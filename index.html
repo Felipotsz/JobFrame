@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobFrame - Gerador Inteligente de Currículos</title>
+    <meta name="description"
+        content="Crie currículos profissionais em minutos com o JobFrame. Gere versões em PDF e web com templates especializados para diferentes setores.">
+    <meta name="author" content="JobFrame">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="JobFrame - Gerador Inteligente de Currículos">
+    <meta property="og:description" content="Crie currículos profissionais em minutos com templates especializados">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@jobframe_app">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js" defer></script>
+
+</head>
+
+<body class="light-theme">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>JobFrame</h1>
+                </div>
+                <nav class="nav">
+                    <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">
+                        <span class="theme-icon">🌓</span>
+                    </button>
+                    <button id="backButton" class="btn btn-outline back-button" style="display: none;">
+                        Voltar
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent">
+        <!-- Home Page -->
+        <div id="homePage" class="page active">
+            <div class="hero-section">
+                <div class="container">
+                    <div class="hero-content">
+                        <h1 class="hero-title">
+                            Crie Currículos
+                            <span class="gradient-text">Profissionais</span>
+                            <br>em Minutos
+                        </h1>
+                        <p class="hero-description">
+                            Transforme suas informações em currículos impressionantes com nossos templates
+                            especializados.
+                            Gere versões em PDF e web com apenas alguns cliques.
+                        </p>
+                        <button id="startButton" class="btn btn-primary btn-hero">
+                            Começar Agora
+                            <span class="btn-icon">→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <div class="container">
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">📄</div>
+                            <h3>Múltiplos Formatos</h3>
+                            <p>Currículos em PDF para impressão e versão web para compartilhar</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🌐</div>
+                            <h3>Compartilhamento Digital</h3>
+                            <p> Link único para envio por email ou redes sociais</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">✨</div>
+                            <h3>Geração Inteligente</h3>
+                            <p>Formulário dinâmico que se adapta ao seu perfil e experiências</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Form Page -->
+        <div id="formPage" class="page">
+            <div class="container">
+                <div class="form-header">
+                    <h2>Criar Currículo</h2>
+                    <div class="step-indicator">
+                        <div class="steps">
+                            <div class="step active" data-step="0">
+                                <span class="step-number">1</span>
+                                <span class="step-title">Pessoal</span>
+                            </div>
+                            <div class="step" data-step="1">
+                                <span class="step-number">2</span>
+                                <span class="step-title">Objetivo</span>
+                            </div>
+                            <div class="step" data-step="2">
+                                <span class="step-number">3</span>
+                                <span class="step-title">Formação</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <!-- Personal Info Section -->
+                    <div id="personalSection" class="form-section active">
+                        <h3>Informações Pessoais</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fullName">Nome Completo *</label>
+                                <input type="text" id="fullName" placeholder="Seu nome completo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" placeholder="seu.email@exemplo.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Telefone *</label>
+                                <input type="tel" id="phone" placeholder="(11) 99999-9999" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="city">Cidade</label>
+                                <input type="text" id="city" placeholder="São Paulo, SP">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="address">Endereço</label>
+                                <input type="text" id="address" placeholder="Rua, número, bairro">
+                            </div>
+                            <div class="form-group">
+                                <label for="linkedin">LinkedIn</label>
+                                <input type="url" id="linkedin" placeholder="linkedin.com/in/seuperfil">
+                            </div>
+                            <div class="form-group">
+                                <label for="website">Website/Portfólio</label>
+                                <input type="url" id="website" placeholder="www.seusite.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Objective Section -->
+                    <div id="objectiveSection" class="form-section">
+                        <h3>Objetivo Profissional</h3>
+                        <div class="form-group">
+                            <label for="objective">Objetivo *</label>
+                            <textarea id="objective" rows="4"
+                                placeholder="Descreva seu objetivo profissional, aspirações de carreira e o que você busca na próxima oportunidade..."
+                                required></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Education Section -->
+                    <div id="educationSection" class="form-section">
+                        <div class="section-header">
+                            <h3>Formação Acadêmica</h3>
+                            <button type="button" id="addEducation" class="btn btn-outline btn-sm">
+                                + Adicionar Formação
+                            </button>
+                        </div>
+                        <div id="educationList" class="dynamic-list"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="prevStep" class="btn btn-outline">Anterior</button>
+                        <button type="button" id="nextStep" class="btn btn-primary">Próximo</button>
+                        <button type="button" id="generateResume" class="btn btn-hero" style="display: none;">
+                            Gerar Currículo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Preview Page -->
+        <div id="previewPage" class="page">
+            <div class="container">
+                <div class="preview-header">
+                    <h2>Seu Currículo</h2>
+                    <div class="preview-actions">
+                        <button id="downloadPDF" class="btn btn-primary">
+                            📄 Baixar PDF
+                        </button>
+                        <button id="shareResume" class="btn btn-outline">
+                            🔗 Compartilhar
+                        </button>
+                    </div>
+                </div>
+                <div id="resumePreview" class="resume-preview"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Equipe de Desenvolvimento</h4>
+                    <div class="team-members">
+                        <div class="member">
+                            <strong>Felipe Gustavo Bieco</strong>
+                            <span>Desenvolvedor Heterossexual</span>
+                            <a href="mailto:joao@jobframe.com">emaildehetero@gmail.com</a>
+                        </div>
+                        <div class="member">
+                            <strong>João Victor</strong>
+                            <span>Desenvolvedor Homossexual</span>
+                            <a href="mailto:maria@jobframe.com">emaildegay@gmail.com</a>
+                        </div>
+                        <div class="member">
+                            <strong>Kayke Delgado</strong>
+                            <span>Desenvolvedor Homossexual</span>
+                            <a href="mailto:carlos@jobframe.com">emaildegay@gmail.com/a>
+                        </div>
+                        <div class="member">
+                            <strong>Rafael Lauri</strong>
+                            <span>Desenvolvedor Homossexual</span>
+                            <a href="mailto:carlos@jobframe.com">emaildegay@gmail.com</a>
+                        </div>
+                        <div class="member">
+                            <strong>Rafael Silveira</strong>
+                            <span>Desenvolvedor Homossexual</span>
+                            <a href="mailto:carlos@jobframe.com">emaildegay@gmail.com</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>&copy; 2025 JobFrame. Todos os direitos reservados.</p>
+                </div>
+            </div>
+    </footer>
+
+</body>
+
+
+</html>
