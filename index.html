@@ -4,248 +4,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobFrame - Gerador Inteligente de Currículos</title>
+    <title>JobFrame - Gerador de Currículos</title>
     <meta name="description"
         content="Crie currículos profissionais em minutos com o JobFrame. Gere versões em PDF e web com templates especializados para diferentes setores.">
     <meta name="author" content="JobFrame">
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="JobFrame - Gerador Inteligente de Currículos">
-    <meta property="og:description" content="Crie currículos profissionais em minutos com templates especializados">
-    <meta property="og:type" content="website">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@jobframe_app">
-
-    <link rel="stylesheet" href="style.css">
+    <!-- Fonte -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- JavaScript -->
     <script src="script.js" defer></script>
 
+    <!-- Gerador PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
-<body class="light-theme">
+<body>
     <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <h1>JobFrame</h1>
-                </div>
-                <nav class="nav">
-                    <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">
-                        <span class="theme-icon">🌓</span>
-                    </button>
-                    <button id="backButton" class="btn btn-outline back-button" style="display: none;">
-                        Voltar
-                    </button>
-                </nav>
+    <header id="header" class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="#hero" class="nav-logo">
+                    <h2>JobFrame</h2>
+                </a>
             </div>
-        </div>
+            <ul class="nav-menu">
+                <li><a href="#hero" class="nav-link">Início</a></li>
+                <li><a href="#about" class="nav-link">Sobre</a></li>
+                <li><a href="#security" class="nav-link">Segurança</a></li>
+                <li><a href="#team" class="nav-link">Contato</a></li>
+            </ul>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema">
+                <span class="theme-icon"></span>
+            </button>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
     </header>
 
-    <!-- Main Content -->
-    <main id="mainContent">
-        <!-- Home Page -->
-        <div id="homePage" class="page active">
-            <div class="hero-section">
-                <div class="container">
-                    <div class="hero-content">
-                        <h1 class="hero-title">
-                            Crie Currículos
-                            <span class="gradient-text">Profissionais</span>
-                            <br>em Minutos
-                        </h1>
-                        <p class="hero-description">
-                            Transforme suas informações em currículos impressionantes com nossos templates
-                            especializados.
-                            Gere versões em PDF e web com apenas alguns cliques.
+    <main>
+        <!-- Seção Hero -->
+        <section id="hero" class="hero">
+            <div class="container">
+                <h1 class="hero-title">
+                    Crie Currículos
+                    <span class="gradient-text">Profissionais</span>
+                    <br>em Minutos
+                </h1>
+                <p class="hero-description">
+                    Transforme suas informações em currículos impressionantes com nossos templates
+                    especializados. Gere versões em PDF e web com apenas alguns cliques.
+                </p>
+                <a href="form.html" class="btn btn-hero">Começar Agora</a>
+            </div>
+        </section>
+
+        <!-- Seção "Nossas Propostas" -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title">Nossas Propostas</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📄</div>
+                        <h3>Múltiplos Formatos</h3>
+                        <p class="feature-text">Currículos em PDF para impressão e versão web para compartilhar</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <h3>Compartilhamento Digital</h3>
+                        <p class="feature-text">Link único para envio por email ou redes sociais</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">✨</div>
+                        <h3>Geração Inteligente</h3>
+                        <p class="feature-text">Formulário dinâmico que se adapta ao seu perfil e experiências</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção "Sobre o JobFrame" -->
+        <section id="about" class="about">
+            <div class="container">
+                <h2 class="section-title">Sobre o JobFrame</h2>
+                <div class="about-grid">
+                    <div class="about-card">
+                        <div class="about-icon">⚡</div>
+                        <h3>Rápido e Inteligente</h3>
+                        <p class="about-text">Gere currículos profissionais em minutos com extrema velocidade e de forma
+                            simples</p>
+                    </div>
+                    <div class="about-card">
+                        <div class="about-icon">🔒</div>
+                        <h3>Privacidade Garantida</h3>
+                        <p class="about-text">Não é necessário nenhum cadastro ou informação pessoal sensível para criar
+                            seus currículos</p>
+                    </div>
+                    <div class="about-card">
+                        <div class="about-icon">🏆</div>
+                        <h3>Foco na Carreira</h3>
+                        <p class="about-text">Modelos otimizados para destacar suas conquistas, competências e
+                            habilidades no mercado de trabalho</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção "Segurança e Privacidade"  -->
+        <section id="security" class="security">
+            <div class="container">
+                <h2 class="section-title">Segurança e Privacidade</h2>
+                <div class="security-grid">
+                    <div class="security-card">
+                        <div class="security-icon">🌐</div>
+                        <h3>Processamento Local</h3>
+                        <p class="security-text">Todo o processamento ocorre diretamente no seu navegador, sem envio a
+                            servidores externos</p>
+                    </div>
+
+                    <div class="security-card">
+                        <div class="security-icon">🛡️</div>
+                        <h3>Privacidade Total</h3>
+                        <p class="security-text">Todas as suas informações pessoais são completamente apagadas assim que
+                            você fechar a página</p>
+                    </div>
+                    <div class="security-card">
+                        <div class="security-icon">📂</div>
+                        <h3>Exportação Segura</h3>
+                        <p class="security-text">Baixe seu currículo em formato PDF com segurança e mantenha controle
+                            total sobre seus dados</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção "Nossa Equipe" -->
+        <section id="team" class="team">
+            <div class="container">
+                <h2 class="section-title">Nossa Equipe</h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <img src="src/Lauri.png" alt="">
+                        </div>
+                        <h3 class="team-name">Felipe Gustavo Bieco</h3>
+                        <p class="team-role">Dev. Back e Front End</p>
+                        <p class="team-description">Especialista em experiência do usuário com foco em simplicidade e
+                            acessibilidade</p>
+                        <a href="https://www.linkedin.com/in/felipe-bieco-879893324/" target="_blank">LinkedIn</a>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <img src="src/Lauri.png" alt="">
+                        </div>
+                        <h3 class="team-name">João Victor de Almeida</h3>
+                        <p class="team-role">Dev. Back e Front End</p>
+                        <p class="team-description">Entusiasta em desenvolvimento full-stack, gerenciamento e na
+                            experiência do usuário</p>
+                        <a href="https://www.linkedin.com/in/joao-victor-de-almeida-959438384/"
+                            target="_blank">LinkedIn</a>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <img src="src/Lauri.png" alt="">
+                        </div>
+                        <h3 class="team-name">Kayke de Farias Delgado</h3>
+                        <p class="team-role">Dev. Back e Front End</p>
+                        <p class="team-description">Expert em desenvolvimento web moderno e otimização de performance
                         </p>
-                        <button id="startButton" class="btn btn-primary btn-hero">
-                            Começar Agora
-                            <span class="btn-icon">→</span>
-                        </button>
+                        <a href="https://www.linkedin.com/in/kayke-delgado-681a1b335/" target="_blank">LinkedIn</a>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <img src="src/Lauri.png" alt="">
+                        </div>
+                        <h3 class="team-name">Rafael Lauri Moraes Santos</h3>
+                        <p class="team-role">Dev. Back e Front End</p>
+                        <p class="team-description">Especialista em integração de sistemas e automação de processos web
+                        </p>
+                        <a href="https://www.linkedin.com/in/rafael-lauri-moraes-santos-717773186/"
+                            target="_blank">LinkedIn</a>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <img src="src/Lauri.png" alt="">
+                        </div>
+                        <h3 class="team-name">Refael Santos Silveira</h3>
+                        <p class="team-role">Dev. Back e Front End</p>
+                        <p class="team-description">Focado em soluções adaptáveis e flexíveis no desempenho em
+                            aplicações modernas
+                        </p>
+                        <a href="https://www.linkedin.com/in/rafael-silveira-0a5537355/" target="_blank">LinkedIn</a>
                     </div>
                 </div>
             </div>
-
-            <div class="features-section">
-                <div class="container">
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <div class="feature-icon">📄</div>
-                            <h3>Múltiplos Formatos</h3>
-                            <p>Currículos em PDF para impressão e versão web para compartilhar</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🌐</div>
-                            <h3>Compartilhamento Digital</h3>
-                            <p> Link único para envio por email ou redes sociais</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">✨</div>
-                            <h3>Geração Inteligente</h3>
-                            <p>Formulário dinâmico que se adapta ao seu perfil e experiências</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Resume Form Page -->
-        <div id="formPage" class="page">
-            <div class="container">
-                <div class="form-header">
-                    <h2>Criar Currículo</h2>
-                    <div class="step-indicator">
-                        <div class="steps">
-                            <div class="step active" data-step="0">
-                                <span class="step-number">1</span>
-                                <span class="step-title">Pessoal</span>
-                            </div>
-                            <div class="step" data-step="1">
-                                <span class="step-number">2</span>
-                                <span class="step-title">Objetivo</span>
-                            </div>
-                            <div class="step" data-step="2">
-                                <span class="step-number">3</span>
-                                <span class="step-title">Formação</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <!-- Personal Info Section -->
-                    <div id="personalSection" class="form-section active">
-                        <h3>Informações Pessoais</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="fullName">Nome Completo *</label>
-                                <input type="text" id="fullName" placeholder="Seu nome completo" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email *</label>
-                                <input type="email" id="email" placeholder="seu.email@exemplo.com" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="phone">Telefone *</label>
-                                <input type="tel" id="phone" placeholder="(11) 99999-9999" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="city">Cidade</label>
-                                <input type="text" id="city" placeholder="São Paulo, SP">
-                            </div>
-                            <div class="form-group full-width">
-                                <label for="address">Endereço</label>
-                                <input type="text" id="address" placeholder="Rua, número, bairro">
-                            </div>
-                            <div class="form-group">
-                                <label for="linkedin">LinkedIn</label>
-                                <input type="url" id="linkedin" placeholder="linkedin.com/in/seuperfil">
-                            </div>
-                            <div class="form-group">
-                                <label for="website">Website/Portfólio</label>
-                                <input type="url" id="website" placeholder="www.seusite.com">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Objective Section -->
-                    <div id="objectiveSection" class="form-section">
-                        <h3>Objetivo Profissional</h3>
-                        <div class="form-group">
-                            <label for="objective">Objetivo *</label>
-                            <textarea id="objective" rows="4"
-                                placeholder="Descreva seu objetivo profissional, aspirações de carreira e o que você busca na próxima oportunidade..."
-                                required></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Education Section -->
-                    <div id="educationSection" class="form-section">
-                        <div class="section-header">
-                            <h3>Formação Acadêmica</h3>
-                            <button type="button" id="addEducation" class="btn btn-outline btn-sm">
-                                + Adicionar Formação
-                            </button>
-                        </div>
-                        <div id="educationList" class="dynamic-list"></div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" id="prevStep" class="btn btn-outline">Anterior</button>
-                        <button type="button" id="nextStep" class="btn btn-primary">Próximo</button>
-                        <button type="button" id="generateResume" class="btn btn-hero" style="display: none;">
-                            Gerar Currículo
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Resume Preview Page -->
-        <div id="previewPage" class="page">
-            <div class="container">
-                <div class="preview-header">
-                    <h2>Seu Currículo</h2>
-                    <div class="preview-actions">
-                        <button id="downloadPDF" class="btn btn-primary">
-                            📄 Baixar PDF
-                        </button>
-                        <button id="shareResume" class="btn btn-outline">
-                            🔗 Compartilhar
-                        </button>
-                    </div>
-                </div>
-                <div id="resumePreview" class="resume-preview"></div>
-            </div>
-        </div>
+        </section>
     </main>
 
     <!-- Footer -->
-<footer class="footer">
+    <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Equipe de Desenvolvimento</h4>
-                    <div class="team-members">
-                        <div class="member">
-                            <p>Felipe Gustavo Bieco</p>
-                            <span>Dev. Back e Front End</span>
-                            <a href="https://www.linkedin.com/in/felipe-bieco-879893324/" target="_blank">LinkedIn</a>
-                        </div>
-                        <div class="member">
-                            <p>João Victor de Almeida Andrade</p>
-                            <span>Dev. Back e Front End</span>
-                            <a href="https://www.linkedin.com/in/joao-victor-de-almeida-959438384/" target="_blank">LinkedIn</a>
-                        </div>
-                        <div class="member">
-                            <p>Kayke de Farias Delgado</p>
-                            <span>Dev. Back e Front End</span>
-                            <a href="https://www.linkedin.com/in/kayke-delgado-681a1b335/" target="_blank">LinkedIn</a>
-                        </div>
-                        <div class="member">
-                            <p>Rafael Lauri Moraes Santos</p>
-                            <span>Dev. Back e Front End</span>
-                            <a href="https://www.linkedin.com/in/rafael-lauri-moraes-santos-717773186/"
-                                target="_blank">LinkedIn</a>
-                        </div>
-                        <div class="member">
-                            <p>Refael Santos Silveira</p>
-                            <span>Dev. Back e Front End</span>
-                            <a href="https://www.linkedin.com/in/rafael-silveira-0a5537355/"
-                                target="_blank">LinkedIn</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <p>&copy; 2025 JobFrame. Todos os direitos reservados.</p>
+                <div class="footer-brand">
+                    <h3>JobFrame</h3>
+                    <p>Criando currículos profissionais para impulsionar sua carreira.</p>
                 </div>
             </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 JobFrame. Todos os direitos reservados.</p>
+                <div class="footer-divider"></div>
+            </div>
+        </div>
     </footer>
 </body>
+
 </html>
