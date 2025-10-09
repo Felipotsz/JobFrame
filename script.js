@@ -1943,27 +1943,59 @@ document.addEventListener('click', function (e) {
 function initializeFormHandlers() {
     const form = document.getElementById('resume-form');
     if (form) {
-        console.log('✅ Inicializando handlers do formulário...');
-
-        // Adicionar listener diretamente
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            console.log('✅ Formulário submetido! Chamando generatePDF...');
-            generatePDF();
-        });
-
+        // Remove qualquer event listener existente para evitar duplicação
+        form.removeEventListener('submit', handleFormSubmit);
+        
+        // Adiciona o event listener para o submit
+        form.addEventListener('submit', handleFormSubmit);
+        
+        // Auto-save
         setInterval(autoSaveProgress, 30000);
         handleCurrentCheckboxes();
     }
 }
 
-// Modifique a função generatePDF para ser mais robusta:
+// Função separada para lidar com o submit
+function handleFormSubmit(e) {
+    e.preventDefault();
+    generatePDF();
+}
+
+// ================================================
+// INICIALIZAÇÃO DO FORMULÁRIO DE GERAÇÃO
+// ================================================
+
+function initializeFormSubmission() {
+    const form = document.getElementById('resume-form');
+    if (form) {
+        console.log('Inicializando submissão do formulário...');
+        
+        // Remove event listeners duplicados
+        form.removeEventListener('submit', handleFormSubmit);
+        
+        // Adiciona o event listener
+        form.addEventListener('submit', handleFormSubmit);
+        
+        // Também adiciona um event listener direto ao botão como fallback
+        const generateBtn = document.getElementById('generate-resume-btn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Botão Gerar Currículo clicado');
+                generatePDF();
+            });
+        }
+    }
+}
+
 async function generatePDF() {
+    console.log('Função generatePDF() chamada');
+    
     const data = getFormData();
-
-    // Validação básica - permitir gerar mesmo com campos vazios, mas mostrar aviso
+    
+    // Validação básica
     const hasBasicInfo = data.personal.fullName || data.personal.email || data.experience.length > 0 || data.education.length > 0;
-
+    
     if (!hasBasicInfo) {
         if (!confirm('Seu currículo está vazio. Deseja gerar mesmo assim?')) {
             return;
@@ -1973,7 +2005,7 @@ async function generatePDF() {
     try {
         const submitBtn = document.querySelector('#generate-resume-btn') || document.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.innerHTML : '';
-
+        
         // Mostrar estado de carregamento
         if (submitBtn) {
             submitBtn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Gerando...';
@@ -1985,6 +2017,7 @@ async function generatePDF() {
 
         // Mostrar modal de preview
         showPDFPreviewModal(templateHTML, data);
+        console.log('Modal de preview mostrado');
 
         // Restaurar botão
         if (submitBtn) {
@@ -2046,21 +2079,13 @@ function initializeScrollToHash() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Carregado - Inicializando JobFrame...');
+    
+    // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
-
-    const submitButton = document.querySelector('#generate-resume-btn') ||
-        document.querySelector('button[type="submit"]') ||
-        document.querySelector('.btn-primary');
-
-    submitButton.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('✅✅✅ BOTÃO CLICADO - Gerando PDF...');
-        generatePDF();
-    });
 
     // Initialize theme
     initializeTheme();
@@ -2071,8 +2096,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize mobile menu
     initializeMobileMenu();
 
-    // Initialize form handlers
+    // Initialize form handlers (mantenha esta linha)
     initializeFormHandlers();
+    
+    // INICIALIZAÇÃO CRÍTICA - Garantir que o formulário funcione
+    initializeFormSubmission();
 
     // Initialize header scroll effect
     initializeHeaderScroll();
@@ -2092,65 +2120,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize scroll to hash
     initializeScrollToHash();
 
-    // Start button handler
-    const startButton = document.getElementById('start-button');
-    const creatorSection = document.getElementById('creator');
-
-    if (startButton && creatorSection) {
-        startButton.addEventListener('click', (e) => {
-            e.preventDefault();
-
-            document.querySelectorAll('main > section').forEach(section => {
-                if (section.id !== 'creator') {
-                    section.style.display = 'none';
-                }
-            });
-
-            creatorSection.style.display = 'block';
-            creatorSection.scrollIntoView({ behavior: 'smooth' });
-        });
+    // Debug: Verificar se o botão existe
+    const generateBtn = document.getElementById('generate-resume-btn');
+    if (generateBtn) {
+        console.log('Botão "Gerar Currículo" encontrado:', generateBtn);
+    } else {
+        console.error('Botão "Gerar Currículo" NÃO encontrado!');
     }
 
-    // Initialize template and color selection
-    const savedTemplate = localStorage.getItem("resume-template");
-    const savedColor = localStorage.getItem("resume-color");
-
-    if (savedTemplate) {
-        selectedTemplate = savedTemplate;
-        const templateCard = document.querySelector(`.template-card[data-template="${savedTemplate}"]`);
-        if (templateCard) {
-            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
-            templateCard.classList.add('active');
-        }
-    }
-
-    if (savedColor) {
-        selectedColor = savedColor;
-        const colorBtn = document.querySelector(`.color-btn[data-color="${savedColor}"]`);
-        if (colorBtn) {
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-            colorBtn.classList.add('active');
-        }
-        const customColorPicker = document.getElementById('customColor');
-        if (customColorPicker) {
-            customColorPicker.value = savedColor;
-        }
+    // Debug: Verificar se o formulário existe
+    const form = document.getElementById('resume-form');
+    if (form) {
+        console.log('Formulário encontrado:', form);
+    } else {
+        console.error('Formulário NÃO encontrado!');
     }
 });
-
-// Função para debug - verificar se tudo está carregando corretamente
-function checkFormStatus() {
-    console.log('=== STATUS DO FORMULÁRIO ===');
-    console.log('Form encontrado:', !!document.getElementById('resume-form'));
-    console.log('Botão submit encontrado:', !!document.querySelector('button[type="submit"]'));
-    console.log('Template selecionado:', selectedTemplate);
-    console.log('Cor selecionada:', selectedColor);
-
-    const data = getFormData();
-    console.log('Dados do formulário:', data);
-}
-
-window.checkFormStatus = checkFormStatus;
 
 // ================================================
 // EXPORTAÇÃO DE FUNÇÕES GLOBAIS
