@@ -16,7 +16,7 @@ const stepIndicators = document.querySelectorAll('.step');
 
 function debounce(func, delay) {
     let timeout;
-    return function(...args) {
+    return function (...args) {
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), delay);
@@ -32,10 +32,10 @@ function formatMonthYear(dateStr) {
 
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container') || createToastContainer();
-    
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info';
     toast.innerHTML = `
         <i data-lucide="${icon}" class="toast-icon"></i>
@@ -75,6 +75,90 @@ function createToastContainer() {
 }
 
 // ================================================
+// FUNÇÕES PARA O POP-UP DE PREVIEW E DOWNLOAD
+// ================================================
+
+function showPDFPreviewModal(templateHTML, data) {
+    // Fechar modal existente se houver
+    closePDFPreviewModal();
+
+    // Criar modal dinamicamente
+    const modalHTML = `
+        <div id="pdf-preview-modal" class="modal-overlay" style="display: flex;">
+            <div class="modal-content pdf-preview-modal">
+                <div class="modal-title">
+                    <i data-lucide="eye"></i>
+                    <span>Pré-visualização do Currículo</span>
+                </div>
+                
+                <div class="pdf-preview-container">
+                    <div id="pdf-preview-content">
+                        ${templateHTML}
+                    </div>
+                </div>
+                
+                <div class="pdf-preview-actions">
+                    <button type="button" class="download-option" onclick="downloadPDF('${btoa(unescape(encodeURIComponent(templateHTML)))}', '${data.personal.fullName || 'curriculo'}')">
+                        <i data-lucide="download"></i>
+                        <span>Baixar PDF</span>
+                    </button>
+                    
+                    <button type="button" class="download-option" onclick="downloadJPG('${btoa(unescape(encodeURIComponent(templateHTML)))}', '${data.personal.fullName || 'curriculo'}')">
+                        <i data-lucide="image"></i>
+                        <span>Baixar JPG</span>
+                    </button>
+                    
+                    <button type="button" class="download-option" onclick="toggleShareOptions()">
+                        <i data-lucide="share-2"></i>
+                        <span>Compartilhar</span>
+                    </button>
+                </div>
+                
+                <div class="share-options" id="share-options" style="display: none; margin-top: 1rem;">
+                    <button type="button" class="share-btn" onclick="shareViaEmail('${data.personal.fullName || 'Currículo'}')">
+                        <i data-lucide="mail"></i> Email
+                    </button>
+                    <button type="button" class="share-btn" onclick="shareViaWhatsApp('${data.personal.fullName || 'Currículo'}')">
+                        <i data-lucide="message-circle"></i> WhatsApp
+                    </button>
+                    <button type="button" class="share-btn" onclick="copyShareLink('${data.personal.fullName || 'Currículo'}')">
+                        <i data-lucide="link"></i> Copiar Link
+                    </button>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closePDFPreviewModal()">
+                        <i data-lucide="x"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Adicionar modal ao body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Inicializar ícones
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function closePDFPreviewModal() {
+    const modal = document.getElementById('pdf-preview-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function toggleShareOptions() {
+    const shareOptions = document.getElementById('share-options');
+    if (shareOptions) {
+        shareOptions.style.display = shareOptions.style.display === 'none' ? 'flex' : 'none';
+    }
+}
+
+// ================================================
 // GERENCIAMENTO DE TEMA
 // ================================================
 
@@ -89,6 +173,7 @@ function setTheme(theme) {
     }
     localStorage.setItem('jobframe-theme', theme);
 }
+
 
 function initializeTheme() {
     const savedTheme = localStorage.getItem('jobframe-theme') || 'dark';
@@ -225,7 +310,7 @@ function getFormData() {
     if (!form) return null;
 
     const formData = new FormData(form);
-    
+
     const data = {
         personal: {
             fullName: formData.get('fullName') || '',
@@ -243,7 +328,7 @@ function getFormData() {
         languages: []
     };
 
-    // Coleta experiências
+    // Coleta experiências (permite campos vazios)
     const experienceTitles = formData.getAll('experienceTitle[]');
     const experienceCompanies = formData.getAll('experienceCompany[]');
     const experienceStartDates = formData.getAll('experienceStartDate[]');
@@ -251,18 +336,16 @@ function getFormData() {
     const experienceCurrent = formData.getAll('experienceCurrent[]');
 
     for (let i = 0; i < experienceTitles.length; i++) {
-        if (experienceTitles[i] || experienceCompanies[i]) {
-            data.experience.push({
-                title: experienceTitles[i] || '',
-                company: experienceCompanies[i] || '',
-                startDate: experienceStartDates[i] || '',
-                endDate: experienceCurrent[i] ? 'Atual' : (experienceEndDates[i] || ''),
-                current: !!experienceCurrent[i]
-            });
-        }
+        data.experience.push({
+            title: experienceTitles[i] || '',
+            company: experienceCompanies[i] || '',
+            startDate: experienceStartDates[i] || '',
+            endDate: experienceCurrent[i] ? 'Atual' : (experienceEndDates[i] || ''),
+            current: !!experienceCurrent[i]
+        });
     }
 
-    // Coleta formações
+    // Coleta formações (permite campos vazios)
     const educationDegrees = formData.getAll('educationDegree[]');
     const educationSchools = formData.getAll('educationSchool[]');
     const educationStartYears = formData.getAll('educationStartYear[]');
@@ -270,28 +353,24 @@ function getFormData() {
     const educationCurrent = formData.getAll('educationCurrent[]');
 
     for (let i = 0; i < educationDegrees.length; i++) {
-        if (educationDegrees[i] || educationSchools[i]) {
-            data.education.push({
-                degree: educationDegrees[i] || '',
-                school: educationSchools[i] || '',
-                startYear: educationStartYears[i] || '',
-                endYear: educationCurrent[i] ? 'Em Andamento' : (educationEndYears[i] || ''),
-                current: !!educationCurrent[i]
-            });
-        }
+        data.education.push({
+            degree: educationDegrees[i] || '',
+            school: educationSchools[i] || '',
+            startYear: educationStartYears[i] || '',
+            endYear: educationCurrent[i] ? 'Em Andamento' : (educationEndYears[i] || ''),
+            current: !!educationCurrent[i]
+        });
     }
 
-    // Coleta idiomas
+    // Coleta idiomas (permite campos vazios)
     const languageNames = formData.getAll('languageName[]');
     const languageLevels = formData.getAll('languageLevel[]');
 
     for (let i = 0; i < languageNames.length; i++) {
-        if (languageNames[i] && languageLevels[i]) {
-            data.languages.push({
-                name: languageNames[i],
-                level: languageLevels[i]
-            });
-        }
+        data.languages.push({
+            name: languageNames[i] || '',
+            level: languageLevels[i] || ''
+        });
     }
 
     return data;
@@ -366,6 +445,11 @@ function addExperience() {
                 <label for="experienceCurrent-${index}" style="font-weight: 400;">Trabalho Atual</label>
             </div>
         </div>
+        <div class="item-actions" style="text-align: right; margin-top: 1rem;">
+            <button type="button" class="btn btn-destructive btn-sm" onclick="removeExperience(this)">
+                <i data-lucide="trash-2"></i> Excluir Experiência
+            </button>
+        </div>
     `;
 
     container.appendChild(newItem);
@@ -408,6 +492,11 @@ function addEducation() {
                 <label for="educationCurrent-${index}" style="font-weight: 400;">Em Andamento</label>
             </div>
         </div>
+        <div class="item-actions" style="text-align: right; margin-top: 1rem;">
+            <button type="button" class="btn btn-destructive btn-sm" onclick="removeEducation(this)">
+                <i data-lucide="trash-2"></i> Excluir Formação
+            </button>
+        </div>
     `;
 
     container.appendChild(newItem);
@@ -443,12 +532,57 @@ function addLanguage() {
                 </select>
             </div>
         </div>
+        <div class="item-actions" style="text-align: right; margin-top: 1rem;">
+            <button type="button" class="btn btn-destructive btn-sm" onclick="removeLanguage(this)">
+                <i data-lucide="trash-2"></i> Excluir Idioma
+            </button>
+        </div>
     `;
 
     container.appendChild(newItem);
 
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+}
+
+// Funções para remover itens
+function removeExperience(button) {
+    const experienceItem = button.closest('.experience-item');
+    const container = document.getElementById('experience-container');
+    const items = container.querySelectorAll('.experience-item');
+
+    // Não permitir remover o primeiro item se for o único
+    if (items.length > 1) {
+        experienceItem.remove();
+    } else {
+        showToast('É necessário ter pelo menos uma experiência', 'error');
+    }
+}
+
+function removeEducation(button) {
+    const educationItem = button.closest('.education-item');
+    const container = document.getElementById('education-container');
+    const items = container.querySelectorAll('.education-item');
+
+    // Não permitir remover o primeiro item se for o único
+    if (items.length > 1) {
+        educationItem.remove();
+    } else {
+        showToast('É necessário ter pelo menos uma formação', 'error');
+    }
+}
+
+function removeLanguage(button) {
+    const languageItem = button.closest('.language-item');
+    const container = document.getElementById('language-container');
+    const items = container.querySelectorAll('.language-item');
+
+    // Não permitir remover o primeiro item se for o único
+    if (items.length > 1) {
+        languageItem.remove();
+    } else {
+        showToast('É necessário ter pelo menos um idioma', 'error');
     }
 }
 
@@ -462,13 +596,13 @@ function initializePhotoUpload() {
         const photoDropZone = document.getElementById('photo-drop-zone');
         const photoPreview = document.getElementById('photo-preview');
         const removePhotoBtn = document.getElementById('remove-photo');
-        
+
         if (!photoInput || !photoDropZone || !photoPreview) {
             return;
         }
 
         const MAX_FILE_SIZE = 5 * 1024 * 1024;
-        
+
         // Elementos da câmera (opcionais)
         const openCameraBtn = document.getElementById('open-camera-btn');
         const cameraModal = document.getElementById('camera-modal');
@@ -478,7 +612,7 @@ function initializePhotoUpload() {
         const capturePhotoBtn = document.getElementById('capture-photo-btn');
         const switchCameraBtn = document.getElementById('switch-camera-btn');
         const cameraMessage = document.getElementById('camera-message');
-        
+
         let currentStream = null;
         let videoDevices = [];
         let currentDeviceIndex = 0;
@@ -499,19 +633,19 @@ function initializePhotoUpload() {
             if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
             photoDropZone.classList.add('has-photo');
             photoDropZone.style.borderColor = 'hsl(var(--primary))';
-            
+
             if (cameraModal) closeCameraModal();
         }
 
         function resetPreview() {
             window.photoBlob = null;
             if (photoInput) photoInput.value = '';
-            
+
             photoPreview.innerHTML = `
                 <i data-lucide="camera" class="photo-placeholder-icon"></i>
                 <span id="photo-placeholder-text">Clique para adicionar ou arraste uma foto (Máx. 5MB)</span>
             `;
-            
+
             if (removePhotoBtn) removePhotoBtn.style.display = 'none';
             photoDropZone.classList.remove('has-photo');
             photoDropZone.style.borderColor = 'hsl(var(--border))';
@@ -523,7 +657,7 @@ function initializePhotoUpload() {
 
         function handleFile(file) {
             if (!file) return;
-            
+
             if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
                 showToast('Formato de arquivo inválido. Use JPEG ou PNG.', 'error');
                 return;
@@ -546,7 +680,7 @@ function initializePhotoUpload() {
 
         // Lógica da câmera
         if (cameraComponentsExist) {
-            
+
             async function getCameraDevices() {
                 try {
                     const devices = await navigator.mediaDevices.enumerateDevices();
@@ -582,7 +716,7 @@ function initializePhotoUpload() {
                 try {
                     currentStream = await navigator.mediaDevices.getUserMedia(constraints);
                     cameraStream.srcObject = currentStream;
-                    
+
                     cameraStream.onloadedmetadata = () => {
                         cameraStream.play();
                         if (cameraMessage) cameraMessage.textContent = '';
@@ -604,27 +738,27 @@ function initializePhotoUpload() {
 
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-                
+
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 canvas.toBlob((blob) => {
                     const capturedFile = new File([blob], "captured_photo.png", { type: "image/png" });
                     handleFile(capturedFile);
-                    
+
                     if (window.photoBlob) {
                         showToast('Foto capturada e salva!', 'success');
                     }
-                    
+
                 }, 'image/png');
             }
 
             function openCameraModal() {
                 if (!cameraModal) return;
-                
+
                 cameraModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-                
+
                 getCameraDevices().then(() => {
                     startCamera(null);
                 });
@@ -643,20 +777,20 @@ function initializePhotoUpload() {
                 const nextDeviceId = videoDevices[currentDeviceIndex].deviceId;
                 startCamera(nextDeviceId);
             }
-            
+
             // Event listeners da câmera
             if (openCameraBtn) openCameraBtn.addEventListener('click', openCameraModal);
             if (closeCameraModalBtn) closeCameraModalBtn.addEventListener('click', closeCameraModal);
             if (capturePhotoBtn) capturePhotoBtn.addEventListener('click', capturePhoto);
             if (switchCameraBtn) switchCameraBtn.addEventListener('click', switchCamera);
-            
+
             cameraModal.addEventListener('click', (e) => {
                 if (e.target === cameraModal) {
                     closeCameraModal();
                 }
             });
         }
-        
+
         // Event listeners comuns
         photoInput.addEventListener('change', function (e) {
             handleFile(e.target.files[0]);
@@ -675,7 +809,7 @@ function initializePhotoUpload() {
                 e.preventDefault();
                 e.stopPropagation();
             }
-            
+
             function handleDrop(e) {
                 const dt = e.dataTransfer;
                 const files = dt.files;
@@ -683,7 +817,7 @@ function initializePhotoUpload() {
                     handleFile(files[0]);
                 }
             }
-            
+
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 photoDropZone.addEventListener(eventName, preventDefaults, false);
             });
@@ -698,14 +832,14 @@ function initializePhotoUpload() {
 
             photoDropZone.addEventListener('drop', handleDrop, false);
 
-            photoDropZone.addEventListener('click', function(e) {
-                 if (window.photoBlob) return;
-                 photoInput.click();
+            photoDropZone.addEventListener('click', function (e) {
+                if (window.photoBlob) return;
+                photoInput.click();
             });
         }
-        
+
         resetPreview();
-    
+
     } catch (e) {
         console.error("Erro em initializePhotoUpload:", e);
     }
@@ -1009,17 +1143,17 @@ function generateTemplateHTML(data, template, color) {
 function saveResumeTemplate() {
     const data = getFormData();
     const templates = JSON.parse(localStorage.getItem('jobframe_saved_templates') || '[]');
-    
+
     const templateName = prompt('Digite um nome para este template:');
     if (!templateName) return;
-    
+
     const newTemplate = {
         id: Date.now().toString(),
         name: templateName,
         data: data,
         createdAt: new Date().toISOString()
     };
-    
+
     templates.unshift(newTemplate);
     localStorage.setItem('jobframe_saved_templates', JSON.stringify(templates));
     showToast(`Template "${templateName}" salvo com sucesso!`, 'success');
@@ -1028,7 +1162,7 @@ function saveResumeTemplate() {
 function loadResumeTemplate(templateId) {
     const templates = JSON.parse(localStorage.getItem('jobframe_saved_templates') || '[]');
     const template = templates.find(t => t.id === templateId);
-    
+
     if (template) {
         populateForm(template.data);
         updatePreview();
@@ -1039,7 +1173,7 @@ function loadResumeTemplate(templateId) {
 function deleteResumeTemplate(templateId) {
     const templates = JSON.parse(localStorage.getItem('jobframe_saved_templates') || '[]');
     const filteredTemplates = templates.filter(t => t.id !== templateId);
-    
+
     localStorage.setItem('jobframe_saved_templates', JSON.stringify(filteredTemplates));
     showToast('Template excluído com sucesso!', 'info');
 }
@@ -1074,23 +1208,23 @@ function loadSavedProgress() {
 function updatePreview() {
     const previewFrame = document.getElementById('resume-frame');
     const placeholder = document.getElementById('preview-placeholder');
-    
+
     if (!previewFrame) return;
 
     const data = getFormData();
-    
+
     if (!data) return;
 
     const hasContent = data.personal.fullName || data.experience.length > 0 || data.education.length > 0;
-    
+
     if (hasContent) {
         const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor);
-        
+
         const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
         iframeDoc.open();
         iframeDoc.write(templateHTML);
         iframeDoc.close();
-        
+
         if (placeholder) {
             placeholder.style.display = 'none';
         }
@@ -1107,7 +1241,7 @@ function initializePreviewHandlers() {
     // Event listeners para seleção de template
     const templateCards = document.querySelectorAll('.template-card');
     templateCards.forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function () {
             templateCards.forEach(c => c.classList.remove('active'));
             this.classList.add('active');
             selectedTemplate = this.dataset.template;
@@ -1119,7 +1253,7 @@ function initializePreviewHandlers() {
     // Event listeners para seleção de cor
     const colorButtons = document.querySelectorAll('.color-btn');
     colorButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             colorButtons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             selectedColor = this.dataset.color;
@@ -1131,7 +1265,7 @@ function initializePreviewHandlers() {
     // Event listener para cor personalizada
     const customColorPicker = document.getElementById('customColor');
     if (customColorPicker) {
-        customColorPicker.addEventListener('input', function(e) {
+        customColorPicker.addEventListener('input', function (e) {
             selectedColor = e.target.value;
             colorButtons.forEach(b => b.classList.remove('active'));
             localStorage.setItem("resume-color", selectedColor);
@@ -1154,7 +1288,7 @@ function initializePreviewHandlers() {
 
     const fullscreenBtn = document.getElementById('preview-fullscreen');
     if (fullscreenBtn) {
-        fullscreenBtn.addEventListener('click', function() {
+        fullscreenBtn.addEventListener('click', function () {
             const frame = document.getElementById('resume-frame');
             if (frame.requestFullscreen) {
                 frame.requestFullscreen();
@@ -1175,7 +1309,7 @@ function initializePreviewHandlers() {
 function openTemplatesModal() {
     const modal = document.getElementById('templates-modal');
     if (!modal) return;
-    
+
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     renderTemplatesList();
@@ -1184,7 +1318,7 @@ function openTemplatesModal() {
 function closeTemplatesModal() {
     const modal = document.getElementById('templates-modal');
     if (!modal) return;
-    
+
     modal.classList.add('hidden');
     document.body.style.overflow = '';
 }
@@ -1192,20 +1326,20 @@ function closeTemplatesModal() {
 function renderTemplatesList() {
     const templatesList = document.getElementById('templates-list');
     const noTemplates = document.getElementById('no-templates');
-    
+
     if (!templatesList || !noTemplates) return;
-    
+
     const templates = JSON.parse(localStorage.getItem('jobframe_saved_templates') || '[]');
-    
+
     if (templates.length === 0) {
         templatesList.style.display = 'none';
         noTemplates.style.display = 'block';
         return;
     }
-    
+
     templatesList.style.display = 'block';
     noTemplates.style.display = 'none';
-    
+
     templatesList.innerHTML = templates.map(template => `
         <div class="template-item" data-template-id="${template.id}">
             <div class="template-header">
@@ -1227,7 +1361,7 @@ function renderTemplatesList() {
             </div>
         </div>
     `).join('');
-    
+
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
@@ -1278,13 +1412,15 @@ if (templatesModal) {
 }
 
 // ================================================
-// GERAÇÃO DE PDF
+// GERAÇÃO DE PDF E COMPARTILHAMENTO
 // ================================================
 
 async function generatePDF() {
-    const previewFrame = document.getElementById('resume-frame');
-    if (!previewFrame || !previewFrame.contentDocument) {
-        alert('Aguarde o carregamento da pré-visualização...');
+    const data = getFormData();
+
+    // Permitir gerar currículo mesmo com campos vazios
+    if (!data) {
+        showToast('Preencha pelo menos algumas informações antes de gerar o currículo.', 'error');
         return;
     }
 
@@ -1292,19 +1428,231 @@ async function generatePDF() {
         const form = document.getElementById('resume-form');
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i data-lucide="loader"></i> Gerando PDF...';
+
+        // Mostrar estado de carregamento
+        submitBtn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Gerando...';
         submitBtn.disabled = true;
 
-        const iframeBody = previewFrame.contentDocument.body;
-        
-        const canvas = await html2canvas(iframeBody, {
+        // Gerar o HTML do currículo
+        const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor);
+
+        // Mostrar modal de preview
+        showPDFPreviewModal(templateHTML, data);
+
+        // Restaurar botão
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+    } catch (error) {
+        console.error('Erro ao gerar preview:', error);
+        showToast('Erro ao gerar preview. Tente novamente.', 'error');
+
+        const form = document.getElementById('resume-form');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Gerar Currículo <i data-lucide="download"></i>';
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+}
+
+async function downloadPDF(encodedHTML, fileName) {
+    try {
+        showToast('Gerando PDF...', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+        const { jsPDF } = window.jspdf;
+
+        // Criar elemento temporário para renderização
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+        tempDiv.style.width = '210mm';
+        tempDiv.style.padding = '20mm';
+        tempDiv.style.background = 'white';
+        document.body.appendChild(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
             scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff'
         });
 
+        document.body.removeChild(tempDiv);
+
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(safeFileName);
+
+        showToast('PDF baixado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        showToast('Erro ao gerar PDF. Tente novamente.', 'error');
+    }
+}
+
+async function downloadJPG(encodedHTML, fileName) {
+    try {
+        showToast('Gerando JPG...', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+        tempDiv.style.width = '210mm';
+        tempDiv.style.padding = '20mm';
+        tempDiv.style.background = 'white';
+        document.body.appendChild(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.9);
+        const link = document.createElement('a');
+        link.download = `curriculo_${(fileName || 'sem_nome').replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.jpg`;
+        link.href = imgData;
+        link.click();
+
+        showToast('JPG baixado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao gerar JPG:', error);
+        showToast('Erro ao gerar JPG. Tente novamente.', 'error');
+    }
+}
+
+function shareViaEmail(fileName) {
+    const subject = `Currículo - ${fileName}`;
+    const body = `Confira meu currículo: ${fileName}\n\nGerado através do JobFrame`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function shareViaWhatsApp(fileName) {
+    const text = `Confira meu currículo: ${fileName}\n\nGerado através do JobFrame`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function copyShareLink(fileName) {
+    const currentUrl = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(currentUrl).then(() => {
+        showToast('Link copiado para a área de transferência!', 'success');
+    });
+}
+
+function showPDFPreviewModal(templateHTML, data) {
+    // Criar modal dinamicamente
+    const modalHTML = `
+        <div id="pdf-preview-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">
+                    <i data-lucide="eye"></i>
+                    <span>Pré-visualização do Currículo</span>
+                </div>
+                
+                <div class="pdf-preview-container" id="pdf-preview-content">
+                    ${templateHTML}
+                </div>
+                
+                <div class="pdf-preview-actions">
+                    <div class="download-option" onclick="downloadPDF('${btoa(unescape(encodeURIComponent(templateHTML)))}', '${data.personal.fullName || 'curriculo'}')">
+                        <i data-lucide="download" style="width: 24px; height: 24px;"></i>
+                        <span>Baixar PDF</span>
+                    </div>
+                    
+                    <div class="download-option" onclick="downloadJPG('${btoa(unescape(encodeURIComponent(templateHTML)))}', '${data.personal.fullName || 'curriculo'}')">
+                        <i data-lucide="image" style="width: 24px; height: 24px;"></i>
+                        <span>Baixar JPG</span>
+                    </div>
+                    
+                    <div class="download-option" onclick="shareResume('${data.personal.fullName || 'Currículo'}')">
+                        <i data-lucide="share-2" style="width: 24px; height: 24px;"></i>
+                        <span>Compartilhar</span>
+                    </div>
+                </div>
+                
+                <div class="share-options" id="share-options" style="display: none;">
+                    <button class="share-btn" onclick="shareViaEmail('${data.personal.fullName || 'Currículo'}')">
+                        <i data-lucide="mail"></i> Email
+                    </button>
+                    <button class="share-btn" onclick="shareViaWhatsApp('${data.personal.fullName || 'Currículo'}')">
+                        <i data-lucide="message-circle"></i> WhatsApp
+                    </button>
+                    <button class="share-btn" onclick="copyShareLink('${data.personal.fullName || 'Currículo'}')">
+                        <i data-lucide="link"></i> Copiar Link
+                    </button>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closePDFPreviewModal()">
+                        <i data-lucide="x"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Adicionar modal ao body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Inicializar ícones
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function closePDFPreviewModal() {
+    const modal = document.getElementById('pdf-preview-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function downloadPDF(encodedHTML, fileName) {
+    try {
+        showToast('Gerando PDF...', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
         const { jsPDF } = window.jspdf;
+
+        // Criar elemento temporário para renderização
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+        document.body.appendChild(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: tempDiv.scrollWidth,
+            height: tempDiv.scrollHeight
+        });
+
+        document.body.removeChild(tempDiv);
+
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
@@ -1314,30 +1662,100 @@ async function generatePDF() {
         const imgData = canvas.toDataURL('image/png');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        
-        const data = getFormData();
-        const fileName = `curriculo_${data.personal.fullName.replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
-        pdf.save(fileName);
 
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-        
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+        // Calcular proporções para caber na página A4
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = imgWidth / imgHeight;
+
+        let width = pdfWidth;
+        let height = width / ratio;
+
+        if (height > pdfHeight) {
+            height = pdfHeight;
+            width = height * ratio;
         }
 
-        showToast('PDF gerado com sucesso!', 'success');
+        const x = (pdfWidth - width) / 2;
+        const y = (pdfHeight - height) / 2;
+
+        pdf.addImage(imgData, 'PNG', x, y, width, height);
+
+        const safeFileName = `curriculo_${fileName.replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(safeFileName);
+
+        showToast('PDF baixado com sucesso!', 'success');
+
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
         showToast('Erro ao gerar PDF. Tente novamente.', 'error');
-        
-        const form = document.getElementById('resume-form');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.disabled = false;
     }
 }
+
+async function downloadJPG(encodedHTML, fileName) {
+    try {
+        showToast('Gerando JPG...', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+        document.body.appendChild(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.9);
+        const link = document.createElement('a');
+        link.download = `curriculo_${fileName.replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.jpg`;
+        link.href = imgData;
+        link.click();
+
+        showToast('JPG baixado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao gerar JPG:', error);
+        showToast('Erro ao gerar JPG. Tente novamente.', 'error');
+    }
+}
+
+function shareResume(fileName) {
+    const shareOptions = document.getElementById('share-options');
+    if (shareOptions) {
+        shareOptions.style.display = shareOptions.style.display === 'none' ? 'flex' : 'none';
+    }
+}
+
+function shareViaEmail(fileName) {
+    const subject = `Currículo - ${fileName}`;
+    const body = `Confira meu currículo: ${fileName}\n\nGerado através do JobFrame`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function shareViaWhatsApp(fileName) {
+    const text = `Confira meu currículo: ${fileName}\n\nGerado através do JobFrame`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function copyShareLink(fileName) {
+    // Em uma implementação real, aqui você geraria um link único
+    const currentUrl = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(currentUrl).then(() => {
+        showToast('Link copiado para a área de transferência!', 'success');
+    });
+}
+
+// Fechar modal ao clicar fora
+document.addEventListener('click', function (e) {
+    if (e.target.id === 'pdf-preview-modal') {
+        closePDFPreviewModal();
+    }
+});
 
 // ================================================
 // SALVAMENTO E CARREGAMENTO DE PROGRESSO
@@ -1371,7 +1789,7 @@ function loadSavedProgress() {
 
 function populateForm(data) {
     if (!data) return;
-    
+
     if (data.personal) {
         const personal = data.personal;
         setValue('fullName', personal.fullName);
@@ -1408,12 +1826,12 @@ function populateForm(data) {
             for (let i = 1; i < items.length; i++) {
                 items[i].remove();
             }
-            
+
             // Add new items starting from index 1
             for (let i = 1; i < data.experience.length; i++) {
                 addExperience();
             }
-            
+
             // Populate all items
             const itemsAfter = container.querySelectorAll('.experience-item');
             data.experience.forEach((exp, index) => {
@@ -1424,7 +1842,7 @@ function populateForm(data) {
                     inputs[2].value = exp.startDate || '';
                     inputs[3].value = exp.current ? '' : (exp.endDate || '');
                     inputs[4].checked = exp.current || false;
-                    
+
                     // Trigger change event to update disabled state
                     if (exp.current) {
                         inputs[4].dispatchEvent(new Event('change'));
@@ -1443,12 +1861,12 @@ function populateForm(data) {
             for (let i = 1; i < items.length; i++) {
                 items[i].remove();
             }
-            
+
             // Add new items starting from index 1
             for (let i = 1; i < data.education.length; i++) {
                 addEducation();
             }
-            
+
             // Populate all items
             const itemsAfter = container.querySelectorAll('.education-item');
             data.education.forEach((edu, index) => {
@@ -1459,7 +1877,7 @@ function populateForm(data) {
                     inputs[2].value = edu.startYear || '';
                     inputs[3].value = edu.current ? '' : (edu.endYear || '');
                     inputs[4].checked = edu.current || false;
-                    
+
                     // Trigger change event to update disabled state
                     if (edu.current) {
                         inputs[4].dispatchEvent(new Event('change'));
@@ -1478,12 +1896,12 @@ function populateForm(data) {
             for (let i = 1; i < items.length; i++) {
                 items[i].remove();
             }
-            
+
             // Add new items starting from index 1
             for (let i = 1; i < data.languages.length; i++) {
                 addLanguage();
             }
-            
+
             // Populate all items
             const itemsAfter = container.querySelectorAll('.language-item');
             data.languages.forEach((lang, index) => {
@@ -1511,6 +1929,13 @@ function setValue(id, value) {
     }
 }
 
+// Fechar modal ao clicar fora
+document.addEventListener('click', function (e) {
+    if (e.target.id === 'pdf-preview-modal') {
+        closePDFPreviewModal();
+    }
+});
+
 // ================================================
 // INICIALIZAÇÃO PRINCIPAL
 // ================================================
@@ -1518,13 +1943,72 @@ function setValue(id, value) {
 function initializeFormHandlers() {
     const form = document.getElementById('resume-form');
     if (form) {
+        console.log('✅ Inicializando handlers do formulário...');
+
+        // Adicionar listener diretamente
         form.addEventListener('submit', function (e) {
             e.preventDefault();
+            console.log('✅ Formulário submetido! Chamando generatePDF...');
             generatePDF();
         });
 
         setInterval(autoSaveProgress, 30000);
         handleCurrentCheckboxes();
+    }
+}
+
+// Modifique a função generatePDF para ser mais robusta:
+async function generatePDF() {
+    const data = getFormData();
+
+    // Validação básica - permitir gerar mesmo com campos vazios, mas mostrar aviso
+    const hasBasicInfo = data.personal.fullName || data.personal.email || data.experience.length > 0 || data.education.length > 0;
+
+    if (!hasBasicInfo) {
+        if (!confirm('Seu currículo está vazio. Deseja gerar mesmo assim?')) {
+            return;
+        }
+    }
+
+    try {
+        const submitBtn = document.querySelector('#generate-resume-btn') || document.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.innerHTML : '';
+
+        // Mostrar estado de carregamento
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Gerando...';
+            submitBtn.disabled = true;
+        }
+
+        // Gerar o HTML do currículo
+        const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor);
+
+        // Mostrar modal de preview
+        showPDFPreviewModal(templateHTML, data);
+
+        // Restaurar botão
+        if (submitBtn) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+    } catch (error) {
+        console.error('Erro ao gerar preview:', error);
+        showToast('Erro ao gerar preview. Tente novamente.', 'error');
+
+        const submitBtn = document.querySelector('#generate-resume-btn') || document.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Gerar Currículo <i data-lucide="download"></i>';
+        }
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 }
 
@@ -1563,10 +2047,20 @@ function initializeScrollToHash() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+
+    const submitButton = document.querySelector('#generate-resume-btn') ||
+        document.querySelector('button[type="submit"]') ||
+        document.querySelector('.btn-primary');
+
+    submitButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('✅✅✅ BOTÃO CLICADO - Gerando PDF...');
+        generatePDF();
+    });
 
     // Initialize theme
     initializeTheme();
@@ -1644,6 +2138,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Função para debug - verificar se tudo está carregando corretamente
+function checkFormStatus() {
+    console.log('=== STATUS DO FORMULÁRIO ===');
+    console.log('Form encontrado:', !!document.getElementById('resume-form'));
+    console.log('Botão submit encontrado:', !!document.querySelector('button[type="submit"]'));
+    console.log('Template selecionado:', selectedTemplate);
+    console.log('Cor selecionada:', selectedColor);
+
+    const data = getFormData();
+    console.log('Dados do formulário:', data);
+}
+
+window.checkFormStatus = checkFormStatus;
+
 // ================================================
 // EXPORTAÇÃO DE FUNÇÕES GLOBAIS
 // ================================================
@@ -1652,10 +2160,12 @@ window.scrollToSection = scrollToSection;
 window.addExperience = addExperience;
 window.addEducation = addEducation;
 window.addLanguage = addLanguage;
+window.removeExperience = removeExperience;
+window.removeEducation = removeEducation;
+window.removeLanguage = removeLanguage;
 window.nextStep = nextStep;
 window.prevStep = prevStep;
 window.updatePreview = updatePreview;
-window.generatePDF = generatePDF;
 window.saveProgress = saveProgress;
 window.saveResumeTemplate = saveResumeTemplate;
 window.loadResumeTemplate = loadResumeTemplate;
@@ -1664,3 +2174,12 @@ window.openTemplatesModal = openTemplatesModal;
 window.closeTemplatesModal = closeTemplatesModal;
 window.loadTemplateFromModal = loadTemplateFromModal;
 window.deleteTemplateFromModal = deleteTemplateFromModal;
+window.generatePDF = generatePDF;
+window.downloadPDF = downloadPDF;
+window.downloadJPG = downloadJPG;
+window.shareViaEmail = shareViaEmail;
+window.shareViaWhatsApp = shareViaWhatsApp;
+window.copyShareLink = copyShareLink;
+window.closePDFPreviewModal = closePDFPreviewModal;
+window.toggleShareOptions = toggleShareOptions;
+window.showPDFPreviewModal = showPDFPreviewModal;

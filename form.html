@@ -467,14 +467,22 @@
                                                 style="background-color:#111827;"
                                                 aria-label="Preto Profissional"></button>
                                         </div>
+
                                     </div>
                                     <div class="custom-color-wrapper">
                                         <label for="customColor">Ou escolha sua própria cor:</label>
                                         <input type="color" id="customColor" name="customColor" value="#2563EB">
                                     </div>
+
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="submit" class="btn btn-hero" id="generate-resume-btn">
+                                            Gerar Currículo <i data-lucide="download"></i>
+                                        </button>
+                                    </div>
                                 </div>
                         </div>
-
 
                         <div class="divider"></div>
 
@@ -502,18 +510,9 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="form-navigation">
-                            <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
-                                    data-lucide="chevron-left"></i> Anterior</button>
-                            <button type="submit" class="btn btn-hero">Gerar Currículo <i
-                                    data-lucide="download"></i></button>
-                        </div>
                     </div>
                     </form>
                 </div>
-            </div>
-            </div>
             </div>
         </section>
     </main>
@@ -560,6 +559,25 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Garantir que todos os labels fiquem visíveis
+        document.addEventListener('DOMContentLoaded', function () {
+            // Forçar cor dos labels
+            const labels = document.querySelectorAll('label');
+            labels.forEach(label => {
+                label.style.color = 'hsl(var(--foreground))';
+                label.style.fontWeight = '600';
+            });
+
+            // Labels de checkbox
+            const checkboxLabels = document.querySelectorAll('.form-group-checkbox label');
+            checkboxLabels.forEach(label => {
+                label.style.color = 'hsl(var(--foreground))';
+                label.style.fontWeight = '500';
+            });
+        });
+    </script>
 </body>
 
 </html>
