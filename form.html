@@ -7,6 +7,8 @@
     <title>JobFrame - Gerador de Currículos</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js" defer></script>
 </head>
 
@@ -408,35 +410,6 @@
                                                 </div>
                                                 <h3>Criativo</h3>
                                                 <p>Estilo expressivo e original</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Modal para Gerenciar Templates -->
-                                    <div id="templates-modal" class="modal-overlay hidden">
-                                        <div class="modal-content">
-                                            <div class="modal-title">
-                                                <i data-lucide="folder-open"></i>
-                                                <span>Meus Templates Salvos</span>
-                                            </div>
-
-                                            <div class="modal-body">
-                                                <div id="templates-list" class="templates-list">
-                                                    <!-- Templates serão carregados aqui dinamicamente -->
-                                                </div>
-                                                <div id="no-templates" class="text-center hidden">
-                                                    <i data-lucide="folder-open" class="photo-placeholder-icon"></i>
-                                                    <p class="mt-4">Nenhum template salvo ainda</p>
-                                                    <span class="text-sm text-muted-foreground">Salve seu primeiro
-                                                        template para vê-lo aqui</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="modal-actions">
-                                                <button class="btn btn-secondary" id="close-templates-btn">
-                                                    <i data-lucide="x"></i>
-                                                    Fechar
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
