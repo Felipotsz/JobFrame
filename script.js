@@ -81,11 +81,14 @@ function showPDFPreviewModal(templateHTML, data) {
     closePDFPreviewModal();
 
     const modalHTML = `
-        <div id="pdf-preview-modal" class="modal-overlay" style="display: flex;">
+        <div id="pdf-preview-modal" class="modal-overlay">
             <div class="modal-content pdf-preview-modal">
-                <div class="modal-title">
-                    <i data-lucide="eye"></i>
-                    <span>Pré-visualização do Currículo</span>
+                <div class="pdf-preview-header">
+                    <div class="pdf-preview-title">
+                        <i data-lucide="eye"></i>
+                        <span>Pré-visualização do Currículo</span>
+                    </div>
+                    <!-- Botão de fechar removido do cabeçalho conforme solicitado -->
                 </div>
                 
                 <div class="pdf-preview-container">
@@ -98,34 +101,46 @@ function showPDFPreviewModal(templateHTML, data) {
                     <button type="button" class="download-option" onclick="downloadPDF('${btoa(unescape(encodeURIComponent(templateHTML)))}', '${data.personal.fullName || 'curriculo'}')">
                         <i data-lucide="download"></i>
                         <span>Baixar PDF</span>
+                        <span class="download-description">Formato ideal para impressão</span>
                     </button>
                     
                     <button type="button" class="download-option" onclick="downloadJPG('${btoa(unescape(encodeURIComponent(templateHTML)))}', '${data.personal.fullName || 'curriculo'}')">
                         <i data-lucide="image"></i>
                         <span>Baixar JPG</span>
+                        <span class="download-description">Imagem de alta qualidade</span>
                     </button>
                     
-                    <button type="button" class="download-option" onclick="toggleShareOptions()">
-                        <i data-lucide="share-2"></i>
-                        <span>Compartilhar</span>
+                    <button type="button" class="download-option" onclick="downloadPNG('${btoa(unescape(encodeURIComponent(templateHTML)))}', '${data.personal.fullName || 'curriculo'}')">
+                        <i data-lucide="file-image"></i>
+                        <span>Baixar PNG</span>
+                        <span class="download-description">Imagem com fundo transparente</span>
                     </button>
                 </div>
                 
-                <div class="share-options" id="share-options" style="display: none; margin-top: 1rem;">
-                    <button type="button" class="share-btn" onclick="shareViaEmail('${data.personal.fullName || 'Currículo'}')">
-                        <i data-lucide="mail"></i> Email
-                    </button>
-                    <button type="button" class="share-btn" onclick="shareViaWhatsApp('${data.personal.fullName || 'Currículo'}')">
-                        <i data-lucide="message-circle"></i> WhatsApp
-                    </button>
-                    <button type="button" class="share-btn" onclick="copyShareLink('${data.personal.fullName || 'Currículo'}')">
-                        <i data-lucide="link"></i> Copiar Link
-                    </button>
+                <div class="share-section">
+                    <div class="share-section-title">
+                        <i data-lucide="share-2"></i>
+                        <span>Compartilhar Currículo</span>
+                    </div>
+                    <div class="share-options">
+                        <button type="button" class="share-btn" onclick="shareViaEmail('${data.personal.fullName || 'Currículo'}')">
+                            <i data-lucide="mail"></i> Email
+                        </button>
+                        <button type="button" class="share-btn" onclick="shareViaWhatsApp('${data.personal.fullName || 'Currículo'}')">
+                            <i data-lucide="message-circle"></i> WhatsApp
+                        </button>
+                        <button type="button" class="share-btn" onclick="copyShareLink('${data.personal.fullName || 'Currículo'}')">
+                            <i data-lucide="link"></i> Copiar Link
+                        </button>
+                        <button type="button" class="share-btn" onclick="shareViaLinkedIn('${data.personal.fullName || 'Currículo'}')">
+                            <i data-lucide="linkedin"></i> LinkedIn
+                        </button>
+                    </div>
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closePDFPreviewModal()">
-                        <i data-lucide="x"></i> Fechar
+                    <button type="button" class="btn btn-destructive" onclick="closePDFPreviewModal()">
+                        <i data-lucide="x"></i> Fechar Pré-visualização
                     </button>
                 </div>
             </div>
@@ -134,9 +149,278 @@ function showPDFPreviewModal(templateHTML, data) {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+    // Inicializar ícones
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+
+    // Garantir que a pré-visualização seja carregada corretamente
+    setTimeout(() => {
+        const previewContent = document.getElementById('pdf-preview-content');
+        if (previewContent) {
+            previewContent.innerHTML = templateHTML;
+        }
+    }, 100);
+}
+
+// Função para fechar o modal corretamente
+function closePDFPreviewModal() {
+    const modal = document.getElementById('pdf-preview-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Função para download em PNG
+async function downloadPNG(encodedHTML, fileName) {
+    try {
+        showToast('Gerando PNG... Aguarde alguns segundos.', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+
+        tempDiv.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        `;
+
+        document.body.appendChild(tempDiv);
+
+        await waitForImages(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: tempDiv.scrollHeight
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+
+        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.png`;
+        link.download = safeFileName;
+        link.href = imgData;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('PNG baixado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao gerar PNG:', error);
+        showToast('Erro ao gerar PNG. Tente novamente.', 'error');
+    }
+}
+
+// Função para compartilhar via LinkedIn
+function shareViaLinkedIn(fileName) {
+    const text = `Confira meu currículo: ${fileName}\n\nGerado através do JobFrame`;
+    const url = window.location.href.split('?')[0];
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(text)}`, '_blank');
+}
+
+// Função para copiar o link de compartilhamento
+function copyShareLink(fileName) {
+    const currentUrl = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(currentUrl).then(() => {
+        showToast('Link copiado para a área de transferência!', 'success');
+    }).catch(() => {
+        // Fallback para navegadores mais antigos
+        const textArea = document.createElement('textarea');
+        textArea.value = currentUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Link copiado para a área de transferência!', 'success');
+    });
+}
+
+// Função para fechar o modal corretamente
+function closePDFPreviewModal() {
+    const modal = document.getElementById('pdf-preview-modal');
+    if (modal) {
+        // Adicionar animação de fade out
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Função para download em PNG
+async function downloadPNG(encodedHTML, fileName) {
+    try {
+        showToast('Gerando PNG... Aguarde alguns segundos.', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+
+        tempDiv.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        `;
+
+        document.body.appendChild(tempDiv);
+
+        await waitForImages(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: tempDiv.scrollHeight
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+
+        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.png`;
+        link.download = safeFileName;
+        link.href = imgData;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('PNG baixado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao gerar PNG:', error);
+        showToast('Erro ao gerar PNG. Tente novamente.', 'error');
+    }
+}
+
+// Função para compartilhar via LinkedIn
+function shareViaLinkedIn(fileName) {
+    const text = `Confira meu currículo: ${fileName}\n\nGerado através do JobFrame`;
+    const url = window.location.href.split('?')[0];
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(text)}`, '_blank');
+}
+
+// Função para copiar o link de compartilhamento
+function copyShareLink(fileName) {
+    const currentUrl = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(currentUrl).then(() => {
+        showToast('Link copiado para a área de transferência!', 'success');
+    }).catch(() => {
+        // Fallback para navegadores mais antigos
+        const textArea = document.createElement('textarea');
+        textArea.value = currentUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Link copiado para a área de transferência!', 'success');
+    });
+}
+
+// Função para download em PNG
+async function downloadPNG(encodedHTML, fileName) {
+    try {
+        showToast('Gerando PNG... Aguarde alguns segundos.', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+
+        tempDiv.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        `;
+
+        document.body.appendChild(tempDiv);
+
+        await waitForImages(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: tempDiv.scrollHeight
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+
+        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.png`;
+        link.download = safeFileName;
+        link.href = imgData;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('PNG baixado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao gerar PNG:', error);
+        showToast('Erro ao gerar PNG. Tente novamente.', 'error');
+    }
+}
+
+// Função para compartilhar via LinkedIn
+function shareViaLinkedIn(fileName) {
+    const text = `Confira meu currículo: ${fileName}\n\nGerado através do JobFrame`;
+    const url = window.location.href.split('?')[0];
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(text)}`, '_blank');
+}
+
+// Função para copiar o link de compartilhamento
+function copyShareLink(fileName) {
+    const currentUrl = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(currentUrl).then(() => {
+        showToast('Link copiado para a área de transferência!', 'success');
+    }).catch(() => {
+        // Fallback para navegadores mais antigos
+        const textArea = document.createElement('textarea');
+        textArea.value = currentUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Link copiado para a área de transferência!', 'success');
+    });
 }
 
 function closePDFPreviewModal() {
