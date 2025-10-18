@@ -507,7 +507,6 @@ section {
     margin-top: 1rem;
     text-align: center;
     padding-top: 1rem;
-    border-top: 1px solid hsl(var(--border));
     width: 100%;
     font-size: 0.875rem;
     color: hsl(var(--muted-foreground));
@@ -647,86 +646,104 @@ section {
     color: hsl(var(--primary));
 }
 
-/* Form Grid */
+/* Form Grid System */
 .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
 }
 
-.form-grid-compact {
-    grid-template-columns: 1fr auto;
-    align-items: center;
+/* Para telas maiores, força 2 colunas */
+@media (min-width: 1024px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
+/* Para campos que devem ocupar a linha inteira */
 .form-group-full {
-    grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 
+/* Para o grid compacto de idiomas */
+.form-grid-compact {
+  grid-template-columns: 1fr auto;
+  align-items: end;
+}
+
+@media (max-width: 768px) {
+  .form-grid-compact {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Garantir consistência nos labels */
 .form-group label {
-    color: #000000 !important;
-    font-weight: 600 !important;
+    color: hsl(var(--foreground));
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.95rem;
+    line-height: 1.4;
 }
 
-.form-group-checkbox label {
-    color: #000000 !important;
-    font-weight: 500 !important;
-}
-
+/* Inputs padronizados */
 .form-group input,
 .form-group textarea,
 .form-group select {
-    padding: 0.75rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid hsl(var(--input));
-    border-radius: var(--radius);
-    color: #000000 !important;
-    background-color: #ffffff !important;
-    font-size: 1rem;
-    transition: var(--transition-smooth);
+    padding: 0.75rem !important;
+    margin-bottom: 1.5rem !important;
+    border: 1px solid hsl(var(--input)) !important;
+    border-radius: var(--radius) !important;
+    font-size: 1rem !important;
+    transition: var(--transition-smooth) !important;
+    width: 100% !important;
+    box-sizing: border-box;
 }
 
+/* Placeholders consistentes */
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-    color: #666666 !important;
+    color: hsl(var(--muted-foreground));
+    opacity: 0.8;
 }
 
-body.dark-theme .form-group input,
-body.dark-theme .form-group textarea,
-body.dark-theme .form-group select {
-    color: #000000 !important;
-    background-color: #ffffff !important;
-}
-
-body.dark-theme .form-group input::placeholder,
-body.dark-theme .form-group textarea::placeholder {
-    color: #666666 !important;
+/* Estados de foco */
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
 }
 
 /* Checkboxes */
 .form-group-checkbox {
-    display: flex;
-    align-items: center;
-    margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
 }
 
 .form-group-checkbox label {
     font-size: 1rem;
     cursor: pointer;
     font-weight: 400;
+    color: hsl(var(--foreground));
 }
 
 .form-group-checkbox input[type="checkbox"] {
-    width: 1rem;
-    height: 1rem;
-    accent-color: hsl(var(--primary));
-    cursor: pointer;
-    margin-right: 0.5rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: hsl(var(--primary));
+  cursor: pointer;
+}
+
+.form-group-checkbox input[type="checkbox"]:focus,
+.form-group-checkbox input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Form Navigation */
@@ -1254,170 +1271,38 @@ body.dark-theme .form-group textarea::placeholder {
     border-radius: calc(var(--radius) - 2px);
 }
 
-.form-group label {
-    color: hsl(var(--foreground)) !important;
-    font-weight: 600 !important;
-}
-
-.form-group-checkbox label {
-    color: hsl(var(--foreground)) !important;
-    font-weight: 500 !important;
-}
-
-/* Garantir que todos os textos do formulário sejam visíveis */
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-    color: hsl(var(--muted-foreground)) !important;
-    opacity: 0.8 !important;
-}
-
 /* ================================================
-   ESTILOS PARA O MODAL DE PREVIEW DO PDF
+   PRÉ-VISUALIZAÇÃO DO CURRÍCULO
 ================================================ */
 
-.pdf-preview-modal {
-    max-width: 90%;
-    width: 800px;
-    max-height: 90vh;
+.resume-preview-panel {
+    margin-top: 2rem;
 }
 
-.pdf-preview-container {
-    width: 100%;
-    height: 500px;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    overflow: auto;
-    background: white;
-    margin-bottom: 1.5rem;
-}
-
-#pdf-preview-content {
-    padding: 2rem;
-    background: white;
-    min-height: 100%;
-}
-
-.pdf-preview-actions {
+/* Alinhamento dos botões de preview */
+.preview-header {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
     gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
 }
 
-.download-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 1.5rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    background: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    min-width: 120px;
-    text-decoration: none;
-    border: none;
-    font-family: inherit;
-    font-size: inherit;
-}
-
-.download-option:hover {
-    border-color: hsl(var(--primary));
-    background: hsl(var(--primary) / 0.1);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.share-options {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.share-btn {
+.preview-title {
+    font-weight: 600;
+    color: hsl(var(--foreground));
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    background: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    border: none;
-    font-family: inherit;
-    font-size: inherit;
 }
 
-.share-btn:hover {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
+.preview-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
 }
-
-/* Animações */
-.animate-spin {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Responsividade para o modal de preview */
-@media (max-width: 768px) {
-    .pdf-preview-modal {
-        width: 95%;
-        margin: 1rem;
-    }
-    
-    .pdf-preview-container {
-        height: 400px;
-    }
-    
-    .pdf-preview-actions {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .download-option {
-        width: 100%;
-        max-width: 200px;
-    }
-    
-    .share-options {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .share-btn {
-        width: 100%;
-        max-width: 200px;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .pdf-preview-container {
-        height: 300px;
-    }
-    
-    #pdf-preview-content {
-        padding: 1rem;
-    }
-}
-
-/* ================================================
-   PREVIEW COM MEDIDAS A4
-================================================ */
 
 .resume-preview-box {
     position: relative;
@@ -1426,13 +1311,8 @@ body.dark-theme .form-group textarea::placeholder {
     overflow: hidden;
     box-shadow: var(--shadow-md);
     background: hsl(var(--card));
-    width: 100%;
-    max-width: 210mm;
-    /* Largura A4 */
-    height: 297mm;
-    /* Altura A4 */
-    margin: 0 auto;
-    transform-origin: top center;
+    min-height: 500px;
+    max-height: 70vh;
 }
 
 .resume-frame {
@@ -1441,7 +1321,6 @@ body.dark-theme .form-group textarea::placeholder {
     border: none;
     display: block;
     background: hsl(var(--card));
-    transform-origin: top center;
 }
 
 .preview-placeholder {
@@ -1463,187 +1342,42 @@ body.dark-theme .form-group textarea::placeholder {
     text-align: center;
 }
 
-/* ================================================
-   MODAL DE CONFIRMAÇÃO DO PDF
-================================================ */
-
-#pdf-preview-modal .modal-content {
-    max-width: 90%;
-    width: 800px;
-}
-
-.pdf-preview-container {
-    width: 100%;
-    height: 500px;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    overflow: auto;
-    background: white;
-}
-
-.pdf-preview-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 1.5rem;
-}
-
-.download-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    background: hsl(var(--card));
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    min-width: 120px;
-}
-
-.download-option:hover {
-    border-color: hsl(var(--primary));
-    transform: translateY(-2px);
-}
-
-.share-options {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 1rem;
-}
-
-.share-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    background: hsl(var(--card));
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.share-btn:hover {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-}
-
-/* Responsividade para o preview A4 */
-@media (max-width: 768px) {
-    .resume-preview-box {
-        max-width: 100%;
-        height: 400px;
-        transform: scale(0.8);
-    }
-
-    .resume-frame {
-        transform: scale(0.85);
-    }
-}
-
-@media (max-width: 480px) {
-    .resume-preview-box {
-        height: 350px;
-        transform: scale(0.7);
-    }
-}
-
-/* ================================================
-   PRÉ-VISUALIZAÇÃO DO CURRÍCULO
-================================================ */
-
-.resume-preview-panel {
-    margin-top: 2rem;
-}
-
-/* Alinhamento dos botões de preview */
-.preview-header {
-    display: flex;
-    justify-content: center;
-    gap: 300px;
-    margin-bottom: 1rem;
-}
-
-.preview-title {
-    font-weight: 600;
-    color: hsl(var(--foreground));
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.preview-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.resume-preview-box {
-    position: relative;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    background: hsl(var(--card));
-}
-
-.resume-frame {
-    width: 100%;
-    height: 500px;
-    border: none;
-    display: block;
-    background: hsl(var(--card));
-}
-
-.preview-placeholder {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: hsl(var(--muted-foreground));
-    font-size: 0.95rem;
-    background: hsl(var(--card));
-    transition: opacity 0.3s ease;
-}
-
 .preview-placeholder i {
     width: 40px;
     height: 40px;
     opacity: 0.6;
 }
 
-/* Modal de Preview do PDF */
-#pdf-preview-modal .modal-content {
+/* ================================================
+   MODAL DE PREVIEW E DOWNLOAD
+================================================ */
+
+.pdf-preview-modal .modal-content {
     max-width: 90%;
     width: 800px;
+    max-height: 90vh;
 }
 
 .pdf-preview-container {
-    width: 100%;
-    height: 500px;
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
     overflow: auto;
+    max-height: 60vh;
     background: white;
+    margin: 1rem 0;
+}
+
+#pdf-preview-content {
+    transform-origin: top center;
+    transform: scale(0.8);
+    width: 125%; /* Compensa o scale */
 }
 
 .pdf-preview-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 1.5rem;
+    margin: 1.5rem 0;
 }
 
 .download-option {
@@ -1651,33 +1385,40 @@ body.dark-theme .form-group textarea::placeholder {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    padding: 1rem;
-    border: 1px solid hsl(var(--border));
+    padding: 1.5rem;
+    border: 2px solid hsl(var(--border));
     border-radius: var(--radius);
     background: hsl(var(--card));
     cursor: pointer;
     transition: var(--transition-smooth);
-    min-width: 120px;
+    text-align: center;
 }
 
 .download-option:hover {
     border-color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.05);
     transform: translateY(-2px);
+}
+
+.download-option i {
+    width: 32px;
+    height: 32px;
+    color: hsl(var(--primary));
 }
 
 .share-options {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin-top: 1rem;
+    margin: 1rem 0;
 }
 
 .share-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
     background: hsl(var(--card));
@@ -1686,8 +1427,8 @@ body.dark-theme .form-group textarea::placeholder {
 }
 
 .share-btn:hover {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
+    background: hsl(var(--primary) / 0.1);
+    border-color: hsl(var(--primary));
 }
 
 /* ================================================
@@ -1729,20 +1470,6 @@ body.dark-theme .form-group textarea::placeholder {
     color: hsl(var(--destructive));
 }
 
-.toast-content {
-    flex: 1;
-}
-
-.toast-title {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.toast-message {
-    font-size: 0.9rem;
-    color: hsl(var(--muted-foreground));
-}
-
 .toast-close {
     background: none;
     border: none;
@@ -1756,12 +1483,6 @@ body.dark-theme .form-group textarea::placeholder {
 .toast-close:hover {
     background-color: hsl(var(--muted));
     color: hsl(var(--foreground));
-}
-
-/* Loading States */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
 }
 
 /* ================================================
@@ -1833,11 +1554,113 @@ body.dark-theme .form-group textarea::placeholder {
 }
 
 /* ================================================
+   ANIMAÇÕES
+================================================ */
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animações de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Aplicando animações */
+.hero-title,
+.hero-description,
+.feature-card,
+.about-card,
+.security-card,
+.team-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.form-section.active {
+    animation: slideInRight 0.4s ease-out;
+}
+
+.modal-content {
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* Estados de foco melhorados */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+}
+
+/* Estados de hover para elementos interativos */
+.btn:not(:disabled):hover {
+    transform: translateY(-2px);
+}
+
+.feature-card:hover .feature-icon,
+.about-card:hover .about-icon,
+.security-card:hover .security-icon {
+    transform: scale(1.1);
+    transition: var(--transition-bounce);
+}
+
+/* Scroll suave */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Melhorias de acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ================================================
    RESPONSIVIDADE
 ================================================ */
 
 @media (max-width: 768px) {
-
     /* Header Mobile */
     .nav {
         flex-wrap: wrap;
@@ -1942,6 +1765,7 @@ body.dark-theme .form-group textarea::placeholder {
 
     .step-title {
         font-size: 0.7rem;
+        word-break: break-word;
     }
 
     /* Photo Upload Mobile */
@@ -2009,10 +1833,49 @@ body.dark-theme .form-group textarea::placeholder {
     .footer-content {
         text-align: center;
     }
+
+    /* Preview Mobile */
+    .preview-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .preview-actions {
+        justify-content: center;
+    }
+
+    .resume-preview-box {
+        min-height: 300px;
+        max-height: 50vh;
+    }
+
+    /* PDF Preview Mobile */
+    .pdf-preview-modal .modal-content {
+        max-width: 95%;
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    .pdf-preview-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .download-option {
+        padding: 1rem;
+    }
+    
+    .share-options {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #pdf-preview-content {
+        transform: scale(0.7);
+        width: 142%; /* Compensa o scale para mobile */
+    }
 }
 
 @media (max-width: 480px) {
-
     /* Ajustes para telas muito pequenas */
     .hero-title {
         font-size: 1.75rem;
@@ -2047,102 +1910,42 @@ body.dark-theme .form-group textarea::placeholder {
         padding: 0.875rem 1.5rem;
         font-size: 1rem;
     }
-}
 
-/* ================================================
-   ANIMAÇÕES E ESTADOS ESPECIAIS
-================================================ */
-
-/* Animações de entrada */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
+    .resume-preview-box {
+        height: 350px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .pdf-preview-modal .modal-content {
+        margin: 0.5rem;
+        padding: 0.75rem;
     }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
+    
+    #pdf-preview-content {
+        transform: scale(0.6);
+        width: 166%; /* Compensa o scale para mobile pequeno */
     }
 
-    to {
-        opacity: 1;
-        transform: translateX(0);
+    .container {
+        padding: 0 0.5rem;
+    }
+    
+    .resume-form {
+        padding: 0.75rem;
     }
 }
 
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
+/* Ajustes para telas muito pequenas */
+@media (max-width: 360px) {
+    .container {
+        padding: 0 0.5rem;
     }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
+    
+    .resume-form {
+        padding: 0.75rem;
     }
-}
-
-/* Aplicando animações */
-.hero-title,
-.hero-description,
-.feature-card,
-.about-card,
-.security-card,
-.team-card {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-.form-section.active {
-    animation: slideInRight 0.4s ease-out;
-}
-
-.modal-content {
-    animation: scaleIn 0.3s ease-out;
-}
-
-/* Estados de foco melhorados */
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 2px;
-}
-
-/* Estados de hover para elementos interativos */
-.btn:not(:disabled):hover {
-    transform: translateY(-2px);
-}
-
-.feature-card:hover .feature-icon,
-.about-card:hover .about-icon,
-.security-card:hover .security-icon {
-    transform: scale(1.1);
-    transition: var(--transition-bounce);
-}
-
-/* Scroll suave */
-html {
-    scroll-behavior: smooth;
-}
-
-/* Melhorias de acessibilidade */
-@media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
+    
+    .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
     }
 }
