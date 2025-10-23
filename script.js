@@ -595,6 +595,7 @@ function getFormData() {
             email: formData.get('email') || '',
             phone: formData.get('phone') || '',
             linkedin: formData.get('linkedin') || '',
+            neighborhood: formData.get('neighborhood') || '',
             city: formData.get('city') || '',
             state: formData.get('state') || '',
             photo: window.photoBlob || null
@@ -612,6 +613,7 @@ function getFormData() {
     const experienceStartDates = formData.getAll('experienceStartDate[]');
     const experienceEndDates = formData.getAll('experienceEndDate[]');
     const experienceCurrent = formData.getAll('experienceCurrent[]');
+    const experienceDescriptions = formData.getAll('experienceDescription[]');
 
     for (let i = 0; i < experienceTitles.length; i++) {
         data.experience.push({
@@ -619,7 +621,8 @@ function getFormData() {
             company: experienceCompanies[i] || '',
             startDate: experienceStartDates[i] || '',
             endDate: experienceCurrent[i] ? 'Atual' : (experienceEndDates[i] || ''),
-            current: !!experienceCurrent[i]
+            current: !!experienceCurrent[i],
+            description: experienceDescriptions[i] || ''
         });
     }
 
@@ -721,6 +724,10 @@ function addExperience() {
             <div class="form-group form-group-full form-group-checkbox">
                 <input type="checkbox" id="experienceCurrent-${index}" name="experienceCurrent[]">
                 <label for="experienceCurrent-${index}" style="font-weight: 400;">Trabalho Atual</label>
+            </div>
+            <div class="form-group form-group-full">
+                <label>Descrição (Opcional)</label>
+                <textarea name="experienceDescription[]" rows="2" placeholder="Descreva suas principais responsabilidades e conquistas..."></textarea>
             </div>
         </div>
         <div class="item-actions" style="text-align: right; margin-top: 1rem;">
@@ -1137,29 +1144,25 @@ const AVAILABLE_TEMPLATES = {
     'compact': 'Compacto'
 };
 
-function generateTemplateHTML(data, template, color) {
+function generateTemplateHTML(data, template, color, secondaryColor, useGradient) {
     if (!data) return '<div style="padding: 2rem; text-align: center; color: #666;">Preencha os dados do formulário para ver a pré-visualização</div>';
 
     // Sistema de templates - fácil de adicionar novos
     switch(template) {
         case 'minimal':
-            return generateMinimalTemplate(data, color);
+            return generateMinimalTemplate(data, color, secondaryColor, useGradient);
         case 'classic':
-            return generateClassicTemplate(data, color);
+            return generateClassicTemplate(data, color, secondaryColor, useGradient);
         case 'executive':
-            return generateExecutiveTemplate(data, color);
+            return generateExecutiveTemplate(data, color, secondaryColor, useGradient);
         case 'elegant':
-            return generateElegantTemplate(data, color);
+            return generateElegantTemplate(data, color, secondaryColor, useGradient);
         case 'professional':
-            return generateProfessionalTemplate(data, color);
+            return generateProfessionalTemplate(data, color, secondaryColor, useGradient);
         case 'creative':
-            return generateCreativeTemplate(data, color);
-        case 'modern':
-            return generateModernTemplate(data, color);
-        case 'compact':
-            return generateCompactTemplate(data, color);
+            return generateCreativeTemplate(data, color, secondaryColor, useGradient);
         default:
-            return generateClassicTemplate(data, color);
+            return generateClassicTemplate(data, color, secondaryColor, useGradient);
     }
 }
 
@@ -1167,7 +1170,9 @@ function generateTemplateHTML(data, template, color) {
 // TEMPLATE 1: CLÁSSICO
 // ======================
 
-function generateClassicTemplate(data, color) {
+function generateClassicTemplate(data, color, secondaryColor, useGradient) {
+    const sidebarBg = useGradient ? `linear-gradient(180deg, ${color} 0%, ${color}dd 100%)` : '#2c3e50';
+    const accentColor = secondaryColor || color;
     let photoHTML = '';
     if (data.personal.photo) {
         let photoSrc = data.personal.photo;
@@ -1215,7 +1220,7 @@ function generateClassicTemplate(data, color) {
                         <div class="contact-info">
                             ${data.personal.email ? `<span>📧 ${data.personal.email}</span>` : ''}
                             ${data.personal.phone ? `<span>📱 ${data.personal.phone}</span>` : ''}
-                            ${data.personal.city ? `<span>📍 ${data.personal.city}${data.personal.state ? ', ' + data.personal.state : ''}</span>` : ''}
+                            ${data.personal.neighborhood || data.personal.city || data.personal.state ? `<span>📍 ${[data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ')}</span>` : ''}
                             ${data.personal.linkedin ? `<span>🔗 LinkedIn</span>` : ''}
                         </div>
                     </div>
@@ -1236,6 +1241,7 @@ function generateClassicTemplate(data, color) {
                                 <div class="item-title">${exp.title}</div>
                                 <div class="item-subtitle">${exp.company}</div>
                                 <div class="item-date">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                ${exp.description ? `<div class="item-description" style="margin-top: 0.5rem; color: #555; font-size: 0.95rem; line-height: 1.5;">${exp.description}</div>` : ''}
                             </div>
                         `).join('')}
                     </div>
@@ -1287,10 +1293,137 @@ function generateClassicTemplate(data, color) {
 // TEMPLATE 2: EXECUTIVO 
 // =======================
 
-function generateExecutiveTemplate(data, color) {
+function generateExecutiveTemplate(data, color, secondaryColor, useGradient) {
+    const accentColor = secondaryColor || color;
+    let photoHTML = '';
+    if (data.personal.photo) {
+        let photoSrc = data.personal.photo;
+        if (typeof photoSrc === 'object' && photoSrc instanceof Blob) {
+            photoSrc = URL.createObjectURL(photoSrc);
+        }
+        photoHTML = `<img src="${photoSrc}" alt="Foto" class="exec-photo">`;
+    }
 
+    const styles = `
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Georgia', serif; color: #2c3e50; line-height: 1.7; background: white; width: 210mm; min-height: 297mm; margin: 0 auto; }
+      .resume-container { max-width: 100%; margin: 0 auto; background: white; padding: 20mm; }
+      .exec-header { text-align: center; padding: 30px 0; border-bottom: 4px double ${color}; margin-bottom: 35px; }
+      .exec-photo { width: 140px; height: 140px; border-radius: 8px; object-fit: cover; border: 4px solid ${color}; margin-bottom: 20px; }
+      .exec-name { font-size: 2.4rem; font-weight: 700; color: ${color}; margin-bottom: 8px; letter-spacing: 1px; }
+      .exec-title { font-size: 1.1rem; color: #555; font-style: italic; margin-bottom: 18px; }
+      .exec-contact { display: flex; justify-content: center; gap: 2rem; font-size: 0.95rem; color: #666; flex-wrap: wrap; }
+      .section { margin-bottom: 2rem; page-break-inside: avoid; }
+      .section-title { font-size: 1.4rem; font-weight: 700; color: ${color}; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid ${color}; padding-bottom: 8px; }
+      .executive-summary { font-size: 1.05rem; line-height: 1.8; text-align: justify; padding: 20px; background: #f8f9fa; border-left: 5px solid ${color}; }
+      .exp-item { margin-bottom: 1.8rem; padding-left: 20px; border-left: 3px solid ${color}20; }
+      .exp-title { font-weight: 700; font-size: 1.1rem; color: #2c3e50; margin-bottom: 4px; }
+      .exp-company { font-size: 1rem; color: ${color}; font-weight: 600; margin-bottom: 4px; }
+      .exp-date { color: #888; font-size: 0.9rem; font-style: italic; margin-bottom: 10px; }
+      .skills-executive { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+      .skill-exec { background: linear-gradient(135deg, ${color}15, ${color}05); color: ${color}; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; border: 1px solid ${color}30; text-align: center; }
+      .edu-item { margin-bottom: 1.2rem; }
+      .edu-degree { font-weight: 700; font-size: 1.05rem; color: #2c3e50; }
+      .edu-school { color: ${color}; font-weight: 600; margin-bottom: 4px; }
+      .edu-date { color: #888; font-size: 0.9rem; font-style: italic; }
+      .lang-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .lang-box { padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid ${color}; }
+      .lang-name { font-weight: 700; color: #2c3e50; }
+      .lang-level { color: #666; font-size: 0.9rem; }
+      @media print { body { padding: 0; } .resume-container { padding: 15mm; } }
+    </style>
+  `;
 
+    const fullName = data.personal.fullName || 'Nome do Executivo';
+    const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
 
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <div class="exec-header">
+                    ${photoHTML}
+                    <div class="exec-name">${fullName}</div>
+                    ${data.objective ? `<div class="exec-title">${data.objective.split('.')[0]}</div>` : ''}
+                    <div class="exec-contact">
+                        ${data.personal.email ? `<span>✉ ${data.personal.email}</span>` : ''}
+                        ${data.personal.phone ? `<span>☎ ${data.personal.phone}</span>` : ''}
+                        ${location ? `<span>⌂ ${location}</span>` : ''}
+                        ${data.personal.linkedin ? `<span>⚲ LinkedIn</span>` : ''}
+                    </div>
+                </div>
+
+                ${data.objective ? `
+                    <div class="section">
+                        <div class="section-title">Sumário Executivo</div>
+                        <div class="executive-summary">${data.objective}</div>
+                    </div>
+                ` : ''}
+
+                ${data.experience.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Experiência Profissional</div>
+                        ${data.experience.map(exp => `
+                            <div class="exp-item">
+                                <div class="exp-title">${exp.title}</div>
+                                <div class="exp-company">${exp.company}</div>
+                                <div class="exp-date">${exp.startDate ? formatMonthYear(exp.startDate) : ''} — ${exp.current ? 'Presente' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                ${exp.description ? `<div class="exp-description" style="margin-top: 0.75rem; color: #555; font-size: 0.95rem; line-height: 1.6; text-align: justify;">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${data.education.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Formação Acadêmica</div>
+                        ${data.education.map(edu => `
+                            <div class="edu-item">
+                                <div class="edu-degree">${edu.degree}</div>
+                                <div class="edu-school">${edu.school}</div>
+                                <div class="edu-date">${edu.startYear ? formatMonthYear(edu.startYear) : ''} — ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${data.skills ? `
+                    <div class="section">
+                        <div class="section-title">Competências Principais</div>
+                        <div class="skills-executive">
+                            ${data.skills.split(',').map(skill => `
+                                <div class="skill-exec">${skill.trim()}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${data.languages.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Idiomas</div>
+                        <div class="lang-grid">
+                            ${data.languages.map(lang => `
+                                <div class="lang-box">
+                                    <div class="lang-name">${lang.name}</div>
+                                    <div class="lang-level">${lang.level}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        </body>
+        </html>
+    `;
+
+    return html;
 }
 
 
@@ -1298,8 +1431,9 @@ function generateExecutiveTemplate(data, color) {
 // TEMPLATE 3: MINIMALISTA 
 // =========================
 
-function generateMinimalTemplate(data, color) {
+function generateMinimalTemplate(data, color, secondaryColor, useGradient) {
     const primaryColor = color || '#2c1a4d';
+    const sidebarBg = useGradient ? `linear-gradient(180deg, ${primaryColor} 0%, ${secondaryColor || primaryColor + 'dd'} 100%)` : primaryColor;
     
     let photoHTML = '';
     if (data.personal.photo) {
@@ -1321,7 +1455,7 @@ function generateMinimalTemplate(data, color) {
             * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
             body { background-color: #f5f5f5; color: #333; line-height: 1.6; }
             .container { display: flex; max-width: 1000px; margin: 0 auto; background-color: white; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); min-height: 297mm; }
-            .left-column { flex: 1; background-color: ${primaryColor}; color: white; padding: 30px; }
+            .left-column { flex: 1; background: ${sidebarBg}; color: white; padding: 30px; }
             .right-column { flex: 2; padding: 30px; }
             .header { display: flex; align-items: center; margin-bottom: 30px; border-bottom: 2px solid ${primaryColor}; padding-bottom: 20px; }
             .photo { width: 120px; height: 120px; border-radius: 50%; margin-right: 20px; overflow: hidden; flex-shrink: 0; }
@@ -1401,7 +1535,7 @@ function generateMinimalTemplate(data, color) {
                             ${data.personal.phone ? `<p>Tel: ${data.personal.phone}</p>` : ''}
                             ${data.personal.email ? `<p>${data.personal.email}</p>` : ''}
                             ${data.personal.linkedin ? `<p>${data.personal.linkedin}</p>` : ''}
-                            ${data.personal.city || data.personal.state ? `<p>${data.personal.city || ''}${data.personal.city && data.personal.state ? ', ' : ''}${data.personal.state || ''}</p>` : ''}
+                            ${data.personal.neighborhood || data.personal.city || data.personal.state ? `<p>${[data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ')}</p>` : ''}
                         </div>
                     </div>
                     
@@ -1438,6 +1572,7 @@ function generateMinimalTemplate(data, color) {
                                 <p class="job-title">${exp.title || 'Cargo'}</p>
                                 <p class="company">${exp.company || 'Empresa'}</p>
                                 <p class="period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</p>
+                                ${exp.description ? `<p class="description" style="margin-top: 0.5rem; color: #555; font-size: 14px; line-height: 1.5;">${exp.description}</p>` : ''}
                             </div>
                             ${index < data.experience.length - 1 ? '<div class="divider"></div>' : ''}
                         `).join('')}
@@ -1469,30 +1604,304 @@ function generateMinimalTemplate(data, color) {
 // TEMPLATE 4: ELEGANTE 
 // ======================
 
-function generateElegantTemplate(data, color) {
+function generateElegantTemplate(data, color, secondaryColor, useGradient) {
+    let photoHTML = '';
+    if (data.personal.photo) {
+        let photoSrc = data.personal.photo;
+        if (typeof photoSrc === 'object' && photoSrc instanceof Blob) {
+            photoSrc = URL.createObjectURL(photoSrc);
+        }
+        photoHTML = `<img src="${photoSrc}" alt="Foto" class="elegant-photo">`;
+    }
 
+    const styles = `
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Playfair Display', serif; color: #34495e; line-height: 1.8; background: white; width: 210mm; min-height: 297mm; margin: 0 auto; }
+      .resume-container { display: grid; grid-template-columns: 35% 65%; max-width: 100%; margin: 0 auto; background: white; min-height: 297mm; }
+      .elegant-sidebar { background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%); padding: 40px 30px; border-right: 3px solid ${color}; }
+      .elegant-main { padding: 40px 35px; }
+      .elegant-photo { width: 160px; height: 160px; border-radius: 50%; object-fit: cover; border: 5px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); margin: 0 auto 25px; display: block; }
+      .elegant-name { font-size: 2rem; font-weight: 700; color: ${color}; text-align: center; margin-bottom: 8px; letter-spacing: 0.5px; }
+      .elegant-tagline { text-align: center; font-size: 1rem; color: #7f8c8d; font-style: italic; margin-bottom: 30px; }
+      .sidebar-section { margin-bottom: 28px; }
+      .sidebar-title { font-size: 1.1rem; font-weight: 700; color: ${color}; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 6px; border-bottom: 2px solid ${color}; }
+      .contact-elegant { font-size: 0.9rem; line-height: 2; color: #555; }
+      .contact-elegant div { margin-bottom: 8px; word-wrap: break-word; }
+      .skills-elegant { list-style: none; }
+      .skill-elegant { padding: 8px 0; font-size: 0.95rem; color: #555; border-bottom: 1px solid #dee2e6; }
+      .skill-elegant:last-child { border-bottom: none; }
+      .lang-elegant { display: flex; justify-content: space-between; padding: 10px 0; font-size: 0.95rem; color: #555; border-bottom: 1px solid #dee2e6; }
+      .lang-elegant:last-child { border-bottom: none; }
+      .lang-name-elegant { font-weight: 600; }
+      .lang-level-elegant { color: #7f8c8d; font-style: italic; }
+      .main-section { margin-bottom: 32px; page-break-inside: avoid; }
+      .main-title { font-size: 1.6rem; font-weight: 700; color: ${color}; margin-bottom: 18px; letter-spacing: 1px; text-transform: uppercase; position: relative; padding-bottom: 10px; }
+      .main-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 80px; height: 3px; background: ${color}; }
+      .about-elegant { font-size: 1.05rem; line-height: 1.9; text-align: justify; color: #555; }
+      .timeline-elegant { position: relative; padding-left: 30px; border-left: 2px solid ${color}40; }
+      .timeline-item-elegant { position: relative; margin-bottom: 24px; }
+      .timeline-item-elegant::before { content: ''; position: absolute; left: -36px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: ${color}; border: 3px solid white; box-shadow: 0 0 0 3px ${color}40; }
+      .item-title-elegant { font-weight: 700; font-size: 1.15rem; color: #2c3e50; margin-bottom: 4px; }
+      .item-company-elegant { font-size: 1rem; color: ${color}; font-weight: 600; margin-bottom: 4px; }
+      .item-date-elegant { font-size: 0.9rem; color: #7f8c8d; font-style: italic; }
+      @media print { body { padding: 0; } }
+    </style>
+  `;
 
+    const fullName = data.personal.fullName || 'Seu Nome Elegante';
+    const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
 
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <div class="elegant-sidebar">
+                    ${photoHTML}
+                    <div class="elegant-name">${fullName}</div>
+                    ${data.objective ? `<div class="elegant-tagline">${data.objective.split('.')[0]}</div>` : ''}
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Contato</div>
+                        <div class="contact-elegant">
+                            ${data.personal.phone ? `<div>📞 ${data.personal.phone}</div>` : ''}
+                            ${data.personal.email ? `<div>✉ ${data.personal.email}</div>` : ''}
+                            ${location ? `<div>📍 ${location}</div>` : ''}
+                            ${data.personal.linkedin ? `<div>🔗 LinkedIn</div>` : ''}
+                        </div>
+                    </div>
+
+                    ${data.skills ? `
+                        <div class="sidebar-section">
+                            <div class="sidebar-title">Habilidades</div>
+                            <ul class="skills-elegant">
+                                ${data.skills.split(',').map(skill => `
+                                    <li class="skill-elegant">${skill.trim()}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    ${data.languages.length > 0 ? `
+                        <div class="sidebar-section">
+                            <div class="sidebar-title">Idiomas</div>
+                            ${data.languages.map(lang => `
+                                <div class="lang-elegant">
+                                    <span class="lang-name-elegant">${lang.name}</span>
+                                    <span class="lang-level-elegant">${lang.level}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="elegant-main">
+                    ${data.objective ? `
+                        <div class="main-section">
+                            <div class="main-title">Sobre</div>
+                            <div class="about-elegant">${data.objective}</div>
+                        </div>
+                    ` : ''}
+
+                    ${data.experience.length > 0 ? `
+                        <div class="main-section">
+                            <div class="main-title">Experiência</div>
+                            <div class="timeline-elegant">
+                                ${data.experience.map(exp => `
+                                    <div class="timeline-item-elegant">
+                                        <div class="item-title-elegant">${exp.title}</div>
+                                        <div class="item-company-elegant">${exp.company}</div>
+                                        <div class="item-date-elegant">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Presente' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                        ${exp.description ? `<div class="item-desc-elegant" style="margin-top: 0.5rem; color: #666; font-size: 0.9rem; line-height: 1.6; font-family: 'Source Sans Pro', sans-serif;">${exp.description}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${data.education.length > 0 ? `
+                        <div class="main-section">
+                            <div class="main-title">Formação</div>
+                            <div class="timeline-elegant">
+                                ${data.education.map(edu => `
+                                    <div class="timeline-item-elegant">
+                                        <div class="item-title-elegant">${edu.degree}</div>
+                                        <div class="item-company-elegant">${edu.school}</div>
+                                        <div class="item-date-elegant">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+
+    return html;
 }
 
 // ==========================
 // TEMPLATE 5: PROFISSIONAL 
 // ==========================
 
-function generateProfessionalTemplate(data, color) {
+function generateProfessionalTemplate(data, color, secondaryColor, useGradient) {
+    const headerBg = useGradient ? `linear-gradient(135deg, ${color} 0%, ${secondaryColor || color + 'cc'} 100%)` : color;
+    let photoHTML = '';
+    if (data.personal.photo) {
+        let photoSrc = data.personal.photo;
+        if (typeof photoSrc === 'object' && photoSrc instanceof Blob) {
+            photoSrc = URL.createObjectURL(photoSrc);
+        }
+        photoHTML = `<img src="${photoSrc}" alt="Foto" class="prof-photo">`;
+    }
 
+    const styles = `
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Roboto', 'Arial', sans-serif; color: #2c3e50; line-height: 1.6; background: white; width: 210mm; min-height: 297mm; margin: 0 auto; }
+      .resume-container { max-width: 100%; margin: 0 auto; background: white; padding: 20mm; }
+      .prof-header { background: ${headerBg}; color: white; padding: 35px 40px; margin: -20mm -20mm 30px -20mm; border-radius: 0 0 20px 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+      .prof-header-content { display: flex; align-items: center; gap: 30px; }
+      .prof-photo { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 5px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+      .prof-info h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .prof-tagline { font-size: 1.1rem; opacity: 0.95; margin-bottom: 12px; }
+      .prof-contact { display: flex; gap: 20px; font-size: 0.95rem; flex-wrap: wrap; }
+      .prof-contact span { display: flex; align-items: center; gap: 6px; }
+      .section-prof { margin-bottom: 28px; page-break-inside: avoid; }
+      .section-title-prof { font-size: 1.4rem; font-weight: 700; color: ${color}; margin-bottom: 16px; text-transform: uppercase; display: flex; align-items: center; gap: 12px; }
+      .section-title-prof::before { content: ''; width: 6px; height: 28px; background: ${color}; border-radius: 3px; }
+      .objective-prof { font-size: 1.05rem; line-height: 1.8; padding: 20px; background: #f8f9fa; border-left: 4px solid ${color}; border-radius: 4px; }
+      .item-prof { padding: 18px 22px; margin-bottom: 16px; background: white; border: 1px solid #e1e8ed; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s; }
+      .item-prof:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+      .item-header-prof { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+      .item-title-prof { font-weight: 700; font-size: 1.1rem; color: #2c3e50; }
+      .item-date-prof { font-size: 0.85rem; color: white; background: ${color}; padding: 4px 12px; border-radius: 12px; font-weight: 600; }
+      .item-subtitle-prof { color: ${color}; font-weight: 600; font-size: 1rem; }
+      .skills-prof { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .skill-prof { background: white; border: 2px solid ${color}30; color: ${color}; padding: 10px 14px; border-radius: 20px; font-weight: 600; text-align: center; font-size: 0.9rem; transition: all 0.2s; }
+      .skill-prof:hover { background: ${color}; color: white; transform: scale(1.05); }
+      .languages-prof { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .lang-prof { padding: 14px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid ${color}; }
+      .lang-name-prof { font-weight: 700; font-size: 1rem; color: #2c3e50; }
+      .lang-level-prof { font-size: 0.9rem; color: #7f8c8d; }
+      @media print { body { padding: 0; } .resume-container { padding: 15mm; } .item-prof:hover { transform: none; } }
+    </style>
+  `;
 
+    const fullName = data.personal.fullName || 'Nome Profissional';
+    const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
 
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <div class="prof-header">
+                    <div class="prof-header-content">
+                        ${photoHTML}
+                        <div class="prof-info">
+                            <h1>${fullName}</h1>
+                            ${data.objective ? `<div class="prof-tagline">${data.objective.split('.')[0]}</div>` : ''}
+                            <div class="prof-contact">
+                                ${data.personal.email ? `<span>✉ ${data.personal.email}</span>` : ''}
+                                ${data.personal.phone ? `<span>☎ ${data.personal.phone}</span>` : ''}
+                                ${location ? `<span>📍 ${location}</span>` : ''}
+                                ${data.personal.linkedin ? `<span>🔗 LinkedIn</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${data.objective ? `
+                    <div class="section-prof">
+                        <div class="section-title-prof">Sobre Mim</div>
+                        <div class="objective-prof">${data.objective}</div>
+                    </div>
+                ` : ''}
+
+                ${data.experience.length > 0 ? `
+                    <div class="section-prof">
+                        <div class="section-title-prof">Experiência Profissional</div>
+                        ${data.experience.map(exp => `
+                            <div class="item-prof">
+                                <div class="item-header-prof">
+                                    <div class="item-title-prof">${exp.title}</div>
+                                    <div class="item-date-prof">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                </div>
+                                <div class="item-subtitle-prof">${exp.company}</div>
+                                ${exp.description ? `<div class="item-desc-prof" style="margin-top: 0.75rem; color: #555; font-size: 0.95rem; line-height: 1.6; text-align: justify;">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${data.education.length > 0 ? `
+                    <div class="section-prof">
+                        <div class="section-title-prof">Formação Acadêmica</div>
+                        ${data.education.map(edu => `
+                            <div class="item-prof">
+                                <div class="item-header-prof">
+                                    <div class="item-title-prof">${edu.degree}</div>
+                                    <div class="item-date-prof">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Cursando' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                                </div>
+                                <div class="item-subtitle-prof">${edu.school}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${data.skills ? `
+                    <div class="section-prof">
+                        <div class="section-title-prof">Habilidades</div>
+                        <div class="skills-prof">
+                            ${data.skills.split(',').map(skill => `
+                                <div class="skill-prof">${skill.trim()}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${data.languages.length > 0 ? `
+                    <div class="section-prof">
+                        <div class="section-title-prof">Idiomas</div>
+                        <div class="languages-prof">
+                            ${data.languages.map(lang => `
+                                <div class="lang-prof">
+                                    <div class="lang-name-prof">${lang.name}</div>
+                                    <div class="lang-level-prof">${lang.level}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        </body>
+        </html>
+    `;
+
+    return html;
 }
 
 // ======================
 // TEMPLATE 6: CRIATIVO 
 // ======================
 
-function generateCreativeTemplate(data, color) {
-
+function generateCreativeTemplate(data, color, secondaryColor, useGradient) {
     const primaryColor = color || '#043382';
-    const accentColor = color || '#0774bb';
+    const accentColor = secondaryColor || '#0774bb';
 
     let photoHTML = '';
     if (data.personal.photo) {
@@ -1859,10 +2268,10 @@ function generateCreativeTemplate(data, color) {
                         </div>
                         ` : ''}
                         
-                        ${data.personal.city || data.personal.state ? `
+                        ${data.personal.neighborhood || data.personal.city || data.personal.state ? `
                         <div class="contact-item">
                             <span class="contact-label">Cidade:</span>
-                            <span class="contact-value">${data.personal.city || ''}${data.personal.city && data.personal.state ? ', ' : ''}${data.personal.state || ''}</span>
+                            <span class="contact-value">${[data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ')}</span>
                         </div>
                         ` : ''}
                     </div>
@@ -1910,6 +2319,7 @@ function generateCreativeTemplate(data, color) {
                                     <div class="item-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
                                 </div>
                                 <div class="item-subtitle">${exp.company || 'Empresa'}</div>
+                                ${exp.description ? `<div class="item-description" style="margin-top: 0.75rem; color: #555; font-size: 14px; line-height: 1.6; text-align: justify;">${exp.description}</div>` : ''}
                             </div>
                         `).join('')}
                     </div>
@@ -1965,6 +2375,318 @@ function generateCreativeTemplate(data, color) {
                         </div>
                     </div>
                     `}
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+
+    return html;
+}
+
+// ====================
+// TEMPLATE 7: MODERNO
+// ====================
+
+function generateModernTemplate(data, color) {
+    let photoHTML = '';
+    if (data.personal.photo) {
+        let photoSrc = data.personal.photo;
+        if (typeof photoSrc === 'object' && photoSrc instanceof Blob) {
+            photoSrc = URL.createObjectURL(photoSrc);
+        }
+        photoHTML = `<img src="${photoSrc}" alt="Foto" class="modern-photo">`;
+    }
+
+    const styles = `
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Poppins', 'Segoe UI', sans-serif; color: #2d3748; line-height: 1.7; background: white; width: 210mm; min-height: 297mm; margin: 0 auto; }
+      .resume-container { max-width: 100%; margin: 0 auto; background: white; padding: 25mm 20mm; }
+      .modern-header { margin-bottom: 35px; position: relative; overflow: hidden; }
+      .modern-accent { position: absolute; top: 0; right: 0; width: 180px; height: 180px; background: linear-gradient(135deg, ${color}20, ${color}05); border-radius: 0 0 0 200px; z-index: 0; }
+      .modern-header-content { position: relative; z-index: 1; }
+      .modern-name-section { margin-bottom: 20px; }
+      .modern-name { font-size: 2.6rem; font-weight: 800; color: ${color}; margin-bottom: 6px; letter-spacing: -0.5px; }
+      .modern-role { font-size: 1.15rem; color: #718096; font-weight: 500; }
+      .modern-contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
+      .contact-modern { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #4a5568; }
+      .contact-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; background: ${color}15; border-radius: 4px; color: ${color}; font-weight: 700; flex-shrink: 0; }
+      ${photoHTML ? '.modern-photo { width: 110px; height: 110px; border-radius: 16px; object-fit: cover; float: right; margin: 0 0 20px 20px; border: 3px solid ${color}30; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }' : ''}
+      .section-modern { margin-bottom: 32px; page-break-inside: avoid; }
+      .section-header-modern { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+      .section-icon-modern { width: 36px; height: 36px; background: linear-gradient(135deg, ${color}, ${color}dd); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+      .section-title-modern { font-size: 1.5rem; font-weight: 700; color: #1a202c; }
+      .about-modern { font-size: 1.05rem; line-height: 1.8; color: #4a5568; padding-left: 50px; }
+      .modern-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 14px; position: relative; overflow: hidden; }
+      .modern-card::before { content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: ${color}; }
+      .card-header-modern { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+      .card-title-modern { font-weight: 700; font-size: 1.1rem; color: #1a202c; }
+      .card-badge-modern { background: ${color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+      .card-subtitle-modern { color: ${color}; font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+      .card-meta-modern { font-size: 0.85rem; color: #718096; }
+      .skills-modern { display: flex; flex-wrap: wrap; gap: 10px; padding-left: 50px; }
+      .skill-modern { background: white; border: 2px solid ${color}; color: ${color}; padding: 8px 18px; border-radius: 24px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+      .languages-modern { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding-left: 50px; }
+      .lang-modern { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+      .lang-name-modern { font-weight: 700; color: #1a202c; }
+      .lang-level-modern { font-size: 0.85rem; color: white; background: ${color}; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+      @media print { body { padding: 0; } .resume-container { padding: 15mm; } }
+    </style>
+  `;
+
+    const fullName = data.personal.fullName || 'Seu Nome';
+    const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <div class="modern-header">
+                    <div class="modern-accent"></div>
+                    ${photoHTML}
+                    <div class="modern-header-content">
+                        <div class="modern-name-section">
+                            <div class="modern-name">${fullName}</div>
+                            ${data.objective ? `<div class="modern-role">${data.objective.split('.')[0]}</div>` : ''}
+                        </div>
+                        <div class="modern-contact-grid">
+                            ${data.personal.email ? `<div class="contact-modern"><span class="contact-icon">@</span>${data.personal.email}</div>` : ''}
+                            ${data.personal.phone ? `<div class="contact-modern"><span class="contact-icon">☎</span>${data.personal.phone}</div>` : ''}
+                            ${location ? `<div class="contact-modern"><span class="contact-icon">📍</span>${location}</div>` : ''}
+                            ${data.personal.linkedin ? `<div class="contact-modern"><span class="contact-icon">in</span>LinkedIn</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                ${data.objective ? `
+                    <div class="section-modern">
+                        <div class="section-header-modern">
+                            <div class="section-icon-modern">ℹ</div>
+                            <div class="section-title-modern">Sobre</div>
+                        </div>
+                        <div class="about-modern">${data.objective}</div>
+                    </div>
+                ` : ''}
+
+                ${data.experience.length > 0 ? `
+                    <div class="section-modern">
+                        <div class="section-header-modern">
+                            <div class="section-icon-modern">💼</div>
+                            <div class="section-title-modern">Experiência</div>
+                        </div>
+                        ${data.experience.map(exp => `
+                            <div class="modern-card">
+                                <div class="card-header-modern">
+                                    <div class="card-title-modern">${exp.title}</div>
+                                    <div class="card-badge-modern">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                </div>
+                                <div class="card-subtitle-modern">${exp.company}</div>
+                                ${exp.description ? `<div class="card-description-modern" style="margin-top: 0.75rem; color: #666; font-size: 0.9rem; line-height: 1.6; text-align: justify;">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${data.education.length > 0 ? `
+                    <div class="section-modern">
+                        <div class="section-header-modern">
+                            <div class="section-icon-modern">🎓</div>
+                            <div class="section-title-modern">Formação</div>
+                        </div>
+                        ${data.education.map(edu => `
+                            <div class="modern-card">
+                                <div class="card-header-modern">
+                                    <div class="card-title-modern">${edu.degree}</div>
+                                    <div class="card-badge-modern">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Cursando' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                                </div>
+                                <div class="card-subtitle-modern">${edu.school}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${data.skills ? `
+                    <div class="section-modern">
+                        <div class="section-header-modern">
+                            <div class="section-icon-modern">⚡</div>
+                            <div class="section-title-modern">Habilidades</div>
+                        </div>
+                        <div class="skills-modern">
+                            ${data.skills.split(',').map(skill => `
+                                <div class="skill-modern">${skill.trim()}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${data.languages.length > 0 ? `
+                    <div class="section-modern">
+                        <div class="section-header-modern">
+                            <div class="section-icon-modern">🌍</div>
+                            <div class="section-title-modern">Idiomas</div>
+                        </div>
+                        <div class="languages-modern">
+                            ${data.languages.map(lang => `
+                                <div class="lang-modern">
+                                    <span class="lang-name-modern">${lang.name}</span>
+                                    <span class="lang-level-modern">${lang.level}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        </body>
+        </html>
+    `;
+
+    return html;
+}
+
+// =====================
+// TEMPLATE 8: COMPACTO
+// =====================
+
+function generateCompactTemplate(data, color) {
+    let photoHTML = '';
+    if (data.personal.photo) {
+        let photoSrc = data.personal.photo;
+        if (typeof photoSrc === 'object' && photoSrc instanceof Blob) {
+            photoSrc = URL.createObjectURL(photoSrc);
+        }
+        photoHTML = `<img src="${photoSrc}" alt="Foto" class="compact-photo">`;
+    }
+
+    const styles = `
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Arial', 'Helvetica', sans-serif; color: #333; line-height: 1.4; background: white; width: 210mm; min-height: 297mm; margin: 0 auto; font-size: 11pt; }
+      .resume-container { max-width: 100%; margin: 0 auto; background: white; padding: 12mm 15mm; }
+      .compact-header { background: ${color}; color: white; padding: 14px 18px; margin: -12mm -15mm 14px -15mm; display: flex; align-items: center; gap: 16px; }
+      .compact-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid white; flex-shrink: 0; }
+      .header-info h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+      .header-subtitle { font-size: 0.9rem; opacity: 0.95; }
+      .compact-contact { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; margin-top: 8px; }
+      .compact-contact span { display: flex; align-items: center; gap: 4px; }
+      .section-compact { margin-bottom: 16px; page-break-inside: avoid; }
+      .section-title-compact { font-size: 1.1rem; font-weight: 700; color: ${color}; margin-bottom: 8px; text-transform: uppercase; padding-bottom: 4px; border-bottom: 2px solid ${color}; }
+      .about-compact { font-size: 0.95rem; line-height: 1.5; margin-bottom: 2px; text-align: justify; }
+      .item-compact { margin-bottom: 10px; padding-left: 14px; border-left: 2px solid ${color}40; }
+      .item-header-compact { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+      .item-title-compact { font-weight: 700; font-size: 1rem; color: #222; }
+      .item-date-compact { font-size: 0.8rem; color: ${color}; font-weight: 600; white-space: nowrap; }
+      .item-subtitle-compact { font-size: 0.9rem; color: #666; margin-bottom: 1px; }
+      .skills-compact { display: flex; flex-wrap: wrap; gap: 6px; }
+      .skill-compact { background: ${color}15; color: ${color}; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; border: 1px solid ${color}40; }
+      .languages-compact { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .lang-compact { font-size: 0.9rem; padding: 6px; background: #f5f5f5; border-radius: 6px; text-align: center; }
+      .lang-name-compact { font-weight: 700; color: #222; display: block; }
+      .lang-level-compact { font-size: 0.8rem; color: #666; }
+      .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media print { body { padding: 0; } .resume-container { padding: 10mm 12mm; } }
+    </style>
+  `;
+
+    const fullName = data.personal.fullName || 'Nome';
+    const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <div class="compact-header">
+                    ${photoHTML}
+                    <div class="header-info">
+                        <h1>${fullName}</h1>
+                        ${data.objective ? `<div class="header-subtitle">${data.objective.split('.')[0]}</div>` : ''}
+                        <div class="compact-contact">
+                            ${data.personal.email ? `<span>✉ ${data.personal.email}</span>` : ''}
+                            ${data.personal.phone ? `<span>☎ ${data.personal.phone}</span>` : ''}
+                            ${location ? `<span>📍 ${location}</span>` : ''}
+                            ${data.personal.linkedin ? `<span>🔗 LinkedIn</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                ${data.objective ? `
+                    <div class="section-compact">
+                        <div class="section-title-compact">Resumo</div>
+                        <div class="about-compact">${data.objective}</div>
+                    </div>
+                ` : ''}
+
+                <div class="two-column">
+                    <div>
+                        ${data.experience.length > 0 ? `
+                            <div class="section-compact">
+                                <div class="section-title-compact">Experiência</div>
+                                ${data.experience.map(exp => `
+                                    <div class="item-compact">
+                                        <div class="item-header-compact">
+                                            <div class="item-title-compact">${exp.title}</div>
+                                            <div class="item-date-compact">${exp.startDate ? formatMonthYear(exp.startDate).split(' ').join('/') : ''}-${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate).split(' ').join('/') : '')}</div>
+                                        </div>
+                                        <div class="item-subtitle-compact">${exp.company}</div>
+                                        ${exp.description ? `<div class="item-desc-compact" style="margin-top: 0.5rem; color: #666; font-size: 0.85rem; line-height: 1.4;">${exp.description}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        ${data.skills ? `
+                            <div class="section-compact">
+                                <div class="section-title-compact">Habilidades</div>
+                                <div class="skills-compact">
+                                    ${data.skills.split(',').map(skill => `
+                                        <span class="skill-compact">${skill.trim()}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div>
+                        ${data.education.length > 0 ? `
+                            <div class="section-compact">
+                                <div class="section-title-compact">Formação</div>
+                                ${data.education.map(edu => `
+                                    <div class="item-compact">
+                                        <div class="item-header-compact">
+                                            <div class="item-title-compact">${edu.degree}</div>
+                                            <div class="item-date-compact">${edu.startYear ? formatMonthYear(edu.startYear).split(' ').join('/') : ''}-${edu.current ? 'Atual' : (edu.endYear ? formatMonthYear(edu.endYear).split(' ').join('/') : '')}</div>
+                                        </div>
+                                        <div class="item-subtitle-compact">${edu.school}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        ${data.languages.length > 0 ? `
+                            <div class="section-compact">
+                                <div class="section-title-compact">Idiomas</div>
+                                <div class="languages-compact">
+                                    ${data.languages.map(lang => `
+                                        <div class="lang-compact">
+                                            <span class="lang-name-compact">${lang.name}</span>
+                                            <span class="lang-level-compact">${lang.level}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
         </body>
@@ -2080,6 +2802,8 @@ function updatePreview() {
     if (!previewFrame) return;
 
     const data = getFormData();
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
+    const useGradient = document.getElementById('useGradient')?.checked || false;
 
     if (!data) return;
 
@@ -2191,8 +2915,12 @@ async function generatePDF() {
         submitBtn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Gerando...';
         submitBtn.disabled = true;
 
+        // Coletar cores
+        const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
+        const useGradient = document.getElementById('useGradient')?.checked || false;
+
         // Gerar o HTML do currículo
-        const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor);
+        const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
 
         // Mostrar modal de preview
         showPDFPreviewModal(templateHTML, data);
@@ -2226,7 +2954,7 @@ async function generatePDF() {
 
 async function downloadPDF(encodedHTML, fileName) {
     try {
-        showToast('Gerando PDF... Aguarde alguns segundos.', 'info');
+        showToast('Gerando PDF em formato A4... Aguarde alguns segundos.', 'info');
 
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
         const { jsPDF } = window.jspdf;
@@ -2235,17 +2963,19 @@ async function downloadPDF(encodedHTML, fileName) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = templateHTML;
 
-        // Aplicar estilos para garantir que as imagens carreguem
+        // Aplicar estilos para garantir formato A4 (210mm x 297mm = 794px x 1123px @ 96dpi)
         tempDiv.style.cssText = `
       position: fixed;
       left: -9999px;
       top: 0;
-      width: 794px;
-      min-height: 1123px;
+      width: 210mm;
+      min-height: 297mm;
+      max-height: 297mm;
       background: white;
-      padding: 40px;
       box-sizing: border-box;
       font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      page-break-after: always;
     `;
 
         document.body.appendChild(tempDiv);
@@ -2253,48 +2983,41 @@ async function downloadPDF(encodedHTML, fileName) {
         // Aguardar o carregamento de imagens
         await waitForImages(tempDiv);
 
+        // Renderizar com html2canvas em dimensões A4
         const canvas = await html2canvas(tempDiv, {
             scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
             width: 794,
-            height: tempDiv.scrollHeight
+            height: 1123,
+            windowWidth: 794,
+            windowHeight: 1123
         });
 
         document.body.removeChild(tempDiv);
 
+        // Criar PDF com dimensões A4 exatas
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: 'a4'
+            format: 'a4',
+            compress: true
         });
 
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        
+        // Dimensões da página A4 em mm
+        const pdfWidth = 210;
+        const pdfHeight = 297;
 
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        const ratio = imgHeight / imgWidth;
-
-        let width = pdfWidth;
-        let height = width * ratio;
-
-        if (height > pdfHeight) {
-            height = pdfHeight;
-            width = height / ratio;
-        }
-
-        const x = (pdfWidth - width) / 2;
-        const y = (pdfHeight - height) / 2;
-
-        pdf.addImage(imgData, 'PNG', x, y, width, height);
+        // Adicionar imagem ocupando toda a página
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'FAST');
 
         const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`;
         pdf.save(safeFileName);
 
-        showToast('PDF baixado com sucesso!', 'success');
+        showToast('PDF em formato A4 baixado com sucesso!', 'success');
 
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
@@ -2304,40 +3027,46 @@ async function downloadPDF(encodedHTML, fileName) {
 
 async function downloadJPG(encodedHTML, fileName) {
     try {
-        showToast('Gerando JPG... Aguarde alguns segundos.', 'info');
+        showToast('Gerando JPG em formato A4... Aguarde alguns segundos.', 'info');
 
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
 
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = templateHTML;
 
+        // Aplicar estilos para garantir formato A4 (210mm x 297mm = 794px x 1123px @ 96dpi)
         tempDiv.style.cssText = `
             position: fixed;
             left: -9999px;
             top: 0;
-            width: 794px;
-            min-height: 1123px;
+            width: 210mm;
+            min-height: 297mm;
+            max-height: 297mm;
             background: white;
-            padding: 40px;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
+            overflow: hidden;
         `;
 
         document.body.appendChild(tempDiv);
 
         await waitForImages(tempDiv);
 
+        // Renderizar com html2canvas em dimensões A4
         const canvas = await html2canvas(tempDiv, {
             scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
             width: 794,
-            height: tempDiv.scrollHeight
+            height: 1123,
+            windowWidth: 794,
+            windowHeight: 1123
         });
 
         document.body.removeChild(tempDiv);
 
+        // Converter para JPG de alta qualidade
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const link = document.createElement('a');
 
@@ -2349,7 +3078,7 @@ async function downloadJPG(encodedHTML, fileName) {
         link.click();
         document.body.removeChild(link);
 
-        showToast('JPG baixado com sucesso!', 'success');
+        showToast('JPG em formato A4 baixado com sucesso!', 'success');
 
     } catch (error) {
         console.error('Erro ao gerar JPG:', error);
@@ -2408,6 +3137,7 @@ function populateForm(data) {
         setValue('email', personal.email);
         setValue('phone', personal.phone);
         setValue('linkedin', personal.linkedin);
+        setValue('neighborhood', personal.neighborhood);
         setValue('city', personal.city);
         setValue('state', personal.state);
         setValue('objective', data.objective || '');
