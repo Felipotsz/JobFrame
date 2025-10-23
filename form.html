@@ -113,6 +113,10 @@
                                                 placeholder="URL do seu perfil">
                                         </div>
                                         <div class="form-group">
+                                            <label for="neighborhood">Bairro</label>
+                                            <input type="text" id="neighborhood" name="neighborhood">
+                                        </div>
+                                        <div class="form-group">
                                             <label for="city">Cidade</label>
                                             <input type="text" id="city" name="city">
                                         </div>
@@ -170,16 +174,20 @@
                                                     <label>Data Início</label>
                                                     <input type="month" name="experienceStartDate[]">
                                                 </div>
-                                                <div class="form-group">
-                                                    <label>Data Fim</label>
-                                                    <input type="month" name="experienceEndDate[]">
-                                                </div>
-                                                <div class="form-group form-group-full form-group-checkbox">
-                                                    <input type="checkbox" id="experienceCurrent-0"
-                                                        name="experienceCurrent[]">
-                                                    <label for="experienceCurrent-0" style="font-weight: 400;">Trabalho
-                                                        Atual</label>
-                                                </div>
+                                <div class="form-group">
+                                    <label>Data Fim</label>
+                                    <input type="month" name="experienceEndDate[]">
+                                </div>
+                                <div class="form-group form-group-full form-group-checkbox">
+                                    <input type="checkbox" id="experienceCurrent-0"
+                                        name="experienceCurrent[]">
+                                    <label for="experienceCurrent-0" style="font-weight: 400;">Trabalho
+                                        Atual</label>
+                                </div>
+                                <div class="form-group form-group-full">
+                                    <label>Descrição (Opcional)</label>
+                                    <textarea name="experienceDescription[]" rows="2" placeholder="Descreva suas principais responsabilidades e conquistas..."></textarea>
+                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -443,8 +451,22 @@
 
                                     </div>
                                     <div class="custom-color-wrapper">
-                                        <label for="customColor">Ou escolha sua própria cor:</label>
+                                        <label for="customColor">Ou escolha sua própria cor principal:</label>
                                         <input type="color" id="customColor" name="customColor" value="#2563EB">
+                                    </div>
+
+                                    <div class="divider" style="margin: 1.5rem 0;"></div>
+
+                                    <div class="form-group form-group-full">
+                                        <label><i data-lucide="palette" style="width: 20px; height: 20px; margin-right: 8px;"></i> Cor Secundária (opcional):</label>
+                                        <div class="custom-color-wrapper">
+                                            <input type="color" id="secondaryColor" name="secondaryColor" value="#3498db">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group form-group-full form-group-checkbox" style="margin-top: 1rem;">
+                                        <input type="checkbox" id="useGradient" name="useGradient">
+                                        <label for="useGradient" style="font-weight: 400;">Usar gradiente nas seções destacadas</label>
                                     </div>
 
                                     <div class="form-navigation">
