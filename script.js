@@ -88,7 +88,6 @@ function showPDFPreviewModal(templateHTML, data) {
                         <i data-lucide="eye"></i>
                         <span>Pré-visualização do Currículo</span>
                     </div>
-                    <!-- Botão de fechar removido do cabeçalho conforme solicitado -->
                 </div>
                 
                 <div class="pdf-preview-container">
@@ -154,21 +153,20 @@ function showPDFPreviewModal(templateHTML, data) {
         lucide.createIcons();
     }
 
-    // Garantir que a pré-visualização seja carregada corretamente
+    // Ajustar a escala baseada no conteúdo
     setTimeout(() => {
         const previewContent = document.getElementById('pdf-preview-content');
         if (previewContent) {
-            previewContent.innerHTML = templateHTML;
+            const contentHeight = previewContent.scrollHeight;
+            const viewportHeight = window.innerHeight * 0.7; // 70% da altura da tela
+            
+            // Ajustar escala se o conteúdo for muito grande
+            if (contentHeight > viewportHeight) {
+                const scale = Math.min(0.8, viewportHeight / contentHeight);
+                previewContent.style.transform = `scale(${scale})`;
+            }
         }
     }, 100);
-}
-
-// Função para fechar o modal corretamente
-function closePDFPreviewModal() {
-    const modal = document.getElementById('pdf-preview-modal');
-    if (modal) {
-        modal.remove();
-    }
 }
 
 // Função para download em PNG
@@ -1135,7 +1133,7 @@ function initializePhotoUpload() {
 // Definição dos templates disponíveis
 const AVAILABLE_TEMPLATES = {
     'classic': 'Clássico',
-    'executive': 'Executive', 
+    'executive': 'Executive',
     'minimal': 'Minimalista',
     'elegant': 'Elegante',
     'professional': 'Profissional',
@@ -1148,7 +1146,7 @@ function generateTemplateHTML(data, template, color, secondaryColor, useGradient
     if (!data) return '<div style="padding: 2rem; text-align: center; color: #666;">Preencha os dados do formulário para ver a pré-visualização</div>';
 
     // Sistema de templates - fácil de adicionar novos
-    switch(template) {
+    switch (template) {
         case 'minimal':
             return generateMinimalTemplate(data, color, secondaryColor, useGradient);
         case 'classic':
@@ -1165,9 +1163,8 @@ function generateTemplateHTML(data, template, color, secondaryColor, useGradient
             return generateClassicTemplate(data, color, secondaryColor, useGradient);
     }
 }
-
 // ======================
-// TEMPLATE 1: CLÁSSICO
+// TEMPLATE 1: CLÁSSICO - CORRIGIDO
 // ======================
 
 function generateClassicTemplate(data, color, secondaryColor, useGradient) {
@@ -1185,21 +1182,94 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient) {
     const styles = `
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font-family: 'Inter', sans-serif; color: #1f2937; line-height: 1.6; background: white; padding: 25mm; width: 210mm; min-height: 297mm; margin: 0 auto; }
-      .resume-container { max-width: 100%; margin: 0 auto; background: white; }
-      .header { border-bottom: 3px solid ${color}; padding-bottom: 20px; margin-bottom: 30px; display: flex; align-items: center; gap: 20px; }
-      .photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid ${color}; flex-shrink: 0; }
-      .header-content h1 { font-size: 2rem; margin-bottom: 0.5rem; color: ${color}; }
-      .contact-info { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem; color: #666; }
-      .section { margin-bottom: 1.5rem; }
-      .section-title { font-size: 1.25rem; font-weight: 600; color: ${color}; margin-bottom: 0.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
-      .experience-item, .education-item { margin-bottom: 1rem; }
-      .item-title { font-weight: 600; margin-bottom: 0.25rem; }
-      .item-subtitle { color: #666; margin-bottom: 0.25rem; }
-      .item-date { color: #888; font-size: 0.9rem; }
-      .skills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-      .skill-tag { background: ${color}15; color: ${color}; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.9rem; border: 1px solid ${color}30; }
-      .language-item { margin-bottom: 0.5rem; }
+      body { 
+        font-family: 'Inter', sans-serif; 
+        color: #1f2937; 
+        line-height: 1.6; 
+        background: white; 
+        padding: 20mm; 
+        width: 210mm; 
+        min-height: 297mm; 
+        height: auto;
+        margin: 0 auto; 
+      }
+      .resume-container { 
+        max-width: 100%; 
+        margin: 0 auto; 
+        background: white; 
+        height: auto;
+        min-height: 100%;
+      }
+      .header { 
+        border-bottom: 3px solid ${color}; 
+        padding-bottom: 20px; 
+        margin-bottom: 30px; 
+        display: flex; 
+        align-items: center; 
+        gap: 20px; 
+      }
+      .photo { 
+        width: 120px; 
+        height: 120px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        border: 3px solid ${color}; 
+        flex-shrink: 0; 
+      }
+      .header-content h1 { 
+        font-size: 2rem; 
+        margin-bottom: 0.5rem; 
+        color: ${color}; 
+      }
+      .contact-info { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 1rem; 
+        font-size: 0.9rem; 
+        color: #666; 
+      }
+      .section { 
+        margin-bottom: 1.5rem; 
+      }
+      .section-title { 
+        font-size: 1.25rem; 
+        font-weight: 600; 
+        color: ${color}; 
+        margin-bottom: 0.75rem; 
+        border-bottom: 1px solid #e5e7eb; 
+        padding-bottom: 0.5rem; 
+      }
+      .experience-item, .education-item { 
+        margin-bottom: 1rem; 
+      }
+      .item-title { 
+        font-weight: 600; 
+        margin-bottom: 0.25rem; 
+      }
+      .item-subtitle { 
+        color: #666; 
+        margin-bottom: 0.25rem; 
+      }
+      .item-date { 
+        color: #888; 
+        font-size: 0.9rem; 
+      }
+      .skills { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 0.5rem; 
+      }
+      .skill-tag { 
+        background: ${color}15; 
+        color: ${color}; 
+        padding: 0.25rem 0.75rem; 
+        border-radius: 1rem; 
+        font-size: 0.9rem; 
+        border: 1px solid ${color}30; 
+      }
+      .language-item { 
+        margin-bottom: 0.5rem; 
+      }
     </style>
   `;
 
@@ -1434,7 +1504,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient) {
 function generateMinimalTemplate(data, color, secondaryColor, useGradient) {
     const primaryColor = color || '#2c1a4d';
     const sidebarBg = useGradient ? `linear-gradient(180deg, ${primaryColor} 0%, ${secondaryColor || primaryColor + 'dd'} 100%)` : primaryColor;
-    
+
     let photoHTML = '';
     if (data.personal.photo) {
         let photoSrc = data.personal.photo;
@@ -1452,6 +1522,26 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient) {
 
     const styles = `
         <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: 'Inter', sans-serif; 
+                color: #1f2937; 
+                line-height: 1.6; 
+                background: white; 
+                padding: 20mm; 
+                width: 210mm; 
+                min-height: 297mm; 
+                height: auto; /* Altura automática */
+                margin: 0 auto; 
+            }
+            .resume-container { 
+                max-width: 100%; 
+                margin: 0 auto; 
+                background: white; 
+                height: auto; /* Altura automática */
+                min-height: 100%; /* Mínimo uma página */
+            }
+
             * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
             body { background-color: #f5f5f5; color: #333; line-height: 1.6; }
             .container { display: flex; max-width: 1000px; margin: 0 auto; background-color: white; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); min-height: 297mm; }
@@ -2954,7 +3044,7 @@ async function generatePDF() {
 
 async function downloadPDF(encodedHTML, fileName) {
     try {
-        showToast('Gerando PDF em formato A4... Aguarde alguns segundos.', 'info');
+        showToast('Gerando PDF... Aguarde alguns segundos.', 'info');
 
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
         const { jsPDF } = window.jspdf;
@@ -2963,61 +3053,61 @@ async function downloadPDF(encodedHTML, fileName) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = templateHTML;
 
-        // Aplicar estilos para garantir formato A4 (210mm x 297mm = 794px x 1123px @ 96dpi)
+        // Aplicar estilos para permitir tamanho flexível
         tempDiv.style.cssText = `
-      position: fixed;
-      left: -9999px;
-      top: 0;
-      width: 210mm;
-      min-height: 297mm;
-      max-height: 297mm;
-      background: white;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-      overflow: hidden;
-      page-break-after: always;
-    `;
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 210mm;
+            background: white;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        `;
 
         document.body.appendChild(tempDiv);
 
         // Aguardar o carregamento de imagens
         await waitForImages(tempDiv);
 
-        // Renderizar com html2canvas em dimensões A4
+        // Calcular altura dinâmica baseada no conteúdo
+        const contentHeight = tempDiv.scrollHeight;
+        const pageHeight = 1123; // Altura A4 em pixels (297mm)
+        const totalPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+
+        // Criar PDF
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'px',
+            format: [794, pageHeight * totalPages], // Largura fixa, altura dinâmica
+            compress: true
+        });
+
+        // Renderizar o conteúdo completo
         const canvas = await html2canvas(tempDiv, {
             scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
             width: 794,
-            height: 1123,
+            height: contentHeight,
             windowWidth: 794,
-            windowHeight: 1123
+            windowHeight: contentHeight,
+            scrollX: 0,
+            scrollY: 0
         });
 
         document.body.removeChild(tempDiv);
 
-        // Criar PDF com dimensões A4 exatas
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4',
-            compress: true
-        });
-
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        
-        // Dimensões da página A4 em mm
-        const pdfWidth = 210;
-        const pdfHeight = 297;
 
-        // Adicionar imagem ocupando toda a página
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'FAST');
+        // Adicionar imagem ocupando toda a altura necessária
+        pdf.addImage(imgData, 'JPEG', 0, 0, 794, contentHeight, '', 'FAST');
 
         const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`;
         pdf.save(safeFileName);
 
-        showToast('PDF em formato A4 baixado com sucesso!', 'success');
+        showToast(`PDF gerado com sucesso! (${totalPages} página${totalPages > 1 ? 's' : ''})`, 'success');
 
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
@@ -3027,21 +3117,19 @@ async function downloadPDF(encodedHTML, fileName) {
 
 async function downloadJPG(encodedHTML, fileName) {
     try {
-        showToast('Gerando JPG em formato A4... Aguarde alguns segundos.', 'info');
+        showToast('Gerando JPG... Aguarde alguns segundos.', 'info');
 
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
 
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = templateHTML;
 
-        // Aplicar estilos para garantir formato A4 (210mm x 297mm = 794px x 1123px @ 96dpi)
+        // Aplicar estilos para permitir tamanho flexível
         tempDiv.style.cssText = `
             position: fixed;
             left: -9999px;
             top: 0;
             width: 210mm;
-            min-height: 297mm;
-            max-height: 297mm;
             background: white;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
@@ -3052,16 +3140,21 @@ async function downloadJPG(encodedHTML, fileName) {
 
         await waitForImages(tempDiv);
 
-        // Renderizar com html2canvas em dimensões A4
+        // Calcular altura dinâmica
+        const contentHeight = tempDiv.scrollHeight;
+
+        // Renderizar com html2canvas em dimensões flexíveis
         const canvas = await html2canvas(tempDiv, {
             scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
             width: 794,
-            height: 1123,
+            height: contentHeight,
             windowWidth: 794,
-            windowHeight: 1123
+            windowHeight: contentHeight,
+            scrollX: 0,
+            scrollY: 0
         });
 
         document.body.removeChild(tempDiv);
@@ -3078,12 +3171,91 @@ async function downloadJPG(encodedHTML, fileName) {
         link.click();
         document.body.removeChild(link);
 
-        showToast('JPG em formato A4 baixado com sucesso!', 'success');
+        showToast('JPG gerado com sucesso!', 'success');
 
     } catch (error) {
         console.error('Erro ao gerar JPG:', error);
         showToast('Erro ao gerar JPG. Tente novamente.', 'error');
     }
+}
+
+async function downloadPNG(encodedHTML, fileName) {
+    try {
+        showToast('Gerando PNG... Aguarde alguns segundos.', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = templateHTML;
+
+        // Aplicar estilos para permitir tamanho flexível
+        tempDiv.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 210mm;
+            background: white;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        `;
+
+        document.body.appendChild(tempDiv);
+
+        await waitForImages(tempDiv);
+
+        // Calcular altura dinâmica
+        const contentHeight = tempDiv.scrollHeight;
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: contentHeight,
+            windowWidth: 794,
+            windowHeight: contentHeight,
+            scrollX: 0,
+            scrollY: 0
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+
+        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.png`;
+        link.download = safeFileName;
+        link.href = imgData;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('PNG gerado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao gerar PNG:', error);
+        showToast('Erro ao gerar PNG. Tente novamente.', 'error');
+    }
+}
+
+// Função auxiliar melhorada para aguardar o carregamento das imagens
+function waitForImages(container) {
+    const images = container.querySelectorAll('img');
+    const promises = Array.from(images).map(img => {
+        if (img.complete && img.naturalHeight !== 0) {
+            return Promise.resolve();
+        }
+        return new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = resolve; // Não rejeitar se uma imagem falhar
+            // Timeout de segurança
+            setTimeout(resolve, 5000);
+        });
+    });
+    return Promise.all(promises);
 }
 
 // Função auxiliar para aguardar o carregamento das imagens
