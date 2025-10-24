@@ -1311,16 +1311,13 @@ section {
     overflow: hidden;
     box-shadow: var(--shadow-md);
     background: hsl(var(--card));
-    min-height: 500px;
-    max-height: 70vh;
+    height: auto;
+    min-height: 600px;
 }
 
 .resume-frame {
-    width: 100%;
     height: 100%;
-    border: none;
-    display: block;
-    background: hsl(var(--card));
+    min-height: 600px;
 }
 
 .preview-placeholder {
@@ -1352,13 +1349,9 @@ section {
    MODAL DE DOWNLOAD E COMPARTILHAMENTO
 ================================================ */
 
-/* ================================================
-   MODAL DE DOWNLOAD E COMPARTILHAMENTO - CORRIGIDO
-================================================ */
-
 .pdf-preview-modal .modal-content {
     max-width: 95%;
-    width: 1200px; /* Aumentado para permitir melhor visualização */
+    width: 1200px;
     max-height: 95vh;
     display: flex;
     flex-direction: column;
@@ -1387,28 +1380,44 @@ section {
     flex: 1;
 }
 
-.pdf-preview-container {
-    flex: 1;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    overflow: auto;
-    background: #f5f5f5;
-    position: relative;
+.resume-frame {
+    height: 100%;
     min-height: 600px;
-    max-height: 70vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 20px;
+}
+
+.pdf-preview-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#pdf-preview-content.very-long {
+    transform: scale(0.7);
+}
+
+#pdf-preview-content.extremely-long {
+    transform: scale(0.6);
 }
 
 #pdf-preview-content {
-    width: 210mm;
-    min-height: 297mm;
-    background: white;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    transform-origin: top center;
-    transform: scale(1);
+    transition: transform 0.3s ease;
+}
+
+.pdf-preview-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.pdf-preview-container::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+}
+
+.pdf-preview-container::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 4px;
+}
+
+.pdf-preview-container::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary-hover));
 }
 
 .pdf-preview-actions {
@@ -1426,7 +1435,7 @@ section {
     padding: 1.5rem;
     border: 2px solid hsl(var(--border));
     border-radius: var(--radius);
-    background: hsl(217 91% 60%); /* Azul claro padrão */
+    background: hsl(217 91% 60%);
     cursor: pointer;
     transition: var(--transition-smooth);
     text-align: center;
@@ -1441,17 +1450,17 @@ section {
 .download-option i {
     width: 32px;
     height: 32px;
-    color: white; /* Ícones em branco */
+    color: white;
 }
 
 .download-option span {
     font-weight: 600;
-    color: white; /* Texto em branco */
+    color: white;
 }
 
 .download-option .download-description {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.9); /* Descrição em branco com transparência */
+    color: rgba(255, 255, 255, 0.9);
     margin-top: 0.25rem;
 }
 
@@ -1472,7 +1481,7 @@ section {
 }
 
 .share-section-title i {
-    color: white; /* Ícone em branco */
+    color: white;
 }
 
 .share-options {
@@ -1489,7 +1498,7 @@ section {
     padding: 0.75rem 1rem;
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
-    background: hsl(217 91% 60%); /* Azul claro padrão */
+    background: hsl(217 91% 60%);
     cursor: pointer;
     transition: var(--transition-smooth);
     font-weight: 500;
@@ -1504,7 +1513,7 @@ section {
 .share-btn i {
     width: 20px;
     height: 20px;
-    color: white; /* Ícones em branco */
+    color: white;
 }
 
 .modal-actions {
@@ -1514,7 +1523,6 @@ section {
     border-top: 1px solid hsl(var(--border));
 }
 
-/* Botão de fechar com estilo destrutivo */
 .btn-destructive {
     background-color: hsl(var(--destructive));
     color: hsl(var(--destructive-foreground));
@@ -1529,7 +1537,6 @@ section {
     box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
 }
 
-/* Estados de carregamento */
 .pdf-preview-loading {
     display: flex;
     flex-direction: column;
@@ -1562,7 +1569,6 @@ section {
     height: 48px;
 }
 
-/* Corrigir fundo do modal overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1584,7 +1590,6 @@ section {
     pointer-events: none;
 }
 
-/* Responsividade */
 @media (max-width: 1300px) {
     .pdf-preview-modal .modal-content {
         width: 95%;
@@ -1647,7 +1652,6 @@ section {
     }
 }
 
-/* Botão de fechar com estilo destrutivo */
 .btn-destructive {
     background-color: hsl(var(--destructive));
     color: hsl(var(--destructive-foreground));
@@ -1662,7 +1666,6 @@ section {
     box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
 }
 
-/* Estados de carregamento */
 .pdf-preview-loading {
     display: flex;
     flex-direction: column;
@@ -1695,7 +1698,6 @@ section {
     height: 48px;
 }
 
-/* Corrigir fundo do modal overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1717,7 +1719,6 @@ section {
     pointer-events: none;
 }
 
-/* Responsividade */
 @media (max-width: 1100px) {
     .pdf-preview-modal .modal-content {
         width: 95%;
@@ -1776,7 +1777,6 @@ section {
     }
 }
 
-/* Botão de fechar com estilo destrutivo */
 .btn-destructive {
     background-color: hsl(var(--destructive));
     color: hsl(var(--destructive-foreground));
@@ -1791,7 +1791,6 @@ section {
     box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
 }
 
-/* Estados de carregamento */
 .pdf-preview-loading {
     display: flex;
     flex-direction: column;
@@ -1824,7 +1823,6 @@ section {
     height: 48px;
 }
 
-/* Corrigir fundo do modal overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1846,7 +1844,6 @@ section {
     pointer-events: none;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
     .pdf-preview-modal .modal-content {
         max-width: 98%;
@@ -1898,7 +1895,6 @@ section {
     }
 }
 
-/* Estados de carregamento */
 .pdf-preview-loading {
     display: flex;
     flex-direction: column;
@@ -1931,7 +1927,6 @@ section {
     height: 48px;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
     .pdf-preview-modal .modal-content {
         max-width: 98%;
@@ -2156,7 +2151,6 @@ section {
     }
 }
 
-/* Aplicando animações */
 .hero-title,
 .hero-description,
 .feature-card,
@@ -2174,7 +2168,6 @@ section {
     animation: scaleIn 0.3s ease-out;
 }
 
-/* Estados de foco melhorados */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -2183,7 +2176,6 @@ select:focus-visible {
     outline-offset: 2px;
 }
 
-/* Estados de hover para elementos interativos */
 .btn:not(:disabled):hover {
     transform: translateY(-2px);
 }
@@ -2195,12 +2187,10 @@ select:focus-visible {
     transition: var(--transition-bounce);
 }
 
-/* Scroll suave */
 html {
     scroll-behavior: smooth;
 }
 
-/* Melhorias de acessibilidade */
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -2218,8 +2208,6 @@ html {
 ================================================ */
 
 @media (max-width: 768px) {
-
-    /* Header Mobile */
     .nav {
         flex-wrap: wrap;
         justify-content: space-between;
@@ -2260,7 +2248,6 @@ html {
         border-bottom: none;
     }
 
-    /* Hero Mobile */
     .hero {
         padding: 6rem 1rem 2rem;
     }
@@ -2273,7 +2260,6 @@ html {
         font-size: 1.125rem;
     }
 
-    /* Sections Mobile */
     section {
         padding: 2rem 1rem;
     }
@@ -2282,7 +2268,6 @@ html {
         font-size: 2rem;
     }
 
-    /* Form Mobile */
     .form-grid {
         grid-template-columns: 1fr;
     }
@@ -2291,7 +2276,6 @@ html {
         padding: 1.5rem;
     }
 
-    /* Step Indicator Mobile */
     .step-indicator {
         margin-bottom: 1.5rem;
     }
@@ -2326,7 +2310,6 @@ html {
         word-break: break-word;
     }
 
-    /* Photo Upload Mobile */
     .photo-upload-wrapper {
         max-width: 100%;
     }
@@ -2347,7 +2330,6 @@ html {
         min-width: unset;
     }
 
-    /* Modal Mobile */
     .modal-content {
         padding: 1.5rem;
         margin: 1rem;
@@ -2366,7 +2348,6 @@ html {
         max-width: 100%;
     }
 
-    /* Templates Mobile */
     .template-options-simple {
         grid-template-columns: 1fr;
         gap: 1rem;
@@ -2376,7 +2357,6 @@ html {
         max-width: 100%;
     }
 
-    /* Team Grid Mobile */
     .team-grid {
         flex-direction: column;
         align-items: center;
@@ -2387,12 +2367,10 @@ html {
         max-width: 100%;
     }
 
-    /* Footer Mobile */
     .footer-content {
         text-align: center;
     }
 
-    /* Preview Mobile */
     .preview-header {
         flex-direction: column;
         align-items: stretch;
@@ -2407,7 +2385,6 @@ html {
         max-height: 50vh;
     }
 
-    /* PDF Preview Mobile */
     .pdf-preview-modal .modal-content {
         max-width: 95%;
         margin: 1rem;
@@ -2430,13 +2407,10 @@ html {
     #pdf-preview-content {
         transform: scale(0.7);
         width: 142%;
-        /* Compensa o scale para mobile */
     }
 }
 
 @media (max-width: 480px) {
-
-    /* Ajustes para telas muito pequenas */
     .hero-title {
         font-size: 1.75rem;
     }
@@ -2483,7 +2457,6 @@ html {
     #pdf-preview-content {
         transform: scale(0.6);
         width: 166%;
-        /* Compensa o scale para mobile pequeno */
     }
 
     .container {
@@ -2495,7 +2468,6 @@ html {
     }
 }
 
-/* Ajustes para telas muito pequenas */
 @media (max-width: 360px) {
     .container {
         padding: 0 0.5rem;
