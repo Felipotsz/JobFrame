@@ -91,9 +91,11 @@ function showPDFPreviewModal(templateHTML, data) {
                 </div>
                 
                 <div class="pdf-preview-container">
-                    <div id="pdf-preview-content">
-                        ${templateHTML}
-                    </div>
+                    <iframe 
+                        id="pdf-preview-iframe" 
+                        srcdoc="${templateHTML.replace(/"/g, '&quot;')}"
+                        style="width: 100%; height: 100%; border: none; background: white;"
+                    ></iframe>
                 </div>
                 
                 <div class="pdf-preview-actions">
@@ -115,27 +117,6 @@ function showPDFPreviewModal(templateHTML, data) {
                         <span class="download-description">Imagem com fundo transparente</span>
                     </button>
                 </div>
-                
-                <div class="share-section">
-                    <div class="share-section-title">
-                        <i data-lucide="share-2"></i>
-                        <span>Compartilhar Currículo</span>
-                    </div>
-                    <div class="share-options">
-                        <button type="button" class="share-btn" onclick="shareViaEmail('${data.personal.fullName || 'Currículo'}')">
-                            <i data-lucide="mail"></i> Email
-                        </button>
-                        <button type="button" class="share-btn" onclick="shareViaWhatsApp('${data.personal.fullName || 'Currículo'}')">
-                            <i data-lucide="message-circle"></i> WhatsApp
-                        </button>
-                        <button type="button" class="share-btn" onclick="copyShareLink('${data.personal.fullName || 'Currículo'}')">
-                            <i data-lucide="link"></i> Copiar Link
-                        </button>
-                        <button type="button" class="share-btn" onclick="shareViaLinkedIn('${data.personal.fullName || 'Currículo'}')">
-                            <i data-lucide="linkedin"></i> LinkedIn
-                        </button>
-                    </div>
-                </div>
 
                 <div class="modal-actions">
                     <button type="button" class="btn btn-destructive" onclick="closePDFPreviewModal()">
@@ -148,25 +129,9 @@ function showPDFPreviewModal(templateHTML, data) {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // Inicializar ícones
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
-
-    // Ajustar a escala baseada no conteúdo
-    setTimeout(() => {
-        const previewContent = document.getElementById('pdf-preview-content');
-        if (previewContent) {
-            const contentHeight = previewContent.scrollHeight;
-            const viewportHeight = window.innerHeight * 0.7; // 70% da altura da tela
-            
-            // Ajustar escala se o conteúdo for muito grande
-            if (contentHeight > viewportHeight) {
-                const scale = Math.min(0.8, viewportHeight / contentHeight);
-                previewContent.style.transform = `scale(${scale})`;
-            }
-        }
-    }, 100);
 }
 
 // Função para download em PNG
@@ -909,10 +874,29 @@ function initializePhotoUpload() {
 
         function renderPreview(dataUrl) {
             window.photoBlob = dataUrl;
-            photoPreview.innerHTML = `<img src="${dataUrl}" alt="Foto do perfil" class="photo-preview-img">`;
-            if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
-            photoDropZone.classList.add('has-photo');
-            photoDropZone.style.borderColor = 'hsl(var(--primary))';
+            
+            // Criar uma nova imagem para garantir o aspect ratio correto
+            const img = new Image();
+            img.onload = function() {
+                const aspectRatio = this.naturalWidth / this.naturalHeight;
+                
+                photoPreview.innerHTML = `
+                    <img src="${dataUrl}" alt="Foto do perfil" class="photo-preview-img" 
+                         style="object-fit: cover; object-position: center; width: 100%; height: 100%;">
+                `;
+                
+                if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
+                photoDropZone.classList.add('has-photo');
+                photoDropZone.style.borderColor = 'hsl(var(--primary))';
+            };
+            img.onerror = function() {
+                // Fallback em caso de erro no carregamento
+                photoPreview.innerHTML = `<img src="${dataUrl}" alt="Foto do perfil" class="photo-preview-img">`;
+                if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
+                photoDropZone.classList.add('has-photo');
+                photoDropZone.style.borderColor = 'hsl(var(--primary))';
+            };
+            img.src = dataUrl;
 
             if (cameraModal) closeCameraModal();
         }
@@ -955,6 +939,9 @@ function initializePhotoUpload() {
                     showToast('Foto carregada com sucesso!', 'success');
                 }
             };
+            reader.onerror = function() {
+                showToast('Erro ao carregar a foto. Tente novamente.', 'error');
+            };
             reader.readAsDataURL(file);
         }
 
@@ -986,6 +973,7 @@ function initializePhotoUpload() {
                     video: {
                         width: { ideal: 1280 },
                         height: { ideal: 720 },
+                        aspectRatio: { ideal: 1.333 } // 4:3 aspect ratio
                     }
                 };
 
@@ -1016,21 +1004,29 @@ function initializePhotoUpload() {
                 const video = cameraStream;
                 const canvas = cameraCanvas;
 
+                // Manter aspect ratio da câmera
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
 
                 const ctx = canvas.getContext('2d');
+                
+                // Limpar e desenhar a imagem com qualidade
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+                // Criar imagem com qualidade máxima
                 canvas.toBlob((blob) => {
-                    const capturedFile = new File([blob], "captured_photo.png", { type: "image/png" });
+                    const capturedFile = new File([blob], "captured_photo.png", { 
+                        type: "image/png",
+                        lastModified: new Date().getTime()
+                    });
                     handleFile(capturedFile);
 
                     if (window.photoBlob) {
                         showToast('Foto capturada e salva!', 'success');
                     }
 
-                }, 'image/png');
+                }, 'image/png', 1.0); // Qualidade máxima
             }
 
             function openCameraModal() {
@@ -1073,7 +1069,10 @@ function initializePhotoUpload() {
 
         // Event listeners comuns
         photoInput.addEventListener('change', function (e) {
-            handleFile(e.target.files[0]);
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
         });
 
         if (removePhotoBtn) {
@@ -1129,7 +1128,6 @@ function initializePhotoUpload() {
 // SISTEMA DE TEMPLATES ESCALÁVEL
 // ================================================
 
-
 // Definição dos templates disponíveis
 const AVAILABLE_TEMPLATES = {
     'classic': 'Clássico',
@@ -1163,8 +1161,9 @@ function generateTemplateHTML(data, template, color, secondaryColor, useGradient
             return generateClassicTemplate(data, color, secondaryColor, useGradient);
     }
 }
+
 // ======================
-// TEMPLATE 1: CLÁSSICO - CORRIGIDO
+// TEMPLATE 1: CLÁSSICO
 // ======================
 
 function generateClassicTemplate(data, color, secondaryColor, useGradient) {
@@ -1180,9 +1179,9 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient) {
     }
 
     const styles = `
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { 
+        <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
         font-family: 'Inter', sans-serif; 
         color: #1f2937; 
         line-height: 1.6; 
@@ -1192,29 +1191,35 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient) {
         min-height: 297mm; 
         height: auto;
         margin: 0 auto; 
-      }
-      .resume-container { 
+    }
+    .resume-container { 
         max-width: 100%; 
         margin: 0 auto; 
         background: white; 
         height: auto;
         min-height: 100%;
-      }
-      .header { 
+    }
+
+    .header { 
         border-bottom: 3px solid ${color}; 
         padding-bottom: 20px; 
         margin-bottom: 30px; 
         display: flex; 
         align-items: center; 
         gap: 20px; 
-      }
-      .photo { 
+    }
+    .photo { 
         width: 120px; 
         height: 120px; 
         border-radius: 50%; 
         object-fit: cover; 
+        object-position: center center;
         border: 3px solid ${color}; 
         flex-shrink: 0; 
+        /* Garantir que a foto mantenha aspect ratio */
+        aspect-ratio: 1 / 1;
+    }
+        
       }
       .header-content h1 { 
         font-size: 2rem; 
@@ -1380,7 +1385,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient) {
       body { font-family: 'Georgia', serif; color: #2c3e50; line-height: 1.7; background: white; width: 210mm; min-height: 297mm; margin: 0 auto; }
       .resume-container { max-width: 100%; margin: 0 auto; background: white; padding: 20mm; }
       .exec-header { text-align: center; padding: 30px 0; border-bottom: 4px double ${color}; margin-bottom: 35px; }
-      .exec-photo { width: 140px; height: 140px; border-radius: 8px; object-fit: cover; border: 4px solid ${color}; margin-bottom: 20px; }
+      .exec-photo { width: 160px; height: 140px; border-radius: 8px; object-fit: contain; object-position: center center; border: 2px solid ${color}; margin-bottom: 20px; background-color: #f5f5f5; }
       .exec-name { font-size: 2.4rem; font-weight: 700; color: ${color}; margin-bottom: 8px; letter-spacing: 1px; }
       .exec-title { font-size: 1.1rem; color: #555; font-style: italic; margin-bottom: 18px; }
       .exec-contact { display: flex; justify-content: center; gap: 2rem; font-size: 0.95rem; color: #666; flex-wrap: wrap; }
@@ -1495,7 +1500,6 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient) {
 
     return html;
 }
-
 
 // =========================
 // TEMPLATE 3: MINIMALISTA 
@@ -2985,7 +2989,7 @@ function initializePreviewHandlers() {
 }
 
 // ================================================
-// GERAÇÃO DE PDF E COMPARTILHAMENTO
+// FUNÇÃO PRINCIPAL PARA GERAR CURRÍCULO
 // ================================================
 
 async function generatePDF() {
@@ -3039,7 +3043,11 @@ async function generatePDF() {
 }
 
 // ================================================
-// FUNÇÕES DE DOWNLOAD
+// GERAÇÃO DE PDF E COMPARTILHAMENTO
+// ================================================
+
+// ================================================
+// FUNÇÕES DE DOWNLOAD COMPLETAMENTE CORRIGIDAS
 // ================================================
 
 async function downloadPDF(encodedHTML, fileName) {
@@ -3049,65 +3057,74 @@ async function downloadPDF(encodedHTML, fileName) {
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
         const { jsPDF } = window.jspdf;
 
-        // Criar elemento temporário para renderização
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = templateHTML;
-
-        // Aplicar estilos para permitir tamanho flexível
-        tempDiv.style.cssText = `
+        // Criar iframe temporário para renderização mais precisa
+        const tempIframe = document.createElement('iframe');
+        tempIframe.style.cssText = `
             position: fixed;
             left: -9999px;
             top: 0;
             width: 210mm;
+            height: 297mm;
+            border: none;
             background: white;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
         `;
+        
+        document.body.appendChild(tempIframe);
 
-        document.body.appendChild(tempDiv);
+        // Escrever o conteúdo no iframe
+        tempIframe.contentDocument.open();
+        tempIframe.contentDocument.write(templateHTML);
+        tempIframe.contentDocument.close();
 
-        // Aguardar o carregamento de imagens
-        await waitForImages(tempDiv);
+        // Aguardar o carregamento
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await waitForImages(tempIframe.contentDocument.body);
 
-        // Calcular altura dinâmica baseada no conteúdo
-        const contentHeight = tempDiv.scrollHeight;
-        const pageHeight = 1123; // Altura A4 em pixels (297mm)
-        const totalPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
-
-        // Criar PDF
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'px',
-            format: [794, pageHeight * totalPages], // Largura fixa, altura dinâmica
-            compress: true
-        });
-
-        // Renderizar o conteúdo completo
-        const canvas = await html2canvas(tempDiv, {
-            scale: 2,
+        // Renderizar com html2canvas
+        const canvas = await html2canvas(tempIframe.contentDocument.body, {
+            scale: 1, // Usar scale 1 para melhor qualidade
             useCORS: true,
+            allowTaint: false,
             logging: false,
             backgroundColor: '#ffffff',
-            width: 794,
-            height: contentHeight,
+            width: 794, // 210mm em pixels
+            height: 1123, // 297mm em pixels
             windowWidth: 794,
-            windowHeight: contentHeight,
+            windowHeight: 1123,
             scrollX: 0,
-            scrollY: 0
+            scrollY: 0,
+            onclone: function(clonedDoc) {
+                // Garantir que todas as imagens carreguem corretamente
+                const images = clonedDoc.querySelectorAll('img');
+                images.forEach(img => {
+                    img.style.objectFit = 'contain';
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                });
+            }
         });
 
-        document.body.removeChild(tempDiv);
+        document.body.removeChild(tempIframe);
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgData = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Criar PDF A4
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
 
-        // Adicionar imagem ocupando toda a altura necessária
-        pdf.addImage(imgData, 'JPEG', 0, 0, 794, contentHeight, '', 'FAST');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        // Adicionar imagem ao PDF
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'MEDIUM');
 
         const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`;
         pdf.save(safeFileName);
 
-        showToast(`PDF gerado com sucesso! (${totalPages} página${totalPages > 1 ? 's' : ''})`, 'success');
+        showToast('PDF gerado com sucesso!', 'success');
 
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
@@ -3121,46 +3138,44 @@ async function downloadJPG(encodedHTML, fileName) {
 
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
 
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = templateHTML;
-
-        // Aplicar estilos para permitir tamanho flexível
-        tempDiv.style.cssText = `
+        // Usar iframe para renderização mais precisa
+        const tempIframe = document.createElement('iframe');
+        tempIframe.style.cssText = `
             position: fixed;
             left: -9999px;
             top: 0;
             width: 210mm;
+            height: 297mm;
+            border: none;
             background: white;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
         `;
+        
+        document.body.appendChild(tempIframe);
 
-        document.body.appendChild(tempDiv);
+        tempIframe.contentDocument.open();
+        tempIframe.contentDocument.write(templateHTML);
+        tempIframe.contentDocument.close();
 
-        await waitForImages(tempDiv);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await waitForImages(tempIframe.contentDocument.body);
 
-        // Calcular altura dinâmica
-        const contentHeight = tempDiv.scrollHeight;
-
-        // Renderizar com html2canvas em dimensões flexíveis
-        const canvas = await html2canvas(tempDiv, {
-            scale: 2,
+        const canvas = await html2canvas(tempIframe.contentDocument.body, {
+            scale: 1,
             useCORS: true,
+            allowTaint: false,
             logging: false,
             backgroundColor: '#ffffff',
             width: 794,
-            height: contentHeight,
+            height: 1123,
             windowWidth: 794,
-            windowHeight: contentHeight,
+            windowHeight: 1123,
             scrollX: 0,
             scrollY: 0
         });
 
-        document.body.removeChild(tempDiv);
+        document.body.removeChild(tempIframe);
 
-        // Converter para JPG de alta qualidade
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgData = canvas.toDataURL('image/jpeg', 0.9);
         const link = document.createElement('a');
 
         const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.jpg`;
@@ -3179,96 +3194,63 @@ async function downloadJPG(encodedHTML, fileName) {
     }
 }
 
-async function downloadPNG(encodedHTML, fileName) {
-    try {
-        showToast('Gerando PNG... Aguarde alguns segundos.', 'info');
+// Função para corrigir aspect ratio das imagens
+async function fixImageAspectRatios(container) {
+    const images = container.querySelectorAll('img');
 
-        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
-
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = templateHTML;
-
-        // Aplicar estilos para permitir tamanho flexível
-        tempDiv.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 210mm;
-            background: white;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-        `;
-
-        document.body.appendChild(tempDiv);
-
-        await waitForImages(tempDiv);
-
-        // Calcular altura dinâmica
-        const contentHeight = tempDiv.scrollHeight;
-
-        const canvas = await html2canvas(tempDiv, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            width: 794,
-            height: contentHeight,
-            windowWidth: 794,
-            windowHeight: contentHeight,
-            scrollX: 0,
-            scrollY: 0
+    for (const img of images) {
+        await new Promise((resolve) => {
+            if (img.complete && img.naturalHeight !== 0) {
+                fixSingleImageAspectRatio(img);
+                resolve();
+            } else {
+                img.onload = () => {
+                    fixSingleImageAspectRatio(img);
+                    resolve();
+                };
+                img.onerror = resolve;
+                setTimeout(resolve, 1000);
+            }
         });
-
-        document.body.removeChild(tempDiv);
-
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        const link = document.createElement('a');
-
-        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.png`;
-        link.download = safeFileName;
-        link.href = imgData;
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        showToast('PNG gerado com sucesso!', 'success');
-
-    } catch (error) {
-        console.error('Erro ao gerar PNG:', error);
-        showToast('Erro ao gerar PNG. Tente novamente.', 'error');
     }
 }
 
-// Função auxiliar melhorada para aguardar o carregamento das imagens
-function waitForImages(container) {
-    const images = container.querySelectorAll('img');
-    const promises = Array.from(images).map(img => {
-        if (img.complete && img.naturalHeight !== 0) {
-            return Promise.resolve();
+// Função para corrigir aspect ratio de uma imagem individual
+function fixSingleImageAspectRatio(img) {
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+    const aspectRatio = naturalWidth / naturalHeight;
+
+    // Se a imagem for quadrada ou quase quadrada, garantir que mantenha o aspect ratio
+    if (aspectRatio > 0.8 && aspectRatio < 1.2) {
+        const currentWidth = parseInt(img.style.width) || img.offsetWidth;
+        const currentHeight = parseInt(img.style.height) || img.offsetHeight;
+
+        // Se as dimensões atuais não correspondem ao aspect ratio, corrigir
+        const currentAspectRatio = currentWidth / currentHeight;
+        if (Math.abs(currentAspectRatio - aspectRatio) > 0.1) {
+            // Manter a largura e ajustar a altura para manter o aspect ratio
+            img.style.height = `${currentWidth / aspectRatio}px`;
         }
-        return new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = resolve; // Não rejeitar se uma imagem falhar
-            // Timeout de segurança
-            setTimeout(resolve, 5000);
-        });
-    });
-    return Promise.all(promises);
+    }
+
+    // Forçar object-fit: cover para manter a proporção sem distorcer
+    img.style.objectFit = 'cover';
+    img.style.objectPosition = 'center center';
 }
 
 // Função auxiliar para aguardar o carregamento das imagens
 function waitForImages(container) {
     const images = container.querySelectorAll('img');
     const promises = Array.from(images).map(img => {
-        if (img.complete) {
-            return Promise.resolve();
-        }
-        return new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-            setTimeout(resolve, 3000);
+        return new Promise((resolve) => {
+            if (img.complete && img.naturalHeight !== 0) {
+                resolve();
+            } else {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 2000);
+            }
         });
     });
     return Promise.all(promises);
