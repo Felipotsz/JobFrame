@@ -914,12 +914,33 @@ section {
     transition: opacity 0.3s;
 }
 
+/* ================================================
+   CORREÇÕES PARA FOTOS - PREVENIR DISTORÇÃO
+================================================ */
+
 .photo-preview-img {
-    width: 100%;
-    height: 100%;
+    object-fit: cover !important;
+    object-position: center center !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50%;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+.photo, .exec-photo, .elegant-photo, .prof-photo, .modern-photo, .compact-photo {
+    max-width: 100%;
+    height: auto;
     object-fit: cover;
     border-radius: 50%;
-    pointer-events: none;
+}
+
+.photo-drop-zone.has-photo img {
+    object-fit: cover !important;
+    object-position: center center !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50%;
 }
 
 .photo-placeholder-icon {
