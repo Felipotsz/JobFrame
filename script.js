@@ -34,7 +34,7 @@ function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     // Ícones Lucide para cada tipo
     const icons = {
         success: 'check-circle',
@@ -101,14 +101,14 @@ function showPDFPreviewModal(templateHTML, data) {
                 </div>
                 
                 <div class="pdf-preview-container">
-                    <iframe 
-                        id="pdf-preview-iframe" 
-                        srcdoc="${templateHTML.replace(/"/g, '&quot;')}"
-                        style="width: 100%; height: 500px; border: none; background: white;"
-                        title="Pré-visualização do currículo"
-                    ></iframe>
+                <iframe 
+                    id="pdf-preview-iframe" 
+                    srcdoc="${templateHTML.replace(/"/g, '&quot;')}"
+                    style="width: 100%; height: 500px; border: none; background: white;"
+                    title="Pré-visualização do currículo"
+                ></iframe>
                 </div>
-                
+
                 <!-- Seção de Download -->
                 <div class="actions-section">
                     <h3 class="section-title">
@@ -201,18 +201,95 @@ function showPDFPreviewModal(templateHTML, data) {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // Configurar iframe após carregamento
+    // CONFIGURAÇÃO MELHORADA DO IFRAME
     setTimeout(() => {
         const iframe = document.getElementById('pdf-preview-iframe');
         if (iframe && iframe.contentDocument) {
-            // Garantir que o conteúdo seja exibido corretamente
             const body = iframe.contentDocument.body;
+            const html = iframe.contentDocument.documentElement;
+            
             if (body) {
-                body.style.margin = '0';
+                // FORÇAR DIMENSÕES CONSISTENTES PARA TODOS OS DISPOSITIVOS
+                html.style.width = '794px';
+                html.style.height = '1123px';
+                html.style.overflow = 'hidden';
+                html.style.margin = '0';
+                html.style.padding = '0';
+                
+                body.style.width = '794px';
+                body.style.minHeight = '1123px';
+                body.style.margin = '0 auto';
                 body.style.padding = '20px';
+                body.style.overflow = 'hidden';
+                body.style.boxSizing = 'border-box';
+                body.style.background = 'white';
+                
+                // GARANTIR QUE AS IMAGENS MANTENHAM QUALIDADE
+                const images = body.querySelectorAll('img');
+                images.forEach(img => {
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                    if (img.classList.contains('photo')) {
+                        img.style.objectFit = 'cover';
+                        img.style.objectPosition = 'center';
+                    }
+                });
+
+                // ADICIONAR CSS CRÍTICO PARA CONSISTÊNCIA
+                const criticalStyles = document.createElement('style');
+                criticalStyles.textContent = `
+                    * {
+                        box-sizing: border-box !important;
+                        max-width: 100% !important;
+                    }
+                    body {
+                        width: 794px !important;
+                        min-height: 1123px !important;
+                        max-width: 794px !important;
+                        margin: 0 auto !important;
+                        padding: 20px !important;
+                        overflow: hidden !important;
+                        background: white !important;
+                    }
+                    .photo, img {
+                        object-fit: cover !important;
+                        object-position: center !important;
+                        max-width: 100% !important;
+                        height: auto !important;
+                    }
+                    .resume-container, .container {
+                        width: 100% !important;
+                        max-width: 794px !important;
+                    }
+                `;
+                
+                if (!iframe.contentDocument.head.querySelector('style[data-critical]')) {
+                    criticalStyles.setAttribute('data-critical', 'true');
+                    iframe.contentDocument.head.appendChild(criticalStyles);
+                }
             }
         }
-    }, 500);
+    }, 800); // Aumentado para garantir carregamento completo
+
+    // AGUARDAR MAIS TEMPO E VERIFICAR NOVAMENTE (especialmente para mobile)
+    setTimeout(() => {
+        const iframe = document.getElementById('pdf-preview-iframe');
+        if (iframe && iframe.contentDocument) {
+            const body = iframe.contentDocument.body;
+            
+            // VERIFICAR SE O CONTEÚDO FOI RENDERIZADO CORRETAMENTE
+            if (body && body.children.length > 0) {
+                console.log('Iframe carregado com sucesso. Dimensões:', 
+                    body.scrollWidth, 'x', body.scrollHeight);
+                
+                // FORÇAR REDIMENSIONAMENTO FINAL
+                body.style.width = '794px';
+                body.style.minHeight = '1123px';
+            } else {
+                console.warn('Iframe pode não ter carregado completamente');
+            }
+        }
+    }, 1500);
 
     // Adicionar efeitos de hover
     setTimeout(() => {
@@ -230,6 +307,9 @@ function showPDFPreviewModal(templateHTML, data) {
 
     // Adicionar event listener para fechar modal com ESC
     document.addEventListener('keydown', handleModalKeydown);
+
+    // LOG para debug
+    console.log('Modal de preview aberto. Template length:', templateHTML.length);
 }
 
 // Função para fechar o modal corretamente
@@ -1004,3008 +1084,104 @@ const AVAILABLE_TEMPLATES = {
 };
 
 // ================================================
-// SISTEMA DE TEMPLATES COM FOTO RESPONSIVO PARA MOBILE
+// SISTEMA DE TEMPLATES COM FOTO
 // ================================================
 
 function generateTemplateHTML(data, template, color, secondaryColor, useGradient) {
     if (!data) return '<div style="padding: 2rem; text-align: center; color: #666;">Preencha os dados do formulário para ver a pré-visualização</div>';
 
-    // Detectar se é mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // Meta viewport para mobile
-    const viewportMeta = isMobile ? 
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">' : 
-        '';
+    // CSS FIXO CRÍTICO para consistência máxima
+    const fixedCSS = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=794, initial-scale=1.0">
+            <style>
+                /* RESET ABSOLUTO PARA GARANTIR CONSISTÊNCIA */
+                * {
+                    box-sizing: border-box !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    max-width: 100% !important;
+                }
+                html, body {
+                    width: 794px !important;
+                    height: 1123px !important;
+                    min-height: 1123px !important;
+                    max-width: 794px !important;
+                    margin: 0 auto !important;
+                    padding: 0 !important;
+                    overflow: hidden !important;
+                    background: white !important;
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    line-height: 1.4 !important;
+                }
+                body {
+                    padding: 20px !important;
+                }
+                .photo, img[class*="photo"], img {
+                    object-fit: cover !important;
+                    object-position: center !important;
+                    max-width: 100% !important;
+                    height: auto !important;
+                    display: block !important;
+                }
+                .resume-container, .container, [class*="container"] {
+                    width: 100% !important;
+                    max-width: 794px !important;
+                    margin: 0 auto !important;
+                }
+                /* Garantir que elementos não quebrem */
+                .row, .column, .section {
+                    box-sizing: border-box !important;
+                    max-width: 100% !important;
+                }
+            </style>
+        </head>
+        <body>
+    `;
 
-    // Processamento consistente da foto para todos os templates
+    const fixedEnd = `</body></html>`;
+
+    // CORREÇÃO: Processamento consistente da foto
     let photoHTML = '';
     if (data.personal.photo) {
-        // Usar o Data URL diretamente sem conversões
-        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo" crossorigin="anonymous" style="object-fit: cover; object-position: center; ${isMobile ? 'max-width: 100%; height: auto;' : ''}">`;
+        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo" style="object-fit: cover; object-position: center; max-width: 100%; height: auto; display: block;">`;
     }
 
-    // Sistema de templates
-    switch (template) {
-        case 'minimal':
-            return generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
-        case 'classic':
-            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
-        case 'executive':
-            return generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
-        case 'elegant':
-            return generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
-        case 'professional':
-            return generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
-        case 'creative':
-            return generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
-        default:
-            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
-    }
-}
-
-// ======================
-// TEMPLATE 1: CLÁSSICO
-// ======================
-
-function generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
-    const primaryColor = color || '#424242';
-    const accentColor = '#000000';
-
-    const styles = `
-        <style>
-            * { 
-                margin: 0; 
-                padding: 0; 
-                box-sizing: border-box; 
-                font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-            }
-            
-            body { 
-                background: white; 
-                color: #424242; 
-                line-height: 1.5; 
-                padding: ${isMobile ? '10mm 8mm' : '20mm 15mm'}; 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: 0 auto; 
-                font-size: ${isMobile ? '11pt' : '10pt'};
-            }
-            
-            .resume-container { 
-                max-width: 100%; 
-                margin: 0 auto; 
-                background: white; 
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : '35% 65%'};
-                gap: ${isMobile ? '20px' : '0'};
-                min-height: 257mm;
-            }
-            
-            /* Left Column */
-            .left-column {
-                padding: ${isMobile ? '0' : '0 20px 0 0'};
-                ${isMobile ? '' : 'border-right: 2px solid ${primaryColor};'}
-                ${isMobile ? 'margin-bottom: 20px;' : ''}
-            }
-            
-            /* Photo Section */
-            .photo-section {
-                text-align: center;
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-            }
-            
-            .photo-container {
-                width: ${isMobile ? '120px' : '150px'};
-                height: ${isMobile ? '120px' : '150px'};
-                margin: 0 auto;
-                border-radius: 50%;
-                border: 3px solid ${primaryColor};
-                overflow: hidden;
-                background: #f5f5f5;
-            }
-            
-            .photo {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-            
-            /* Contact Section */
-            .contact-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .section-title {
-                font-size: ${isMobile ? '14px' : '16px'};
-                font-weight: 600;
-                color: ${primaryColor};
-                margin-bottom: ${isMobile ? '12px' : '15px'};
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                border-bottom: 1px solid ${primaryColor};
-                padding-bottom: 5px;
-            }
-            
-            .contact-item {
-                margin-bottom: ${isMobile ? '10px' : '12px'};
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #555;
-                display: flex;
-                align-items: flex-start;
-            }
-            
-            .contact-icon {
-                width: 16px;
-                height: 16px;
-                margin-right: 10px;
-                color: ${primaryColor};
-                stroke: ${primaryColor};
-                flex-shrink: 0;
-            }
-            
-            /* Skills Section */
-            .skills-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .skills-list {
-                list-style: none;
-                padding: 0;
-            }
-            
-            .skill-item {
-                margin-bottom: ${isMobile ? '6px' : '8px'};
-                padding-left: 0;
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #444;
-                position: relative;
-            }
-            
-            .skill-item:before {
-                content: "■";
-                margin-right: 8px;
-                color: ${primaryColor};
-                font-size: 8px;
-            }
-            
-            /* Education Section */
-            .education-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .education-item {
-                margin-bottom: ${isMobile ? '15px' : '20px'};
-            }
-            
-            .education-degree {
-                font-weight: 600;
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #222;
-                margin-bottom: 3px;
-            }
-            
-            .education-school {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: ${primaryColor};
-                margin-bottom: 3px;
-            }
-            
-            .education-period {
-                font-size: ${isMobile ? '10pt' : '9pt'};
-                color: #666;
-                font-style: italic;
-            }
-            
-            /* Right Column */
-            .right-column {
-                padding: ${isMobile ? '0' : '0 0 0 25px'};
-            }
-            
-            /* Header Section */
-            .header-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-                padding-bottom: ${isMobile ? '15px' : '20px'};
-                border-bottom: 2px solid ${primaryColor};
-            }
-            
-            .name {
-                font-size: ${isMobile ? '24px' : '28px'};
-                font-weight: 700;
-                color: ${primaryColor};
-                margin-bottom: 5px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-            
-            /* Profile Section */
-            .profile-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .profile-text {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                line-height: 1.6;
-                color: #555;
-                text-align: justify;
-            }
-            
-            /* Experience Section */
-            .experience-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .experience-item {
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-                padding-bottom: ${isMobile ? '15px' : '20px'};
-                border-bottom: 1px solid #e0e0e0;
-            }
-            
-            .experience-item:last-child {
-                border-bottom: none;
-            }
-            
-            .experience-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
-                margin-bottom: 8px;
-                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
-            }
-            
-            .experience-title {
-                font-weight: 600;
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                color: #222;
-                margin-bottom: 3px;
-            }
-            
-            .experience-company {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: ${primaryColor};
-                margin-bottom: 5px;
-                font-weight: 500;
-            }
-            
-            .experience-period {
-                font-size: ${isMobile ? '10.5pt' : '9.5pt'};
-                color: #666;
-                font-weight: 500;
-                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
-            }
-            
-            .experience-description {
-                color: #555;
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                line-height: 1.5;
-                text-align: justify;
-            }
-            
-            /* Mobile-specific styles */
-            @media (max-width: 768px) {
-                body {
-                    padding: 8mm 6mm;
-                    font-size: 12pt;
-                }
-                
-                .resume-container {
-                    grid-template-columns: 1fr;
-                    gap: 15px;
-                }
-                
-                .left-column, .right-column {
-                    padding: 0;
-                }
-                
-                .name {
-                    font-size: 22px;
-                }
-                
-                .section-title {
-                    font-size: 15px;
-                }
-            }
-            
-            @media print {
-                body {
-                    padding: ${isMobile ? '8mm 6mm' : '15mm 10mm'};
-                }
-                .resume-container {
-                    min-height: 267mm;
-                }
-            }
-        </style>
-    `;
-
-    // Função para formatar número de telefone
-    function formatPhoneNumber(phone) {
-        if (!phone) return '';
-        const cleaned = phone.replace(/\D/g, '');
-        
-        if (cleaned.length === 11) {
-            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-        } else if (cleaned.length === 10) {
-            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    // Sistema de templates (gerar o HTML primeiro)
+    let templateContent = '';
+    try {
+        switch (template) {
+            case 'minimal':
+                templateContent = generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML);
+                break;
+            case 'classic':
+                templateContent = generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
+                break;
+            case 'executive':
+                templateContent = generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML);
+                break;
+            case 'elegant':
+                templateContent = generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML);
+                break;
+            case 'professional':
+                templateContent = generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML);
+                break;
+            case 'creative':
+                templateContent = generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML);
+                break;
+            default:
+                templateContent = generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
         }
-        
-        return phone;
+    } catch (error) {
+        console.error('Erro ao gerar template:', error);
+        templateContent = '<div style="padding: 2rem; text-align: center; color: red;">Erro ao gerar template</div>';
     }
 
-    const contactItems = [];
-    if (data.personal.phone) {
-        const formattedPhone = formatPhoneNumber(data.personal.phone);
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span>${formattedPhone}</span>
-            </div>
-        `);
-    }
-    if (data.personal.email) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span>${data.personal.email}</span>
-            </div>
-        `);
-    }
-    if (data.personal.linkedin) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                    <rect x="2" y="9" width="4" height="12"/>
-                    <circle cx="4" cy="4" r="2"/>
-                </svg>
-                <span>${data.personal.linkedin}</span>
-            </div>
-        `);
-    }
-    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
-        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                </svg>
-                <span>${location}</span>
-            </div>
-        `);
-    }
-
-    let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            ${viewportMeta}
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-            ${styles}
-        </head>
-        <body>
-            <div class="resume-container">
-                <!-- Left Column -->
-                <div class="left-column">
-                    <!-- Photo -->
-                    ${photoHTML ? `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            ${photoHTML.replace('class="photo"', 'class="photo"')}
-                        </div>
-                    </div>
-                    ` : `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    `}
-
-                    <!-- Contact Information -->
-                    <div class="contact-section">
-                        <h2 class="section-title">Contato</h2>
-                        ${contactItems.join('')}
-                    </div>
-
-                    <!-- Skills -->
-                    ${data.skills ? `
-                    <div class="skills-section">
-                        <h2 class="section-title">Habilidades</h2>
-                        <ul class="skills-list">
-                            ${data.skills.split(',').map(skill => `
-                                <li class="skill-item">${skill.trim()}</li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                    ` : ''}
-
-                    <!-- Education -->
-                    ${data.education.length > 0 ? `
-                    <div class="education-section">
-                        <h2 class="section-title">Formação Acadêmica</h2>
-                        ${data.education.map(edu => `
-                            <div class="education-item">
-                                <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                <div class="education-school">${edu.school || 'Instituição'}</div>
-                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                </div>
-
-                <!-- Right Column -->
-                <div class="right-column">
-                    <!-- Header -->
-                    <div class="header-section">
-                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                    </div>
-
-                    <!-- Profile -->
-                    ${data.objective ? `
-                    <div class="profile-section">
-                        <h2 class="section-title">Sobre Mim</h2>
-                        <div class="profile-text">${data.objective}</div>
-                    </div>
-                    ` : ''}
-
-                    <!-- Experience -->
-                    ${data.experience.length > 0 ? `
-                    <div class="experience-section">
-                        <h2 class="section-title">Experiência Profissional</h2>
-                        ${data.experience.map(exp => `
-                            <div class="experience-item">
-                                <div class="experience-header">
-                                    <div>
-                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                    </div>
-                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
-                                </div>
-                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-
-    return html;
-}
-
-// =======================
-// TEMPLATE 2: EXECUTIVO
-// =======================
-
-function generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
-    const primaryColor = color || '#000000';
-    const goldColor = '#000000';
-
-    const styles = `
-        <style>
-            * { 
-                margin: 0; 
-                padding: 0; 
-                box-sizing: border-box; 
-                font-family: 'Georgia', 'Times New Roman', serif;
-            }
-            
-            body { 
-                background: white; 
-                color: #333; 
-                line-height: 1.5; 
-                padding: ${isMobile ? '10mm 15mm' : '20mm 25mm'}; 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: 0 auto; 
-                font-size: ${isMobile ? '12pt' : '11pt'};
-            }
-            
-            .resume-container { 
-                max-width: 100%; 
-                margin: 0 auto; 
-                background: white; 
-                min-height: 257mm;
-                position: relative;
-            }
-            
-            /* Elegant Header with Photo */
-            .header-section {
-                display: flex;
-                align-items: center;
-                margin-bottom: ${isMobile ? '25px' : '35px'};
-                padding-bottom: ${isMobile ? '15px' : '25px'};
-                border-bottom: 2px solid ${goldColor};
-                position: relative;
-                gap: ${isMobile ? '20px' : '30px'};
-                ${isMobile ? 'flex-direction: column; text-align: center;' : ''}
-            }
-            
-            .header-section::before {
-                content: '';
-                position: absolute;
-                bottom: -1px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100px;
-                height: 3px;
-                background: ${primaryColor};
-            }
-            
-            .photo-section {
-                flex-shrink: 0;
-            }
-            
-            .photo-container {
-                width: ${isMobile ? '140px' : '160px'};
-                height: ${isMobile ? '140px' : '160px'};
-                border-radius: 50%;
-                border: 3px solid ${goldColor};
-                overflow: hidden;
-                background: #f5f5f5;
-            }
-            
-            .photo {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-            
-            .header-content {
-                flex: 1;
-                text-align: ${isMobile ? 'center' : 'left'};
-            }
-            
-            .name {
-                font-size: ${isMobile ? '28px' : '36px'};
-                font-weight: 400;
-                margin-bottom: 8px;
-                color: ${primaryColor};
-                letter-spacing: 2px;
-                text-transform: uppercase;
-            }
-            
-            .contact-elegant {
-                display: flex;
-                justify-content: ${isMobile ? 'center' : 'flex-start'};
-                flex-wrap: wrap;
-                gap: ${isMobile ? '15px' : '25px'};
-                font-size: ${isMobile ? '11pt' : '10.5pt'};
-                color: #666;
-                margin-top: 15px;
-                ${isMobile ? 'flex-direction: column; align-items: center;' : ''}
-            }
-            
-            .contact-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            
-            .contact-icon {
-                width: 12px;
-                height: 12px;
-                color: ${goldColor};
-            }
-            
-            /* Main Content Layout */
-            .main-content {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: ${isMobile ? '20px' : '25px'};
-            }
-            
-            /* Two Column Sections */
-            .two-column-section {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
-                gap: ${isMobile ? '20px' : '30px'};
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-            }
-            
-            /* Section Styling */
-            .section {
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-            }
-            
-            .section-title {
-                font-size: ${isMobile ? '13px' : '14px'};
-                font-weight: 600;
-                color: ${primaryColor};
-                margin-bottom: ${isMobile ? '12px' : '15px'};
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                border-bottom: 1px solid #e0e0e0;
-                padding-bottom: 6px;
-                position: relative;
-            }
-            
-            .section-title::after {
-                content: '';
-                position: absolute;
-                bottom: -1px;
-                left: 0;
-                width: 40px;
-                height: 2px;
-                background: ${goldColor};
-            }
-            
-            /* Profile Section */
-            .profile-text {
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                line-height: 1.6;
-                color: #555;
-                text-align: justify;
-            }
-            
-            /* Experience Section */
-            .experience-item {
-                margin-bottom: ${isMobile ? '15px' : '18px'};
-                padding-bottom: ${isMobile ? '12px' : '15px'};
-                border-bottom: 1px solid #f0f0f0;
-            }
-            
-            .experience-item:last-child {
-                border-bottom: none;
-            }
-            
-            .experience-title {
-                font-weight: 600;
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                color: #222;
-                margin-bottom: 3px;
-            }
-            
-            .experience-company {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: ${primaryColor};
-                margin-bottom: 3px;
-            }
-            
-            .experience-period {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #666;
-                font-style: italic;
-            }
-            
-            .experience-description {
-                color: #555;
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                line-height: 1.5;
-                margin-top: 8px;
-            }
-            
-            /* Education Section */
-            .education-section {
-                margin-top: ${isMobile ? '5px' : '10px'};
-                margin-bottom: ${isMobile ? '10px' : '15px'};
-            }
-            
-            .education-item {
-                margin-bottom: ${isMobile ? '15px' : '18px'};
-                padding-bottom: ${isMobile ? '12px' : '15px'};
-                border-bottom: 1px solid #f0f0f0;
-            }
-            
-            .education-item:last-child {
-                border-bottom: none;
-            }
-            
-            .education-degree {
-                font-weight: 600;
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                color: #222;
-                margin-bottom: 3px;
-            }
-            
-            .education-school {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: ${primaryColor};
-                margin-bottom: 3px;
-            }
-            
-            .education-period {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #666;
-                font-style: italic;
-            }
-            
-            /* Skills and Languages Section */
-            .skills-languages-section {
-                margin-top: ${isMobile ? '5px' : '10px'};
-                margin-bottom: ${isMobile ? '10px' : '15px'};
-            }
-            
-            /* Skills Section */
-            .skills-list {
-                list-style: none;
-                padding: 0;
-            }
-            
-            .skill-item {
-                margin-bottom: ${isMobile ? '6px' : '8px'};
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #555;
-                position: relative;
-                padding-left: 15px;
-            }
-            
-            .skill-item::before {
-                content: '—';
-                position: absolute;
-                left: 0;
-                color: ${goldColor};
-            }
-            
-            /* Languages */
-            .languages-list {
-                list-style: none;
-                padding: 0;
-            }
-            
-            .language-item {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: ${isMobile ? '6px' : '8px'};
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #555;
-            }
-            
-            /* Mobile-specific styles */
-            @media (max-width: 768px) {
-                body {
-                    padding: 8mm 10mm;
-                }
-                
-                .header-section {
-                    flex-direction: column;
-                    text-align: center;
-                }
-                
-                .contact-elegant {
-                    flex-direction: column;
-                    align-items: center;
-                }
-                
-                .two-column-section {
-                    grid-template-columns: 1fr;
-                }
-            }
-            
-            @media print {
-                body {
-                    padding: ${isMobile ? '8mm 10mm' : '15mm 20mm'};
-                }
-                .resume-container {
-                    min-height: 267mm;
-                }
-            }
-        </style>
-    `;
-
-    // Função para formatar número de telefone
-    function formatPhoneNumber(phone) {
-        if (!phone) return '';
-        const cleaned = phone.replace(/\D/g, '');
-        
-        if (cleaned.length === 11) {
-            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-        } else if (cleaned.length === 10) {
-            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-        }
-        
-        return phone;
-    }
-
-    const contactItems = [];
-    
-    if (data.personal.phone) {
-        const formattedPhone = formatPhoneNumber(data.personal.phone);
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span>${formattedPhone}</span>
-            </div>
-        `);
-    }
-    
-    if (data.personal.email) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span>${data.personal.email}</span>
-            </div>
-        `);
-    }
-    
-    if (data.personal.linkedin) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                    <rect x="2" y="9" width="4" height="12"/>
-                    <circle cx="4" cy="4" r="2"/>
-                </svg>
-                <span>${data.personal.linkedin}</span>
-            </div>
-        `);
-    }
-    
-    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
-        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                </svg>
-                <span>${location}</span>
-            </div>
-        `);
-    }
-
-    let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            ${viewportMeta}
-            <link href="https://fonts.googleapis.com/css2?family=Georgia&display=swap" rel="stylesheet">
-            ${styles}
-        </head>
-        <body>
-            <div class="resume-container">
-                <!-- Elegant Header with Photo -->
-                <div class="header-section">
-                    ${photoHTML ? `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            ${photoHTML.replace('class="photo"', 'class="photo"')}
-                        </div>
-                    </div>
-                    ` : `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    `}
-                    
-                    <div class="header-content">
-                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                        <div class="contact-elegant">
-                            ${contactItems.join('')}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Content -->
-                <div class="main-content">
-                    <!-- Profile Section -->
-                    ${data.objective ? `
-                    <div class="section">
-                        <h2 class="section-title">Sobre mim</h2>
-                        <div class="profile-text">${data.objective}</div>
-                    </div>
-                    ` : ''}
-
-                    <!-- Experience Section -->
-                    <div class="section">
-                        <h2 class="section-title">Experiência Profissional</h2>
-                        ${data.experience.length > 0 ? data.experience.map(exp => `
-                            <div class="experience-item">
-                                <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
-                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
-                            </div>
-                        `).join('') : ''}
-                    </div>
-
-                    <!-- Education Section -->
-                    ${data.education.length > 0 ? `
-                    <div class="education-section">
-                        <h2 class="section-title">Formação Acadêmica</h2>
-                        ${data.education.map(edu => `
-                            <div class="education-item">
-                                <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                <div class="education-school">${edu.school || 'Instituição'}</div>
-                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-
-                    <!-- Skills and Languages Section -->
-                    <div class="skills-languages-section">
-                        <div class="two-column-section">
-                            <!-- Skills -->
-                            ${data.skills ? `
-                            <div class="section">
-                                <h2 class="section-title">Habilidades</h2>
-                                <ul class="skills-list">
-                                    ${data.skills.split(',').map(skill => `
-                                        <li class="skill-item">${skill.trim()}</li>
-                                    `).join('')}
-                                </ul>
-                            </div>
-                            ` : ''}
-
-                            <!-- Languages -->
-                            ${data.languages.length > 0 ? `
-                            <div class="section">
-                                <h2 class="section-title">Idiomas</h2>
-                                <ul class="languages-list">
-                                    ${data.languages.map(lang => `
-                                        <li class="language-item">
-                                            <span>${lang.name}</span>
-                                            <span>${lang.level}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-
-    return html;
-}
-
-// =========================
-// TEMPLATE 3: MINIMALISTA
-// =========================
-
-function generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
-    const primaryColor = color || '#2c2c2c';
-    const accentColor = '#000000';
-    const subtleColor = '#a8a8a8';
-
-    const styles = `
-        <style>
-            * { 
-                margin: 0; 
-                padding: 0; 
-                box-sizing: border-box; 
-                font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-            }
-            
-            body { 
-                background: #fefefe; 
-                color: #2c2c2c; 
-                line-height: 1.5; 
-                padding: ${isMobile ? '8mm 12mm' : '15mm 20mm'}; 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: 0 auto; 
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                font-weight: 300;
-            }
-            
-            .resume-container { 
-                max-width: 100%; 
-                margin: 0 auto; 
-                background: #fefefe; 
-                min-height: 267mm;
-            }
-            
-            /* Header */
-            .header-standard {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : 'auto 1fr'};
-                gap: ${isMobile ? '20px' : '25px'};
-                align-items: ${isMobile ? 'center' : 'start'};
-                margin-bottom: ${isMobile ? '25px' : '30px'};
-                padding-bottom: ${isMobile ? '20px' : '25px'};
-                border-bottom: 1px solid #e8e8e8;
-                ${isMobile ? 'text-align: center;' : ''}
-            }
-            
-            /* Photo Section */
-            .photo-section {
-                width: ${isMobile ? '100px' : '120px'};
-                height: ${isMobile ? '100px' : '120px'};
-                ${isMobile ? 'margin: 0 auto;' : ''}
-            }
-            
-            .photo-container {
-                width: 100%;
-                height: 100%;
-                border-radius: 50%;
-                overflow: hidden;
-                border: 3px solid ${accentColor};
-                background: #f8f8f8;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            }
-            
-            .photo {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-            
-            .header-content {
-                flex: 1;
-                ${isMobile ? 'text-align: center;' : ''}
-            }
-            
-            .name-standard {
-                font-size: ${isMobile ? '24px' : '28px'};
-                font-weight: 600;
-                color: ${primaryColor};
-                margin-bottom: 8px;
-                letter-spacing: -0.5px;
-            }
-            
-            .contact-standard {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))'};
-                gap: ${isMobile ? '10px' : '8px'};
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: ${subtleColor};
-                margin-top: 10px;
-            }
-            
-            .contact-item {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                ${isMobile ? 'justify-content: center;' : ''}
-            }
-            
-            .contact-icon {
-                width: 12px;
-                height: 12px;
-                color: ${accentColor};
-            }
-            
-            /* Standard Layout */
-            .standard-layout {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
-                gap: ${isMobile ? '25px' : '30px'};
-            }
-            
-            /* Section Styling */
-            .section {
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-            }
-            
-            .section-title {
-                font-size: ${isMobile ? '13px' : '12px'};
-                font-weight: 600;
-                color: ${primaryColor};
-                margin-bottom: ${isMobile ? '12px' : '15px'};
-                text-transform: uppercase;
-                letter-spacing: 1.2px;
-                padding-bottom: 6px;
-                border-bottom: 2px solid ${accentColor};
-                display: inline-block;
-            }
-            
-            /* Profile Section */
-            .profile-section {
-                grid-column: 1 / -1;
-            }
-            
-            .profile-text {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                line-height: 1.6;
-                color: #555;
-                text-align: justify;
-            }
-            
-            /* Experience Section */
-            .experience-item {
-                margin-bottom: ${isMobile ? '15px' : '18px'};
-                padding-bottom: ${isMobile ? '12px' : '15px'};
-                border-bottom: 1px solid #f5f5f5;
-            }
-            
-            .experience-item:last-child {
-                border-bottom: none;
-                margin-bottom: 0;
-                padding-bottom: 0;
-            }
-            
-            .experience-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
-                margin-bottom: 6px;
-                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
-            }
-            
-            .experience-title {
-                font-weight: 600;
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                color: ${primaryColor};
-                margin-bottom: 3px;
-            }
-            
-            .experience-company {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: ${accentColor};
-                margin-bottom: 4px;
-                font-weight: 500;
-            }
-            
-            .experience-period {
-                font-size: ${isMobile ? '10pt' : '9pt'};
-                color: ${subtleColor};
-                font-weight: 400;
-                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
-                background: #f8f8f8;
-                padding: 3px 8px;
-                border-radius: 4px;
-            }
-            
-            .experience-description {
-                color: #666;
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                line-height: 1.5;
-                margin-top: 4px;
-            }
-            
-            /* Education Section */
-            .education-item {
-                margin-bottom: ${isMobile ? '12px' : '15px'};
-                padding-bottom: ${isMobile ? '10px' : '12px'};
-                border-bottom: 1px solid #f5f5f5;
-            }
-            
-            .education-item:last-child {
-                border-bottom: none;
-            }
-            
-            .education-degree {
-                font-weight: 600;
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: ${primaryColor};
-                margin-bottom: 3px;
-            }
-            
-            .education-school {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: ${accentColor};
-                margin-bottom: 3px;
-            }
-            
-            .education-period {
-                font-size: ${isMobile ? '10pt' : '9pt'};
-                color: ${subtleColor};
-            }
-            
-            /* Skills Section */
-            .skills-tags {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                margin-top: 8px;
-            }
-            
-            .skill-tag {
-                background: ${accentColor}15;
-                color: ${accentColor};
-                padding: 4px 10px;
-                border-radius: 12px;
-                font-size: ${isMobile ? '10.5pt' : '9.5pt'};
-                border: 1px solid ${accentColor}30;
-                font-weight: 400;
-            }
-            
-            /* Languages Section */
-            .language-item {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: ${isMobile ? '6px' : '8px'};
-                padding: 6px 0;
-                border-bottom: 1px dashed #f0f0f0;
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #666;
-            }
-            
-            .language-item:last-child {
-                border-bottom: none;
-            }
-            
-            /* Mobile-specific styles */
-            @media (max-width: 768px) {
-                body {
-                    padding: 6mm 8mm;
-                }
-                
-                .header-standard {
-                    grid-template-columns: 1fr;
-                    text-align: center;
-                }
-                
-                .standard-layout {
-                    grid-template-columns: 1fr;
-                }
-                
-                .contact-standard {
-                    grid-template-columns: 1fr;
-                }
-            }
-            
-            @media print {
-                body {
-                    padding: ${isMobile ? '6mm 8mm' : '10mm 15mm'};
-                }
-                .resume-container {
-                    min-height: 277mm;
-                }
-            }
-        </style>
-    `;
-
-    // Função para formatar número de telefone
-    function formatPhoneNumber(phone) {
-        if (!phone) return '';
-        const cleaned = phone.replace(/\D/g, '');
-        if (cleaned.length === 11) {
-            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-        } else if (cleaned.length === 10) {
-            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-        }
-        return phone;
-    }
-
-    // Processar informações de contato
-    const contactItems = [];
-
-    if (data.personal.phone) {
-        const formattedPhone = formatPhoneNumber(data.personal.phone);
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span>${formattedPhone}</span>
-            </div>
-        `);
-    }
-
-    if (data.personal.email) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span>${data.personal.email}</span>
-            </div>
-        `);
-    }
-
-    if (data.personal.linkedin) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                    <rect x="2" y="9" width="4" height="12"/>
-                    <circle cx="4" cy="4" r="2"/>
-                </svg>
-                <span>${data.personal.linkedin}</span>
-            </div>
-        `);
-    }
-
-    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
-        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                </svg>
-                <span>${location}</span>
-            </div>
-        `);
-    }
-
-    let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            ${viewportMeta}
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-            ${styles}
-        </head>
-        <body>
-            <div class="resume-container">
-                <!-- Header with Photo -->
-                <div class="header-standard">
-                    <!-- Photo Section -->
-                    <div class="photo-section">
-                        ${photoHTML ? `
-                        <div class="photo-container">
-                            ${photoHTML.replace('class="photo"', 'class="photo"')}
-                        </div>
-                        ` : `
-                        <div class="photo-container">
-                            <div style="width:100%;height:100%;background:#f8f8f8;display:flex;align-items:center;justify-content:center;color:#ddd;">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                            </div>
-                        </div>
-                        `}
-                    </div>
-
-                    <!-- Header Content -->
-                    <div class="header-content">
-                        <h1 class="name-standard">${data.personal.fullName || 'Nome Completo'}</h1>
-                        <div class="contact-standard">
-                            ${contactItems.join('')}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Standard Layout -->
-                <div class="standard-layout">
-                    <!-- Profile Section -->
-                    ${data.objective ? `
-                    <div class="section profile-section">
-                        <h2 class="section-title">Sobre mim</h2>
-                        <div class="profile-text">${data.objective}</div>
-                    </div>
-                    ` : ''}
-
-                    <!-- Experience Section -->
-                    ${data.experience.length > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">Experiência</h2>
-                        ${data.experience.map(exp => `
-                            <div class="experience-item">
-                                <div class="experience-header">
-                                    <div>
-                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                    </div>
-                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
-                                </div>
-                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-
-                    <!-- Education Section -->
-                    ${data.education.length > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">Formação</h2>
-                        ${data.education.map(edu => `
-                            <div class="education-item">
-                                <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                <div class="education-school">${edu.school || 'Instituição'}</div>
-                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-
-                    <!-- Skills Section -->
-                    ${data.skills ? `
-                    <div class="section">
-                        <h2 class="section-title">Habilidades</h2>
-                        <div class="skills-tags">
-                            ${data.skills.split(',').map(skill => `
-                                <span class="skill-tag">${skill.trim()}</span>
-                            `).join('')}
-                        </div>
-                    </div>
-                    ` : ''}
-
-                    <!-- Languages Section -->
-                    ${data.languages.length > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">Idiomas</h2>
-                        ${data.languages.map(lang => `
-                            <div class="language-item">
-                                <span>${lang.name}</span>
-                                <span>${lang.level}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-
-    return html;
-}
-
-// ======================
-// TEMPLATE 4: ELEGANTE
-// ======================
-
-function generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
-    const primaryColor = color || '#2c3e50';
-    const goldColor = '#000000';
-
-    const styles = `
-        <style>
-            * { 
-                margin: 0; 
-                padding: 0; 
-                box-sizing: border-box; 
-                font-family: 'Playfair Display', 'Georgia', serif;
-            }
-            
-            body { 
-                background: #fefefe; 
-                color: #2c3e50; 
-                line-height: 1.6; 
-                padding: ${isMobile ? '8mm 12mm' : '15mm 20mm'}; 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: 0 auto; 
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                background-image: linear-gradient(to bottom, #fefefe 0%, #f8f9fa 100%);
-            }
-            
-            .resume-container { 
-                max-width: 100%; 
-                margin: 0 auto; 
-                background: white; 
-                min-height: 267mm;
-                position: relative;
-                box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-                border: 1px solid #f0f0f0;
-            }
-            
-            /* Header */
-            .header-elegant {
-                padding: ${isMobile ? '25px 25px 15px' : '35px 40px 25px'};
-                border-bottom: 3px double ${goldColor};
-                position: relative;
-                background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%);
-            }
-            
-            .name-title-container {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-end;
-                margin-bottom: 15px;
-                ${isMobile ? 'flex-direction: column; align-items: center; text-align: center; gap: 15px;' : ''}
-            }
-            
-            .name {
-                font-size: ${isMobile ? '32px' : '42px'};
-                font-weight: 400;
-                color: ${primaryColor};
-                letter-spacing: 1.5px;
-                line-height: 1.1;
-                margin: 0;
-                font-family: 'Playfair Display', serif;
-            }
-            
-            .contact-elegant {
-                display: flex;
-                justify-content: ${isMobile ? 'center' : 'space-between'};
-                flex-wrap: wrap;
-                gap: ${isMobile ? '12px' : '15px'};
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #7f8c8d;
-                margin-top: 10px;
-                ${isMobile ? 'flex-direction: column; align-items: center;' : ''}
-            }
-            
-            .contact-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            
-            .contact-icon {
-                width: 14px;
-                height: 14px;
-                color: ${goldColor};
-            }
-            
-            /* Main Content Layout */
-            .main-content {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
-                gap: 0;
-            }
-            
-            /* Left Column - Photo and Personal Info */
-            .left-column {
-                padding: ${isMobile ? '20px' : '30px'};
-                background: #fcfcfc;
-                ${isMobile ? '' : 'border-right: 1px solid #f0f0f0;'}
-                position: relative;
-                ${isMobile ? 'order: 2;' : ''}
-            }
-            
-            .left-column::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                right: -1px;
-                height: 100%;
-                width: 1px;
-                background: linear-gradient(to bottom, transparent, ${goldColor}, transparent);
-                ${isMobile ? 'display: none;' : ''}
-            }
-            
-            .photo-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-                text-align: center;
-            }
-            
-            .photo-container {
-                width: ${isMobile ? '140px' : '180px'};
-                height: ${isMobile ? '140px' : '180px'};
-                margin: 0 auto;
-                border-radius: 50%;
-                overflow: hidden;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                border: 3px solid ${primaryColor};
-                background: white;
-            }
-            
-            .photo {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-            
-            /* Profile Section */
-            .profile-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .section-title {
-                font-size: ${isMobile ? '15px' : '16px'};
-                font-weight: 600;
-                color: ${primaryColor};
-                margin-bottom: ${isMobile ? '12px' : '15px'};
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                position: relative;
-                padding-bottom: 8px;
-            }
-            
-            .section-title::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 40px;
-                height: 2px;
-                background: ${goldColor};
-            }
-            
-            .profile-text {
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                line-height: 1.7;
-                color: #555;
-                text-align: justify;
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
-            /* Skills Section */
-            .skills-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .skills-list {
-                list-style: none;
-                padding: 0;
-            }
-            
-            .skill-item {
-                margin-bottom: ${isMobile ? '8px' : '10px'};
-                padding-left: 20px;
-                position: relative;
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #555;
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
-            .skill-item::before {
-                content: '▸';
-                position: absolute;
-                left: 0;
-                color: ${goldColor};
-                font-weight: bold;
-            }
-            
-            /* Languages Section */
-            .languages-section {
-                margin-bottom: ${isMobile ? '15px' : '20px'};
-            }
-            
-            .languages-list {
-                list-style: none;
-                padding: 0;
-            }
-            
-            .language-item {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: ${isMobile ? '6px' : '8px'};
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #555;
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
-            /* Right Column - Professional Experience */
-            .right-column {
-                padding: ${isMobile ? '20px' : '30px'};
-                ${isMobile ? 'order: 1;' : ''}
-            }
-            
-            /* Experience Section */
-            .experience-section {
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-            
-            .experience-item {
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-                padding-bottom: ${isMobile ? '15px' : '20px'};
-                border-bottom: 1px solid #f0f0f0;
-                position: relative;
-            }
-            
-            .experience-item:last-child {
-                border-bottom: none;
-            }
-            
-            .experience-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
-                margin-bottom: 8px;
-                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
-            }
-            
-            .experience-title {
-                font-weight: 600;
-                font-size: ${isMobile ? '13pt' : '12pt'};
-                color: #222;
-                margin-bottom: 3px;
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
-            .experience-company {
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                color: ${primaryColor};
-                margin-bottom: 5px;
-                font-weight: 500;
-                font-style: italic;
-            }
-            
-            .experience-period {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #7f8c8d;
-                font-weight: 400;
-                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
-                background: #f8f9fa;
-                padding: 3px 8px;
-                border-radius: 3px;
-                border: 1px solid #eee;
-            }
-            
-            .experience-description {
-                color: #555;
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                line-height: 1.6;
-                text-align: justify;
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
-            /* Education Section */
-            .education-section {
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-            }
-            
-            .education-item {
-                margin-bottom: ${isMobile ? '15px' : '20px'};
-                padding-bottom: ${isMobile ? '12px' : '15px'};
-                border-bottom: 1px solid #f0f0f0;
-            }
-            
-            .education-item:last-child {
-                border-bottom: none;
-            }
-            
-            .education-degree {
-                font-weight: 600;
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                color: #222;
-                margin-bottom: 3px;
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
-            .education-school {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: ${primaryColor};
-                margin-bottom: 3px;
-                font-style: italic;
-            }
-            
-            .education-period {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #7f8c8d;
-                font-style: italic;
-            }
-            
-            /* Mobile-specific styles */
-            @media (max-width: 768px) {
-                body {
-                    padding: 6mm 8mm;
-                }
-                
-                .resume-container {
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                }
-                
-                .main-content {
-                    grid-template-columns: 1fr;
-                }
-                
-                .left-column, .right-column {
-                    padding: 15px;
-                }
-                
-                .name-title-container {
-                    flex-direction: column;
-                    align-items: center;
-                    text-align: center;
-                }
-                
-                .contact-elegant {
-                    flex-direction: column;
-                    align-items: center;
-                }
-            }
-            
-            @media print {
-                body {
-                    padding: ${isMobile ? '6mm 8mm' : '10mm 15mm'};
-                    background: white;
-                }
-                .resume-container {
-                    box-shadow: none;
-                    border: none;
-                    min-height: 277mm;
-                }
-            }
-        </style>
-    `;
-
-    // Função para formatar número de telefone
-    function formatPhoneNumber(phone) {
-        if (!phone) return '';
-        const cleaned = phone.replace(/\D/g, '');
-        
-        if (cleaned.length === 11) {
-            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-        } else if (cleaned.length === 10) {
-            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-        }
-        
-        return phone;
-    }
-
-    // Processar informações de contato
-    const contactItems = [];
-    
-    if (data.personal.phone) {
-        const formattedPhone = formatPhoneNumber(data.personal.phone);
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span>${formattedPhone}</span>
-            </div>
-        `);
-    }
-    
-    if (data.personal.email) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span>${data.personal.email}</span>
-            </div>
-        `);
-    }
-    
-    if (data.personal.linkedin) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                    <rect x="2" y="9" width="4" height="12"/>
-                    <circle cx="4" cy="4" r="2"/>
-                </svg>
-                <span>${data.personal.linkedin}</span>
-            </div>
-        `);
-    }
-    
-    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
-        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                </svg>
-                <span>${location}</span>
-            </div>
-        `);
-    }
-
-    let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            ${viewportMeta}
-            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
-            ${styles}
-        </head>
-        <body>
-            <div class="resume-container">
-                <!-- Elegant Header -->
-                <div class="header-elegant">
-                    <div class="name-title-container">
-                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                    </div>
-                    <div class="contact-elegant">
-                        ${contactItems.join('')}
-                    </div>
-                </div>
-
-                <!-- Main Content -->
-                <div class="main-content">
-                    <!-- Left Column -->
-                    <div class="left-column">
-                        <!-- Photo -->
-                        ${photoHTML ? `
-                        <div class="photo-section">
-                            <div class="photo-container">
-                                ${photoHTML.replace('class="photo"', 'class="photo"')}
-                            </div>
-                        </div>
-                        ` : `
-                        <div class="photo-section">
-                            <div class="photo-container">
-                                <div style="width:100%;height:100%;background:#f8f9fa;display:flex;align-items:center;justify-content:center;color:#bdc3c7;font-size:12px;">
-                                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#bdc3c7" stroke-width="1.5">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                        <circle cx="12" cy="7" r="4"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        `}
-
-                        <!-- Profile Section -->
-                        ${data.objective ? `
-                        <div class="profile-section">
-                            <h2 class="section-title">Sobre mim</h2>
-                            <div class="profile-text">${data.objective}</div>
-                        </div>
-                        ` : ''}
-
-                        <!-- Skills -->
-                        ${data.skills ? `
-                        <div class="skills-section">
-                            <h2 class="section-title">Competências</h2>
-                            <ul class="skills-list">
-                                ${data.skills.split(',').map(skill => `
-                                    <li class="skill-item">${skill.trim()}</li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        ` : ''}
-
-                        <!-- Languages -->
-                        ${data.languages.length > 0 ? `
-                        <div class="languages-section">
-                            <h2 class="section-title">Idiomas</h2>
-                            <ul class="languages-list">
-                                ${data.languages.map(lang => `
-                                    <li class="language-item">
-                                        <span>${lang.name}</span>
-                                        <span>${lang.level}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        ` : ''}
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="right-column">
-                        <!-- Experience -->
-                        ${data.experience.length > 0 ? `
-                        <div class="experience-section">
-                            <h2 class="section-title">Experiência Profissional</h2>
-                            ${data.experience.map(exp => `
-                                <div class="experience-item">
-                                    <div class="experience-header">
-                                        <div>
-                                            <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                            <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                        </div>
-                                        <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
-                                    </div>
-                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
-                        ` : ''}
-
-                        <!-- Education -->
-                        ${data.education.length > 0 ? `
-                        <div class="education-section">
-                            <h2 class="section-title">Formação Acadêmica</h2>
-                            ${data.education.map(edu => `
-                                <div class="education-item">
-                                    <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                    <div class="education-school">${edu.school || 'Instituição'}</div>
-                                    <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-
-    return html;
-}
-
-// ==========================
-// TEMPLATE 5: PROFISSIONAL
-// ==========================
-
-function generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
-    const primaryColor = color || '#7c3aed';
-    const accentColor = secondaryColor || '#5b21b6';
-    const neutralColor = '#6d28d9';
-
-    const styles = `
-        <style>
-            * { 
-                margin: 0; 
-                padding: 0; 
-                box-sizing: border-box; 
-                font-family: 'SF Pro Display', 'Helvetica Neue', sans-serif;
-            }
-            
-            body { 
-                background: #ffffff; 
-                color: #1f2937; 
-                line-height: 1.5; 
-                padding: ${isMobile ? '8mm 12mm' : '15mm 20mm'}; 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: 0 auto; 
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-            }
-            
-            .resume-container { 
-                max-width: 100%; 
-                margin: 0 auto; 
-                background: white; 
-                min-height: 267mm;
-                position: relative;
-            }
-            
-            /* Professional Header */
-            .header-professional {
-                padding: ${isMobile ? '25px 0 15px' : '35px 0 25px'};
-                border-bottom: 3px solid ${primaryColor};
-                margin-bottom: ${isMobile ? '25px' : '30px'};
-                position: relative;
-            }
-            
-            .header-content {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : '1fr auto 1fr'};
-                gap: ${isMobile ? '20px' : '30px'};
-                align-items: center;
-                margin-bottom: ${isMobile ? '15px' : '20px'};
-                ${isMobile ? 'text-align: center;' : ''}
-            }
-            
-            .contact-info {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr 1fr' : 'repeat(4, 1fr)'};
-                gap: ${isMobile ? '15px' : '20px'};
-                text-align: center;
-            }
-            
-            .name-title {
-                text-align: center;
-            }
-            
-            .photo-section {
-                ${isMobile ? 'order: -1; text-align: center; margin-bottom: 15px;' : 'text-align: right;'}
-            }
-            
-            .photo-container {
-                width: ${isMobile ? '100px' : '120px'};
-                height: ${isMobile ? '100px' : '120px'};
-                border-radius: 50%;
-                overflow: hidden;
-                border: 3px solid ${primaryColor};
-                background: white;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                ${isMobile ? 'margin: 0 auto;' : ''}
-            }
-            
-            .photo {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-            
-            .name {
-                font-size: ${isMobile ? '26px' : '32px'};
-                font-weight: 700;
-                color: ${primaryColor};
-                margin-bottom: 10px;
-                letter-spacing: -0.5px;
-            }
-            
-            .contact-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 5px;
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #6b7280;
-            }
-            
-            .contact-icon {
-                width: 14px;
-                height: 14px;
-                color: ${primaryColor};
-                flex-shrink: 0;
-            }
-            
-            .contact-label {
-                font-size: ${isMobile ? '10pt' : '9pt'};
-                color: #9ca3af;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-            
-            .contact-value {
-                font-weight: 500;
-            }
-            
-            /* Main Content */
-            .main-content {
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
-                gap: ${isMobile ? '25px' : '35px'};
-            }
-            
-            /* Sections */
-            .section {
-                margin-bottom: ${isMobile ? '20px' : '25px'};
-            }
-            
-            .section-title {
-                font-size: ${isMobile ? '14px' : '13px'};
-                font-weight: 700;
-                color: ${primaryColor};
-                margin-bottom: ${isMobile ? '12px' : '15px'};
-                text-transform: uppercase;
-                letter-spacing: 1.5px;
-                padding-bottom: 8px;
-                border-bottom: 2px solid #e5e7eb;
-                position: relative;
-            }
-            
-            .section-title::after {
-                content: '';
-                position: absolute;
-                bottom: -2px;
-                left: 0;
-                width: 40px;
-                height: 2px;
-                background: ${primaryColor};
-            }
-            
-            /* Profile Section */
-            .profile-text {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                line-height: 1.6;
-                color: #4b5563;
-                text-align: justify;
-            }
-            
-            /* Skills Section - Clean Style */
-            .skills-list {
-                list-style: none;
-                padding: 0;
-                display: grid;
-                gap: ${isMobile ? '10px' : '8px'};
-            }
-            
-            .skill-item {
-                padding: ${isMobile ? '10px 0' : '8px 0'};
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #4b5563;
-                position: relative;
-                padding-left: 15px;
-                border-bottom: 1px solid #f3f4f6;
-            }
-            
-            .skill-item:last-child {
-                border-bottom: none;
-            }
-            
-            .skill-item::before {
-                content: '•';
-                position: absolute;
-                left: 0;
-                color: ${primaryColor};
-                font-weight: bold;
-            }
-            
-            /* Languages Section */
-            .languages-list {
-                list-style: none;
-                padding: 0;
-            }
-            
-            .language-item {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: ${isMobile ? '10px' : '8px'};
-                padding: ${isMobile ? '10px 0' : '8px 0'};
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: #4b5563;
-                border-bottom: 1px solid #f3f4f6;
-            }
-            
-            .language-item:last-child {
-                border-bottom: none;
-            }
-            
-            .language-level {
-                color: ${primaryColor};
-                font-weight: 600;
-            }
-            
-            /* Experience Section - Clean Style */
-            .experience-item {
-                margin-bottom: ${isMobile ? '18px' : '22px'};
-                padding-bottom: ${isMobile ? '15px' : '20px'};
-                border-bottom: 1px solid #f3f4f6;
-            }
-            
-            .experience-item:last-child {
-                border-bottom: none;
-                margin-bottom: 0;
-                padding-bottom: 0;
-            }
-            
-            .experience-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
-                margin-bottom: 8px;
-                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
-            }
-            
-            .experience-title {
-                font-weight: 700;
-                font-size: ${isMobile ? '12.5pt' : '11.5pt'};
-                color: #1f2937;
-                margin-bottom: 4px;
-            }
-            
-            .experience-company {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: ${primaryColor};
-                font-weight: 600;
-            }
-            
-            .experience-period {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #6b7280;
-                font-weight: 500;
-                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
-            }
-            
-            .experience-description {
-                color: #4b5563;
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                line-height: 1.6;
-            }
-            
-            /* Education Section - Clean Style */
-            .education-item {
-                margin-bottom: ${isMobile ? '15px' : '18px'};
-                padding-bottom: ${isMobile ? '12px' : '15px'};
-                border-bottom: 1px solid #f3f4f6;
-            }
-            
-            .education-item:last-child {
-                border-bottom: none;
-                margin-bottom: 0;
-                padding-bottom: 0;
-            }
-            
-            .education-degree {
-                font-weight: 700;
-                font-size: ${isMobile ? '12pt' : '11pt'};
-                color: #1f2937;
-                margin-bottom: 4px;
-            }
-            
-            .education-school {
-                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
-                color: ${primaryColor};
-                margin-bottom: 4px;
-                font-weight: 600;
-            }
-            
-            .education-period {
-                font-size: ${isMobile ? '11pt' : '10pt'};
-                color: #6b7280;
-                font-style: italic;
-            }
-            
-            /* Mobile-specific styles */
-            @media (max-width: 768px) {
-                body {
-                    padding: 6mm 8mm;
-                }
-                
-                .header-content {
-                    grid-template-columns: 1fr;
-                }
-                
-                .contact-info {
-                    grid-template-columns: 1fr;
-                }
-                
-                .main-content {
-                    grid-template-columns: 1fr;
-                }
-            }
-            
-            @media print {
-                body {
-                    padding: ${isMobile ? '6mm 8mm' : '10mm 15mm'};
-                }
-            }
-        </style>
-    `;
-
-    // Função para formatar número de celular
-    function formatPhoneNumber(phone) {
-        const cleaned = phone.replace(/\D/g, '');
-        if (cleaned.length === 11) {
-            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-        } else if (cleaned.length === 10) {
-            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-        }
-        return phone;
-    }
-
-    // Processar informações de contato COMPLETAS
-    const contactItems = [];
-    
-    // Telefone
-    if (data.personal.phone) {
-        const formattedPhone = formatPhoneNumber(data.personal.phone);
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <div class="contact-label">Telefone</div>
-                <div class="contact-value">${formattedPhone}</div>
-            </div>
-        `);
-    }
-    
-    // Email
-    if (data.personal.email) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <div class="contact-label">Email</div>
-                <div class="contact-value">${data.personal.email}</div>
-            </div>
-        `);
-    }
-    
-    // LinkedIn
-    if (data.personal.linkedin) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                    <rect x="2" y="9" width="4" height="12"/>
-                    <circle cx="4" cy="4" r="2"/>
-                </svg>
-                <div class="contact-label">LinkedIn</div>
-                <div class="contact-value">${data.personal.linkedin}</div>
-            </div>
-        `);
-    }
-    
-    // Endereço
-    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
-        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                </svg>
-                <div class="contact-label">Localização</div>
-                <div class="contact-value">${location}</div>
-            </div>
-        `);
-    }
-
-    // Se algum contato estiver faltando, preencher com espaços vazios
-    while (contactItems.length < 4) {
-        contactItems.push('<div class="contact-item"></div>');
-    }
-
-    let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            ${viewportMeta}
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-            ${styles}
-        </head>
-        <body>
-            <div class="resume-container">
-                <!-- Professional Header -->
-                <div class="header-professional">
-                    <div class="header-content">
-                        ${isMobile ? '' : '<div></div>'} <!-- Espaço vazio à esquerda -->
-                        
-                        <div class="name-title">
-                            <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                        </div>
-                        
-                        <div class="photo-section">
-                            ${photoHTML ? `
-                            <div class="photo-container">
-                                ${photoHTML.replace('class="photo"', 'class="photo"')}
-                            </div>
-                            ` : `
-                            <div class="photo-container">
-                                <div style="width:100%;height:100%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;">
-                                    <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                        <circle cx="12" cy="7" r="4"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            `}
-                        </div>
-                    </div>
-                    
-                    <!-- Contact Info Grid -->
-                    <div class="contact-info">
-                        ${contactItems.join('')}
-                    </div>
-                </div>
-
-                <!-- Main Content -->
-                <div class="main-content">
-                    <!-- Left Column -->
-                    <div class="left-column">
-                        <!-- Professional Summary -->
-                        <div class="section summary-section">
-                            <h2 class="section-title">Resumo Profissional</h2>
-                            <div class="summary-text">
-                                ${data.objective || `Profissional com sólida experiência e histórico comprovado de resultados. 
-                                Especializado em desenvolver estratégias eficazes que impulsionam o crescimento 
-                                e a excelência operacional. Comprometido com a inovação e a entrega de valor 
-                                sustentável.`}
-                            </div>
-                        </div>
-
-                        <!-- Skills -->
-                        <div class="section">
-                            <h2 class="section-title">Competências</h2>
-                            <ul class="skills-list">
-                                ${data.skills ? data.skills.split(',').map(skill => `
-                                    <li class="skill-item">${skill.trim()}</li>
-                                `).join('') : `
-                                    <li class="skill-item">Gestão de Projetos</li>
-                                    <li class="skill-item">Liderança de Equipe</li>
-                                    <li class="skill-item">Comunicação Eficaz</li>
-                                    <li class="skill-item">Análise Estratégica</li>
-                                    <li class="skill-item">Resolução de Problemas</li>
-                                    <li class="skill-item">Planejamento e Organização</li>
-                                `}
-                            </ul>
-                        </div>
-
-                        <!-- Languages -->
-                        <div class="section">
-                            <h2 class="section-title">Idiomas</h2>
-                            <ul class="languages-list">
-                                ${data.languages.length > 0 ? data.languages.map(lang => `
-                                    <li class="language-item">
-                                        <span>${lang.name}</span>
-                                        <span class="language-level">${lang.level}</span>
-                                    </li>
-                                `).join('') : `
-                                    <li class="language-item">
-                                        <span>Português</span>
-                                        <span class="language-level">Nativo</span>
-                                    </li>
-                                    <li class="language-item">
-                                        <span>Inglês</span>
-                                        <span class="language-level">Avançado</span>
-                                    </li>
-                                    <li class="language-item">
-                                        <span>Espanhol</span>
-                                        <span class="language-level">Intermediário</span>
-                                    </li>
-                                `}
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="right-column">
-                        <!-- Experience -->
-                        <div class="section">
-                            <h2 class="section-title">Experiência Profissional</h2>
-                            ${data.experience.length > 0 ? data.experience.map(exp => `
-                                <div class="experience-item">
-                                    <div class="experience-header">
-                                        <div>
-                                            <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                            <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                        </div>
-                                        <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
-                                    </div>
-                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : `
-                                    <div class="experience-description">
-                                        Desenvolvimento e implementação de estratégias que resultaram em 
-                                        crescimento significativo e otimização de processos organizacionais.
-                                    </div>
-                                    `}
-                                </div>
-                            `).join('') : `
-                                <div class="experience-item">
-                                    <div class="experience-header">
-                                        <div>
-                                            <div class="experience-title">Gerente de Projetos</div>
-                                            <div class="experience-company">Empresa de Tecnologia</div>
-                                        </div>
-                                        <div class="experience-period">2020 – Atual</div>
-                                    </div>
-                                    <div class="experience-description">
-                                        Liderança de equipes multidisciplinares no desenvolvimento e 
-                                        implementação de projetos estratégicos com foco em inovação 
-                                        e excelência operacional.
-                                    </div>
-                                </div>
-                            `}
-                        </div>
-
-                        <!-- Education -->
-                        <div class="section">
-                            <h2 class="section-title">Formação Acadêmica</h2>
-                            ${data.education.length > 0 ? data.education.map(edu => `
-                                <div class="education-item">
-                                    <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                    <div class="education-school">${edu.school || 'Instituição'}</div>
-                                    <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                                </div>
-                            `).join('') : `
-                                <div class="education-item">
-                                    <div class="education-degree">MBA em Gestão Empresarial</div>
-                                    <div class="education-school">Instituição de Ensino Superior</div>
-                                    <div class="education-period">2018 – 2020</div>
-                                </div>
-                            `}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-
-    return html;
-}
-
-// ======================
-// TEMPLATE 6: CRIATIVO
-// ======================
-
-function generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
-    const primaryColor = color || '#191919';
-    const accentColor = '#000000';
-
-    const styles = `
-        <style>
-            * { 
-                margin: 0; 
-                padding: 0; 
-                box-sizing: border-box; 
-                font-family: 'Public Sans', 'Garet', 'Inter', sans-serif;
-            }
-
-            body { 
-                background: white; 
-                color: #222; 
-                line-height: 1.5; 
-                padding: 0; 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: 0 auto; 
-            }
-
-            .resume-container { 
-                width: 100%; 
-                margin: 0 auto; 
-                display: grid;
-                grid-template-columns: ${isMobile ? '1fr' : '40% 60%'};
-                min-height: 297mm;
-                background: white;
-                border: 1px solid #efefef;
-                box-shadow: 0 6px 24px rgba(0,0,0,0.06);
-            }
-
-            /* Sidebar (esquerda) */
-            .sidebar {
-                background: ${primaryColor};
-                color: #fff;
-                padding: ${isMobile ? '30px 20px' : '50px 36px'};
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                align-items: flex-start;
-                position: relative;
-                overflow: hidden;
-                ${isMobile ? 'order: 2;' : ''}
-            }
-
-            .photo-container {
-                text-align: center;
-                margin: ${isMobile ? '20px 0 25px 0' : '25px 0 35px 0'};
-                width: ${isMobile ? '120px' : '160px'};
-                height: ${isMobile ? '120px' : '160px'};
-                border-radius: 50%;
-                border: 2px solid #fff;
-                overflow: hidden;
-                box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-                align-self: center;
-            }
-
-            .photo-container img.photo {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-            /* Contato */
-            .contact-section {
-                width: 100%;
-                margin-bottom: ${isMobile ? '20px' : '30px'};
-            }
-
-            .section-title {
-                font-size: ${isMobile ? '13px' : '14px'};
-                font-weight: 700;
-                color: ${accentColor};
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                border-bottom: 2px solid ${accentColor};
-                padding-bottom: 6px;
-                margin-bottom: ${isMobile ? '12px' : '14px'};
-            }
-
-            .contact-item {
-                display: flex;
-                align-items: flex-start;
-                gap: 10px;
-                margin-bottom: ${isMobile ? '10px' : '12px'};
-                font-size: ${isMobile ? '13px' : '14px'};
-                color: rgba(255,255,255,0.95);
-            }
-
-            .contact-icon {
-                width: 16px;
-                height: 16px;
-                color: ${accentColor};
-                stroke: ${accentColor};
-                flex-shrink: 0;
-                margin-top: 2px;
-            }
-
-            .contact-value {
-                flex: 1;
-            }
-
-            /* Skills e Idiomas */
-            .skills-list, .languages-list {
-                list-style: none;
-                padding: 0;
-            }
-
-            .skill-item, .language-item {
-                font-size: ${isMobile ? '13px' : '14px'};
-                color: rgba(255,255,255,0.95);
-                margin-bottom: ${isMobile ? '6px' : '8px'};
-                position: relative;
-                padding-left: 14px;
-            }
-
-            .skill-item::before {
-                content: "•";
-                position: absolute;
-                left: 0;
-                color: ${accentColor};
-                font-weight: 700;
-            }
-
-            .language-item {
-                display: flex;
-                justify-content: space-between;
-            }
-
-            .language-name {
-                color: white;
-                font-weight: 500;
-            }
-
-            .language-level {
-                color: rgba(255,255,255,0.8);
-                font-size: ${isMobile ? '11px' : '12px'};
-            }
-
-            /* Conteúdo principal (direita) */
-            .main-content {
-                padding: ${isMobile ? '30px 25px' : '50px 44px'};
-                background: white;
-                color: #222;
-                ${isMobile ? 'order: 1;' : ''}
-            }
-
-            .section {
-                margin-bottom: ${isMobile ? '20px' : '28px'};
-            }
-
-            .main-title {
-                font-size: ${isMobile ? '24px' : '28px'};
-                font-weight: 700;
-                color: ${accentColor};
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
-            }
-
-            .about-text {
-                font-size: ${isMobile ? '13px' : '14px'};
-                color: #555;
-                text-align: justify;
-                line-height: 1.6;
-            }
-
-            /* Experiência */
-            .experience-item {
-                margin-bottom: ${isMobile ? '18px' : '22px'};
-                border-bottom: 1px solid #efefef;
-                padding-bottom: ${isMobile ? '10px' : '12px'};
-            }
-
-            .experience-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
-                margin-bottom: 6px;
-                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
-            }
-
-            .experience-title {
-                font-weight: 700;
-                font-size: ${isMobile ? '14px' : '15px'};
-                color: #222;
-            }
-
-            .experience-company {
-                font-weight: 600;
-                color: ${accentColor};
-                margin-top: 2px;
-                font-size: ${isMobile ? '13px' : '14px'};
-            }
-
-            .experience-period {
-                font-size: ${isMobile ? '12px' : '13px'};
-                color: ${accentColor};
-                font-weight: 600;
-                ${isMobile ? 'align-self: flex-start;' : ''}
-            }
-
-            .experience-description {
-                color: #555;
-                font-size: ${isMobile ? '12.5px' : '13.5px'};
-                line-height: 1.6;
-                text-align: justify;
-                margin-top: 6px;
-            }
-
-            /* Formação */
-            .education-item {
-                margin-bottom: ${isMobile ? '12px' : '16px'};
-            }
-
-            .education-degree {
-                font-weight: 600;
-                color: #222;
-                font-size: ${isMobile ? '13px' : '14px'};
-                margin-bottom: 2px;
-            }
-
-            .education-school {
-                font-size: ${isMobile ? '12.5px' : '13.5px'};
-                color: ${accentColor};
-            }
-
-            .education-period {
-                font-size: ${isMobile ? '11.5px' : '12.5px'};
-                color: #666;
-                font-style: italic;
-            }
-
-            /* Mobile-specific styles */
-            @media (max-width: 768px) {
-                .resume-container {
-                    grid-template-columns: 1fr;
-                }
-                
-                .sidebar, .main-content {
-                    padding: 20px 15px;
-                }
-                
-                .main-title {
-                    font-size: 22px;
-                }
-            }
-
-            @media print {
-                body { background: white; padding: 0; }
-                .resume-container { box-shadow: none; border: none; }
-            }
-        </style>
-    `;
-
-    // Função para formatar número de telefone
-    function formatPhoneNumber(phone) {
-        if (!phone) return '';
-        const cleaned = phone.replace(/\D/g, '');
-        
-        if (cleaned.length === 11) {
-            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-        } else if (cleaned.length === 10) {
-            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-        }
-        
-        return phone;
-    }
-
-    const fullName = data.personal.fullName || 'Seu Nome Completo';
-
-    // Processar informações de contato
-    const contactItems = [];
-    if (data.personal.phone) {
-        const formattedPhone = formatPhoneNumber(data.personal.phone);
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span class="contact-value">${formattedPhone}</span>
-            </div>
-        `);
-    }
-    if (data.personal.email) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span class="contact-value">${data.personal.email}</span>
-            </div>
-        `);
-    }
-    if (data.personal.linkedin) {
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                    <rect x="2" y="9" width="4" height="12"/>
-                    <circle cx="4" cy="4" r="2"/>
-                </svg>
-                <span class="contact-value">${data.personal.linkedin}</span>
-            </div>
-        `);
-    }
-    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
-        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
-        contactItems.push(`
-            <div class="contact-item">
-                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                </svg>
-                <span class="contact-value">${location}</span>
-            </div>
-        `);
-    }
-
-    let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            ${viewportMeta}
-            <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-            ${styles}
-        </head>
-        <body>
-            <div class="resume-container">
-                <!-- Sidebar -->
-                <div class="sidebar">
-                    ${photoHTML ? `
-                        <div class="photo-container">
-                            ${photoHTML}
-                        </div>
-                    ` : `
-                        <div class="photo-container">
-                            <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                            </div>
-                        </div>
-                    `}
-
-                    <div class="contact-section">
-                        <div class="section-title">Contato</div>
-                        ${contactItems.join('')}
-                    </div>
-
-                    ${data.skills ? `
-                        <div class="section">
-                            <div class="section-title">Habilidades</div>
-                            <ul class="skills-list">
-                                ${data.skills.split(',').map(skill => `<li class="skill-item">${skill.trim()}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-
-                    ${data.languages.length > 0 ? `
-                        <div class="section">
-                            <div class="section-title">Idiomas</div>
-                            <ul class="languages-list">
-                                ${data.languages.map(lang => `
-                                    <li class="language-item">
-                                        <span class="language-name">${lang.name}</span>
-                                        <span class="language-level">${lang.level}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                </div>
-
-                <!-- Main Content -->
-                <div class="main-content">
-                    <div class="main-title">${fullName}</div>
-
-                    <!-- Profile Section -->
-                    ${data.objective ? `
-                        <div class="section">
-                            <div class="section-title">Sobre Mim</div>
-                            <div class="about-text">${data.objective}</div>
-                        </div>
-                    ` : ''}
-
-                    ${data.experience.length > 0 ? `
-                        <div class="section">
-                            <div class="section-title">Experiência Profissional</div>
-                            ${data.experience.map(exp => `
-                                <div class="experience-item">
-                                    <div class="experience-header">
-                                        <div>
-                                            <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                            <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                        </div>
-                                        <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
-                                    </div>
-                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-
-                    ${data.education.length > 0 ? `
-                        <div class="section">
-                            <div class="section-title">Formação Acadêmica</div>
-                            ${data.education.map(edu => `
-                                <div class="education-item">
-                                    <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                    <div class="education-school">${edu.school || 'Instituição'}</div>
-                                    <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
-
-    return html;
+    // Combinar CSS fixo com o conteúdo do template
+    return fixedCSS + templateContent + fixedEnd;
 }
 
 // Função auxiliar para formatar datas
@@ -4155,50 +1331,2805 @@ function initializePreviewHandlers() {
     setTimeout(updatePreview, 500);
 }
 
-function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
+// ======================
+// TEMPLATE 1: CLÁSSICO (CORRIGIDO)
+// ======================
 
-function getMobileScale() {
-    return isMobileDevice() ? 1.5 : 2;
-}
+function generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+    const primaryColor = color || '#424242';
+    const accentColor = '#000000';
 
-function getMobileDimensions() {
-    if (isMobileDevice()) {
-        return {
-            width: 375, // Largura mais adequada para mobile
-            height: 667
-        };
-    }
-    return {
-        width: 794,
-        height: 1123
-    };
-}
-
-function getMobileOptimizedStyles() {
-    if (!isMobileDevice()) return '';
-    
-    return `
+    const styles = `
         <style>
-            @media (max-width: 768px) {
+            * { 
+                margin: 0; 
+                padding: 0; 
+                box-sizing: border-box; 
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            }
+            
+            body { 
+                background: white; 
+                color: #424242; 
+                line-height: 1.5; 
+                padding: 20px; /* CORREÇÃO: de mm para px */
+                width: 794px; /* CORREÇÃO: de 210mm para 794px */
+                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                margin: 0 auto; 
+                font-size: 10pt;
+            }
+            
+            .resume-container { 
+                max-width: 100%; 
+                margin: 0 auto; 
+                background: white; 
+                display: grid;
+                grid-template-columns: 35% 65%;
+                gap: 0;
+                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+            }
+            
+            /* Left Column */
+            .left-column {
+                padding: 0 20px 0 0;
+                border-right: 2px solid ${primaryColor};
+            }
+            
+            /* Photo Section */
+            .photo-section {
+                text-align: center;
+                margin-bottom: 25px;
+            }
+            
+            .photo-container {
+                width: 150px;
+                height: 150px;
+                margin: 0 auto;
+                border-radius: 50%;
+                border: 3px solid ${primaryColor};
+                overflow: hidden;
+                background: #f5f5f5;
+            }
+            
+            .photo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            /* Contact Section */
+            .contact-section {
+                margin-bottom: 30px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: ${primaryColor};
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                border-bottom: 1px solid ${primaryColor};
+                padding-bottom: 5px;
+            }
+            
+            .contact-item {
+                margin-bottom: 12px;
+                font-size: 10pt;
+                color: #555;
+                display: flex;
+                align-items: flex-start;
+            }
+            
+            .contact-icon {
+                width: 16px;
+                height: 16px;
+                margin-right: 10px;
+                color: ${primaryColor};
+                stroke: ${primaryColor};
+                flex-shrink: 0;
+            }
+            
+            /* Skills Section */
+            .skills-section {
+                margin-bottom: 30px;
+            }
+            
+            .skills-list {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .skill-item {
+                margin-bottom: 8px;
+                padding-left: 0;
+                font-size: 10pt;
+                color: #444;
+                position: relative;
+            }
+            
+            .skill-item:before {
+                content: "■";
+                margin-right: 8px;
+                color: ${primaryColor};
+                font-size: 8px;
+            }
+            
+            /* Education Section */
+            .education-section {
+                margin-bottom: 30px;
+            }
+            
+            .education-item {
+                margin-bottom: 20px;
+            }
+            
+            .education-degree {
+                font-weight: 600;
+                font-size: 10.5pt;
+                color: #222;
+                margin-bottom: 3px;
+            }
+            
+            .education-school {
+                font-size: 10pt;
+                color: ${primaryColor};
+                margin-bottom: 3px;
+            }
+            
+            .education-period {
+                font-size: 9pt;
+                color: #666;
+                font-style: italic;
+            }
+            
+            /* Right Column */
+            .right-column {
+                padding: 0 0 0 25px;
+            }
+            
+            /* Header Section */
+            .header-section {
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid ${primaryColor};
+            }
+            
+            .name {
+                font-size: 28px;
+                font-weight: 700;
+                color: ${primaryColor};
+                margin-bottom: 5px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            
+            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            .profile-section {
+                margin-bottom: 30px;
+            }
+            
+            .profile-text {
+                font-size: 10.5pt;
+                line-height: 1.6;
+                color: #555;
+                text-align: justify;
+            }
+            
+            /* Experience Section */
+            .experience-section {
+                margin-bottom: 30px;
+            }
+            
+            .experience-item {
+                margin-bottom: 25px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .experience-item:last-child {
+                border-bottom: none;
+            }
+            
+            .experience-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 8px;
+            }
+            
+            .experience-title {
+                font-weight: 600;
+                font-size: 11pt;
+                color: #222;
+                margin-bottom: 3px;
+            }
+            
+            .experience-company {
+                font-size: 10.5pt;
+                color: ${primaryColor};
+                margin-bottom: 5px;
+                font-weight: 500;
+            }
+            
+            .experience-period {
+                font-size: 9.5pt;
+                color: #666;
+                font-weight: 500;
+                white-space: nowrap;
+            }
+            
+            .experience-description {
+                color: #555;
+                font-size: 10pt;
+                line-height: 1.5;
+                text-align: justify;
+            }
+            
+            /* Decorative Elements */
+            .divider {
+                height: 1px;
+                background: #e0e0e0;
+                margin: 20px 0;
+            }
+            
+            @media print {
                 body {
-                    font-size: 14px !important;
-                    line-height: 1.4 !important;
+                    padding: 15px; /* CORREÇÃO: consistente com px */
                 }
                 .resume-container {
-                    padding: 10px !important;
-                }
-                .section-title {
-                    font-size: 16px !important;
-                }
-                .photo-container {
-                    width: 120px !important;
-                    height: 120px !important;
+                    min-height: 1093px; /* CORREÇÃO: ajustado para print */
                 }
             }
         </style>
     `;
+
+    // Função para formatar número de telefone
+    function formatPhoneNumber(phone) {
+        if (!phone) return '';
+        // Remove tudo que não é número
+        const cleaned = phone.replace(/\D/g, '');
+        
+        // Formata para (00) 00000-0000
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        
+        // Retorna o número original se não conseguir formatar
+        return phone;
+    }
+
+    const contactItems = [];
+    if (data.personal.phone) {
+        const formattedPhone = formatPhoneNumber(data.personal.phone);
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span>${formattedPhone}</span>
+            </div>
+        `);
+    }
+    if (data.personal.email) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>${data.personal.email}</span>
+            </div>
+        `);
+    }
+    if (data.personal.linkedin) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span>${data.personal.linkedin}</span>
+            </div>
+        `);
+    }
+    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
+        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>${location}</span>
+            </div>
+        `);
+    }
+
+    let html = `
+        ${styles}
+        
+        <div class="resume-container">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Photo -->
+                ${photoHTML ? `
+                <div class="photo-section">
+                    <div class="photo-container">
+                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
+                    </div>
+                </div>
+                ` : `
+                <div class="photo-section">
+                    <div class="photo-container">
+                        <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                `}
+
+                <!-- Contact Information -->
+                <div class="contact-section">
+                    <h2 class="section-title">Contato</h2>
+                    ${contactItems.join('')}
+                </div>
+
+                <!-- Skills -->
+                ${data.skills ? `
+                <div class="skills-section">
+                    <h2 class="section-title">Habilidades</h2>
+                    <ul class="skills-list">
+                        ${data.skills.split(',').map(skill => `
+                            <li class="skill-item">${skill.trim()}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+
+                <!-- Education -->
+                ${data.education.length > 0 ? `
+                <div class="education-section">
+                    <h2 class="section-title">Formação Acadêmica</h2>
+                    ${data.education.map(edu => `
+                        <div class="education-item">
+                            <div class="education-degree">${edu.degree || 'Curso'}</div>
+                            <div class="education-school">${edu.school || 'Instituição'}</div>
+                            <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Header -->
+                <div class="header-section">
+                    <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
+                </div>
+
+                <!-- Profile - CORREÇÃO: Mudado para "Sobre Mim" -->
+                ${data.objective ? `
+                <div class="profile-section">
+                    <h2 class="section-title">Sobre Mim</h2>
+                    <div class="profile-text">${data.objective}</div>
+                </div>
+                ` : ''}
+
+                <!-- Experience -->
+                ${data.experience.length > 0 ? `
+                <div class="experience-section">
+                    <h2 class="section-title">Experiência Profissional</h2>
+                    ${data.experience.map(exp => `
+                        <div class="experience-item">
+                            <div class="experience-header">
+                                <div>
+                                    <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                    <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                </div>
+                                <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                            </div>
+                            ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+// =======================
+// TEMPLATE 2: EXECUTIVO (CORRIGIDO)
+// =======================
+
+function generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+    const primaryColor = color || '#000000';
+    const goldColor = '#000000';
+
+    const styles = `
+        <style>
+            * { 
+                margin: 0; 
+                padding: 0; 
+                box-sizing: border-box; 
+                font-family: 'Georgia', 'Times New Roman', 'Times', serif;
+            }
+            
+            body { 
+                background: white; 
+                color: #333; 
+                line-height: 1.5; 
+                padding: 20px; /* CORREÇÃO: de mm para px */
+                width: 794px; /* CORREÇÃO: de 210mm para 794px */
+                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                margin: 0 auto; 
+                font-size: 11pt;
+            }
+            
+            .resume-container { 
+                max-width: 100%; 
+                margin: 0 auto; 
+                background: white; 
+                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                position: relative;
+            }
+            
+            /* Elegant Header with Photo */
+            .header-section {
+                display: flex;
+                align-items: center;
+                margin-bottom: 35px;
+                padding-bottom: 25px;
+                border-bottom: 2px solid ${goldColor};
+                position: relative;
+                gap: 30px;
+            }
+            
+            .header-section::before {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 100px;
+                height: 3px;
+                background: ${primaryColor};
+            }
+            
+            .photo-section {
+                flex-shrink: 0;
+            }
+            
+            .photo-container {
+                width: 160px;
+                height: 160px;
+                border-radius: 50%;
+                border: 3px solid ${goldColor};
+                overflow: hidden;
+                background: #f5f5f5;
+            }
+            
+            .photo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .header-content {
+                flex: 1;
+                text-align: left;
+            }
+            
+            .name {
+                font-size: 36px;
+                font-weight: 400;
+                margin-bottom: 8px;
+                color: ${primaryColor};
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+            
+            .contact-elegant {
+                display: flex;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                gap: 25px;
+                font-size: 10.5pt;
+                color: #666;
+                margin-top: 15px;
+            }
+            
+            .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .contact-icon {
+                width: 12px;
+                height: 12px;
+                color: ${goldColor};
+            }
+            
+            /* Main Content Layout */
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            /* Two Column Sections */
+            .two-column-section {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+                margin-bottom: 25px;
+            }
+            
+            /* Section Styling */
+            .section {
+                margin-bottom: 25px;
+            }
+            
+            .section-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: ${primaryColor};
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                border-bottom: 1px solid #e0e0e0;
+                padding-bottom: 6px;
+                position: relative;
+            }
+            
+            .section-title::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                width: 40px;
+                height: 2px;
+                background: ${goldColor};
+            }
+            
+            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            .profile-text {
+                font-size: 11pt;
+                line-height: 1.6;
+                color: #555;
+                text-align: justify;
+            }
+            
+            /* Experience Section */
+            .experience-item {
+                margin-bottom: 18px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .experience-item:last-child {
+                border-bottom: none;
+            }
+            
+            .experience-title {
+                font-weight: 600;
+                font-size: 11pt;
+                color: #222;
+                margin-bottom: 3px;
+            }
+            
+            .experience-company {
+                font-size: 10.5pt;
+                color: ${primaryColor};
+                margin-bottom: 3px;
+            }
+            
+            .experience-period {
+                font-size: 10pt;
+                color: #666;
+                font-style: italic;
+            }
+            
+            .experience-description {
+                color: #555;
+                font-size: 10.5pt;
+                line-height: 1.5;
+                margin-top: 8px;
+            }
+            
+            /* Education Section */
+            .education-section {
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .education-item {
+                margin-bottom: 18px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .education-item:last-child {
+                border-bottom: none;
+            }
+            
+            .education-degree {
+                font-weight: 600;
+                font-size: 11pt;
+                color: #222;
+                margin-bottom: 3px;
+            }
+            
+            .education-school {
+                font-size: 10.5pt;
+                color: ${primaryColor};
+                margin-bottom: 3px;
+            }
+            
+            .education-period {
+                font-size: 10pt;
+                color: #666;
+                font-style: italic;
+            }
+            
+            /* Skills and Languages Section */
+            .skills-languages-section {
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+            
+            /* Skills Section */
+            .skills-list {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .skill-item {
+                margin-bottom: 8px;
+                font-size: 10.5pt;
+                color: #555;
+                position: relative;
+                padding-left: 15px;
+            }
+            
+            .skill-item::before {
+                content: '—';
+                position: absolute;
+                left: 0;
+                color: ${goldColor};
+            }
+            
+            /* Languages */
+            .languages-list {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .language-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                font-size: 10.5pt;
+                color: #555;
+            }
+            
+            /* Signature Section */
+            .signature-section {
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #e0e0e0;
+                text-align: right;
+            }
+            
+            @media print {
+                body {
+                    padding: 15px; /* CORREÇÃO: consistente com px */
+                }
+                .resume-container {
+                    min-height: 1093px; /* CORREÇÃO: ajustado para print */
+                }
+            }
+        </style>
+    `;
+
+    // Função para formatar número de telefone
+    function formatPhoneNumber(phone) {
+        if (!phone) return '';
+        const cleaned = phone.replace(/\D/g, '');
+        
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        
+        return phone;
+    }
+
+    // Processar informações de contato
+    const contactItems = [];
+    
+    if (data.personal.phone) {
+        const formattedPhone = formatPhoneNumber(data.personal.phone);
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span>${formattedPhone}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.email) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>${data.personal.email}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.linkedin) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span>${data.personal.linkedin}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
+        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>${location}</span>
+            </div>
+        `);
+    }
+
+    let html = `
+        ${styles}
+        
+        <div class="resume-container">
+            <!-- Elegant Header with Photo -->
+            <div class="header-section">
+                ${photoHTML ? `
+                <div class="photo-section">
+                    <div class="photo-container">
+                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
+                    </div>
+                </div>
+                ` : `
+                <div class="photo-section">
+                    <div class="photo-container">
+                        <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                `}
+                
+                <div class="header-content">
+                    <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
+                    <div class="contact-elegant">
+                        ${contactItems.join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
+                ${data.objective ? `
+                <div class="section">
+                    <h2 class="section-title">Sobre Mim</h2>
+                    <div class="profile-text">${data.objective}</div>
+                </div>
+                ` : ''}
+
+                <!-- Experience Section -->
+                <div class="section">
+                    <h2 class="section-title">Experiência Profissional</h2>
+                    ${data.experience.length > 0 ? data.experience.map(exp => `
+                        <div class="experience-item">
+                            <div class="experience-title">${exp.title || 'Cargo'}</div>
+                            <div class="experience-company">${exp.company || 'Empresa'}</div>
+                            <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                            ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                        </div>
+                    `).join('') : '<div class="experience-item">Adicione suas experiências profissionais</div>'}
+                </div>
+
+                <!-- Education Section -->
+                ${data.education.length > 0 ? `
+                <div class="education-section">
+                    <h2 class="section-title">Formação Acadêmica</h2>
+                    ${data.education.map(edu => `
+                        <div class="education-item">
+                            <div class="education-degree">${edu.degree || 'Curso'}</div>
+                            <div class="education-school">${edu.school || 'Instituição'}</div>
+                            <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+
+                <!-- Skills and Languages Section -->
+                <div class="skills-languages-section">
+                    <div class="two-column-section">
+                        <!-- Skills -->
+                        ${data.skills ? `
+                        <div class="section">
+                            <h2 class="section-title">Habilidades</h2>
+                            <ul class="skills-list">
+                                ${data.skills.split(',').map(skill => `
+                                    <li class="skill-item">${skill.trim()}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+
+                        <!-- Languages -->
+                        ${data.languages.length > 0 ? `
+                        <div class="section">
+                            <h2 class="section-title">Idiomas</h2>
+                            <ul class="languages-list">
+                                ${data.languages.map(lang => `
+                                    <li class="language-item">
+                                        <span>${lang.name}</span>
+                                        <span>${lang.level}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+// =========================
+// TEMPLATE 3: MINIMALISTA (CORRIGIDO)
+// =========================
+
+function generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+    const primaryColor = color || '#2c2c2c';
+    const accentColor = '#000000';
+    const subtleColor = '#a8a8a8';
+
+    const styles = `
+        <style>
+            * { 
+                margin: 0; 
+                padding: 0; 
+                box-sizing: border-box; 
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            }
+            
+            body { 
+                background: #fefefe; 
+                color: #2c2c2c; 
+                line-height: 1.5; 
+                padding: 20px; /* CORREÇÃO: de mm para px */
+                width: 794px; /* CORREÇÃO: de 210mm para 794px */
+                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                margin: 0 auto; 
+                font-size: 10.5pt;
+                font-weight: 300;
+            }
+            
+            .resume-container { 
+                max-width: 100%; 
+                margin: 0 auto; 
+                background: #fefefe; 
+                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+            }
+            
+            /* Header */
+            .header-standard {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 25px;
+                align-items: start;
+                margin-bottom: 30px;
+                padding-bottom: 25px;
+                border-bottom: 1px solid #e8e8e8;
+            }
+            
+            /* Photo Section */
+            .photo-section {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .photo-container {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                overflow: hidden;
+                border: 3px solid ${accentColor};
+                background: #f8f8f8;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            
+            .photo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .header-content {
+                flex: 1;
+            }
+            
+            .name-standard {
+                font-size: 28px;
+                font-weight: 600;
+                color: ${primaryColor};
+                margin-bottom: 8px;
+                letter-spacing: -0.5px;
+            }
+            
+            .contact-standard {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 8px;
+                font-size: 10pt;
+                color: ${subtleColor};
+                margin-top: 10px;
+            }
+            
+            .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            
+            .contact-icon {
+                width: 12px;
+                height: 12px;
+                color: ${accentColor};
+            }
+            
+            /* Standard Layout */
+            .standard-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+            
+            /* Section Styling */
+            .section {
+                margin-bottom: 25px;
+            }
+            
+            .section-title {
+                font-size: 12px;
+                font-weight: 600;
+                color: ${primaryColor};
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                padding-bottom: 6px;
+                border-bottom: 2px solid ${accentColor};
+                display: inline-block;
+            }
+            
+            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            .profile-section {
+                grid-column: 1 / -1;
+            }
+            
+            .profile-text {
+                font-size: 10.5pt;
+                line-height: 1.6;
+                color: #555;
+                text-align: justify;
+            }
+            
+            /* Experience Section */
+            .experience-item {
+                margin-bottom: 18px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+            
+            .experience-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+            
+            .experience-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 6px;
+            }
+            
+            .experience-title {
+                font-weight: 600;
+                font-size: 11pt;
+                color: ${primaryColor};
+                margin-bottom: 3px;
+            }
+            
+            .experience-company {
+                font-size: 10pt;
+                color: ${accentColor};
+                margin-bottom: 4px;
+                font-weight: 500;
+            }
+            
+            .experience-period {
+                font-size: 9pt;
+                color: ${subtleColor};
+                font-weight: 400;
+                white-space: nowrap;
+                background: #f8f8f8;
+                padding: 3px 8px;
+                border-radius: 4px;
+            }
+            
+            .experience-description {
+                color: #666;
+                font-size: 10pt;
+                line-height: 1.5;
+                margin-top: 4px;
+            }
+            
+            /* Education Section */
+            .education-item {
+                margin-bottom: 15px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+            
+            .education-item:last-child {
+                border-bottom: none;
+            }
+            
+            .education-degree {
+                font-weight: 600;
+                font-size: 10.5pt;
+                color: ${primaryColor};
+                margin-bottom: 3px;
+            }
+            
+            .education-school {
+                font-size: 10pt;
+                color: ${accentColor};
+                margin-bottom: 3px;
+            }
+            
+            .education-period {
+                font-size: 9pt;
+                color: ${subtleColor};
+            }
+            
+            /* Skills Section */
+            .skills-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-top: 8px;
+            }
+            
+            .skill-tag {
+                background: ${accentColor}15;
+                color: ${accentColor};
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 9.5pt;
+                border: 1px solid ${accentColor}30;
+                font-weight: 400;
+            }
+            
+            /* Languages Section */
+            .language-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                padding: 6px 0;
+                border-bottom: 1px dashed #f0f0f0;
+                font-size: 10pt;
+                color: #666;
+            }
+            
+            .language-item:last-child {
+                border-bottom: none;
+            }
+            
+            @media print {
+                body {
+                    padding: 10px; /* CORREÇÃO: consistente com px */
+                }
+                .resume-container {
+                    min-height: 1103px; /* CORREÇÃO: ajustado para print */
+                }
+            }
+        </style>
+    `;
+
+    // Função para formatar número de telefone
+    function formatPhoneNumber(phone) {
+        if (!phone) return '';
+        const cleaned = phone.replace(/\D/g, '');
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        return phone;
+    }
+
+    // Processar informações de contato
+    const contactItems = [];
+
+    if (data.personal.phone) {
+        const formattedPhone = formatPhoneNumber(data.personal.phone);
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span>${formattedPhone}</span>
+            </div>
+        `);
+    }
+
+    if (data.personal.email) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>${data.personal.email}</span>
+            </div>
+        `);
+    }
+
+    if (data.personal.linkedin) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span>${data.personal.linkedin}</span>
+            </div>
+        `);
+    }
+
+    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
+        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>${location}</span>
+            </div>
+        `);
+    }
+
+    let html = `
+        ${styles}
+        
+        <div class="resume-container">
+            <!-- Header with Photo -->
+            <div class="header-standard">
+                <!-- Photo Section -->
+                <div class="photo-section">
+                    ${photoHTML ? `
+                    <div class="photo-container">
+                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
+                    </div>
+                    ` : `
+                    <div class="photo-container">
+                        <div style="width:100%;height:100%;background:#f8f8f8;display:flex;align-items:center;justify-content:center;color:#ddd;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                    </div>
+                    `}
+                </div>
+
+                <!-- Header Content -->
+                <div class="header-content">
+                    <h1 class="name-standard">${data.personal.fullName || 'Nome Completo'}</h1>
+                    <div class="contact-standard">
+                        ${contactItems.join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Standard Layout -->
+            <div class="standard-layout">
+                <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
+                ${data.objective ? `
+                <div class="section profile-section">
+                    <h2 class="section-title">Sobre Mim</h2>
+                    <div class="profile-text">${data.objective}</div>
+                </div>
+                ` : ''}
+
+                <!-- Experience Section -->
+                ${data.experience.length > 0 ? `
+                <div class="section">
+                    <h2 class="section-title">Experiência</h2>
+                    ${data.experience.map(exp => `
+                        <div class="experience-item">
+                            <div class="experience-header">
+                                <div>
+                                    <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                    <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                </div>
+                                <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                            </div>
+                            ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+
+                <!-- Education Section -->
+                ${data.education.length > 0 ? `
+                <div class="section">
+                    <h2 class="section-title">Formação</h2>
+                    ${data.education.map(edu => `
+                        <div class="education-item">
+                            <div class="education-degree">${edu.degree || 'Curso'}</div>
+                            <div class="education-school">${edu.school || 'Instituição'}</div>
+                            <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+
+                <!-- Skills Section -->
+                ${data.skills ? `
+                <div class="section">
+                    <h2 class="section-title">Habilidades</h2>
+                    <div class="skills-tags">
+                        ${data.skills.split(',').map(skill => `
+                            <span class="skill-tag">${skill.trim()}</span>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Languages Section -->
+                ${data.languages.length > 0 ? `
+                <div class="section">
+                    <h2 class="section-title">Idiomas</h2>
+                    ${data.languages.map(lang => `
+                        <div class="language-item">
+                            <span>${lang.name}</span>
+                            <span>${lang.level}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+// ======================
+// TEMPLATE 4: ELEGANTE (CORRIGIDO)
+// ======================
+
+function generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+    const primaryColor = color || '#2c3e50';
+    const goldColor = '#000000';
+
+    const styles = `
+        <style>
+            * { 
+                margin: 0; 
+                padding: 0; 
+                box-sizing: border-box; 
+                font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+            }
+            
+            body { 
+                background: #fefefe; 
+                color: #2c3e50; 
+                line-height: 1.6; 
+                padding: 20px; /* CORREÇÃO: de mm para px */
+                width: 794px; /* CORREÇÃO: de 210mm para 794px */
+                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                margin: 0 auto; 
+                font-size: 11pt;
+                background-image: linear-gradient(to bottom, #fefefe 0%, #f8f9fa 100%);
+            }
+            
+            .resume-container { 
+                max-width: 100%; 
+                margin: 0 auto; 
+                background: white; 
+                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                position: relative;
+                box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+                border: 1px solid #f0f0f0;
+            }
+            
+            /* Header */
+            .header-elegant {
+                padding: 35px 40px 25px;
+                border-bottom: 3px double ${goldColor};
+                position: relative;
+                background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%);
+            }
+            
+            .name-title-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                margin-bottom: 15px;
+            }
+            
+            .name {
+                font-size: 42px;
+                font-weight: 400;
+                color: ${primaryColor};
+                letter-spacing: 1.5px;
+                line-height: 1.1;
+                margin: 0;
+                font-family: 'Playfair Display', serif;
+            }
+            
+            .contact-elegant {
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 15px;
+                font-size: 10.5pt;
+                color: #7f8c8d;
+                margin-top: 10px;
+            }
+            
+            .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .contact-icon {
+                width: 14px;
+                height: 14px;
+                color: ${goldColor};
+            }
+            
+            /* Main Content Layout */
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0;
+            }
+            
+            /* Left Column - Photo and Personal Info */
+            .left-column {
+                padding: 30px;
+                background: #fcfcfc;
+                border-right: 1px solid #f0f0f0;
+                position: relative;
+            }
+            
+            .left-column::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: -1px;
+                height: 100%;
+                width: 1px;
+                background: linear-gradient(to bottom, transparent, ${goldColor}, transparent);
+            }
+            
+            .photo-section {
+                margin-bottom: 30px;
+                text-align: center;
+            }
+            
+            .photo-container {
+                width: 180px;
+                height: 180px;
+                margin: 0 auto;
+                border-radius: 50%;
+                overflow: hidden;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                border: 3px solid ${primaryColor};
+                background: white;
+            }
+            
+            .photo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            .profile-section {
+                margin-bottom: 30px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: ${primaryColor};
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                position: relative;
+                padding-bottom: 8px;
+            }
+            
+            .section-title::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 40px;
+                height: 2px;
+                background: ${goldColor};
+            }
+            
+            .profile-text {
+                font-size: 11pt;
+                line-height: 1.7;
+                color: #555;
+                text-align: justify;
+                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+            
+            /* Skills Section */
+            .skills-section {
+                margin-bottom: 30px;
+            }
+            
+            .skills-list {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .skill-item {
+                margin-bottom: 10px;
+                padding-left: 20px;
+                position: relative;
+                font-size: 10.5pt;
+                color: #555;
+                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+            
+            .skill-item::before {
+                content: '▸';
+                position: absolute;
+                left: 0;
+                color: ${goldColor};
+                font-weight: bold;
+            }
+            
+            /* Languages Section */
+            .languages-section {
+                margin-bottom: 20px;
+            }
+            
+            .languages-list {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .language-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                font-size: 10.5pt;
+                color: #555;
+                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+            
+            /* Right Column - Professional Experience */
+            .right-column {
+                padding: 30px;
+            }
+            
+            /* Experience Section */
+            .experience-section {
+                margin-bottom: 30px;
+            }
+            
+            .experience-item {
+                margin-bottom: 25px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #f0f0f0;
+                position: relative;
+            }
+            
+            .experience-item:last-child {
+                border-bottom: none;
+            }
+            
+            .experience-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 8px;
+            }
+            
+            .experience-title {
+                font-weight: 600;
+                font-size: 12pt;
+                color: #222;
+                margin-bottom: 3px;
+                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+            
+            .experience-company {
+                font-size: 11pt;
+                color: ${primaryColor};
+                margin-bottom: 5px;
+                font-weight: 500;
+                font-style: italic;
+            }
+            
+            .experience-period {
+                font-size: 10pt;
+                color: #7f8c8d;
+                font-weight: 400;
+                white-space: nowrap;
+                background: #f8f9fa;
+                padding: 3px 8px;
+                border-radius: 3px;
+                border: 1px solid #eee;
+            }
+            
+            .experience-description {
+                color: #555;
+                font-size: 10.5pt;
+                line-height: 1.6;
+                text-align: justify;
+                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+            
+            /* Education Section */
+            .education-section {
+                margin-bottom: 25px;
+            }
+            
+            .education-item {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .education-item:last-child {
+                border-bottom: none;
+            }
+            
+            .education-degree {
+                font-weight: 600;
+                font-size: 11pt;
+                color: #222;
+                margin-bottom: 3px;
+                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+            
+            .education-school {
+                font-size: 10.5pt;
+                color: ${primaryColor};
+                margin-bottom: 3px;
+                font-style: italic;
+            }
+            
+            .education-period {
+                font-size: 10pt;
+                color: #7f8c8d;
+                font-style: italic;
+            }
+            
+            /* Decorative Elements */
+            .ornament {
+                position: absolute;
+                width: 80px;
+                height: 80px;
+                opacity: 0.05;
+                pointer-events: none;
+            }
+            
+            .ornament-1 {
+                top: 20px;
+                right: 20px;
+                background: radial-gradient(circle, ${primaryColor} 0%, transparent 70%);
+            }
+            
+            .ornament-2 {
+                bottom: 20px;
+                left: 20px;
+                background: radial-gradient(circle, ${goldColor} 0%, transparent 70%);
+            }
+            
+            @media print {
+                body {
+                    padding: 10px; /* CORREÇÃO: consistente com px */
+                    background: white;
+                }
+                .resume-container {
+                    box-shadow: none;
+                    border: none;
+                    min-height: 1103px; /* CORREÇÃO: ajustado para print */
+                }
+            }
+        </style>
+    `;
+
+    // Função para formatar número de telefone
+    function formatPhoneNumber(phone) {
+        if (!phone) return '';
+        const cleaned = phone.replace(/\D/g, '');
+        
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        
+        return phone;
+    }
+
+    // Processar informações de contato
+    const contactItems = [];
+    
+    if (data.personal.phone) {
+        const formattedPhone = formatPhoneNumber(data.personal.phone);
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span>${formattedPhone}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.email) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>${data.personal.email}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.linkedin) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span>${data.personal.linkedin}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
+        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>${location}</span>
+            </div>
+        `);
+    }
+
+    let html = `
+        ${styles}
+        
+        <div class="resume-container">
+            <!-- Decorative Elements -->
+            <div class="ornament ornament-1"></div>
+            <div class="ornament ornament-2"></div>
+            
+            <!-- Elegant Header -->
+            <div class="header-elegant">
+                <div class="name-title-container">
+                    <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
+                </div>
+                <div class="contact-elegant">
+                    ${contactItems.join('')}
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Photo -->
+                    ${photoHTML ? `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            <div style="width:100%;height:100%;background:#f8f9fa;display:flex;align-items:center;justify-content:center;color:#bdc3c7;font-size:12px;">
+                                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#bdc3c7" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    `}
+
+                    <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
+                    ${data.objective ? `
+                    <div class="profile-section">
+                        <h2 class="section-title">Sobre Mim</h2>
+                        <div class="profile-text">${data.objective}</div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Skills -->
+                    ${data.skills ? `
+                    <div class="skills-section">
+                        <h2 class="section-title">Competências</h2>
+                        <ul class="skills-list">
+                            ${data.skills.split(',').map(skill => `
+                                <li class="skill-item">${skill.trim()}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+
+                    <!-- Languages -->
+                    ${data.languages.length > 0 ? `
+                    <div class="languages-section">
+                        <h2 class="section-title">Idiomas</h2>
+                        <ul class="languages-list">
+                            ${data.languages.map(lang => `
+                                <li class="language-item">
+                                    <span>${lang.name}</span>
+                                    <span>${lang.level}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Experience -->
+                    ${data.experience.length > 0 ? `
+                    <div class="experience-section">
+                        <h2 class="section-title">Experiência Profissional</h2>
+                        ${data.experience.map(exp => `
+                            <div class="experience-item">
+                                <div class="experience-header">
+                                    <div>
+                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                    </div>
+                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                </div>
+                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <!-- Education -->
+                    ${data.education.length > 0 ? `
+                    <div class="education-section">
+                        <h2 class="section-title">Formação Acadêmica</h2>
+                        ${data.education.map(edu => `
+                            <div class="education-item">
+                                <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                <div class="education-school">${edu.school || 'Instituição'}</div>
+                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+// ==========================
+// TEMPLATE 5: PROFISSIONAL (CORRIGIDO)
+// ==========================
+
+function generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+    const primaryColor = color || '#7c3aed';
+    const accentColor = '#000000';
+    const neutralColor = '#6d28d9';
+
+    const styles = `
+        <style>
+            * { 
+                margin: 0; 
+                padding: 0; 
+                box-sizing: border-box; 
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            }
+            
+            body { 
+                background: #ffffff; 
+                color: #1f2937; 
+                line-height: 1.5; 
+                padding: 20px; /* CORREÇÃO: de mm para px */
+                width: 794px; /* CORREÇÃO: de 210mm para 794px */
+                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                margin: 0 auto; 
+                font-size: 10.5pt;
+            }
+            
+            .resume-container { 
+                max-width: 100%; 
+                margin: 0 auto; 
+                background: white; 
+                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                position: relative;
+            }
+            
+            /* Consulting Header */
+            .header-consulting {
+                padding: 35px 0 25px;
+                border-bottom: 3px solid ${primaryColor};
+                margin-bottom: 30px;
+                position: relative;
+            }
+            
+            .header-content {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                gap: 30px;
+                align-items: center;
+            }
+            
+            .contact-left {
+                text-align: left;
+            }
+            
+            .name-title {
+                text-align: center;
+            }
+            
+            .photo-section {
+                text-align: right;
+            }
+            
+            .photo-container {
+                width: 110px;
+                height: 110px;
+                border-radius: 8px;
+                overflow: hidden;
+                border: 3px solid ${primaryColor};
+                background: white;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            
+            .photo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .name {
+                font-size: 32px;
+                font-weight: 700;
+                color: ${primaryColor};
+                margin-bottom: 5px;
+                letter-spacing: -0.5px;
+            }
+            
+            .title {
+                font-size: 16px;
+                font-weight: 500;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+            
+            .contact-consulting {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 10pt;
+                color: #6b7280;
+            }
+            
+            .contact-icon {
+                width: 12px;
+                height: 12px;
+                color: ${primaryColor};
+                flex-shrink: 0;
+            }
+            
+            /* Main Content */
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 35px;
+            }
+            
+            /* Sections */
+            .section {
+                margin-bottom: 25px;
+            }
+            
+            .section-title {
+                font-size: 13px;
+                font-weight: 700;
+                color: ${primaryColor};
+                margin-bottom: 15px;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #e5e7eb;
+                position: relative;
+            }
+            
+            .section-title::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 40px;
+                height: 2px;
+                background: ${primaryColor};
+            }
+            
+            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            .profile-text {
+                font-size: 10.5pt;
+                line-height: 1.6;
+                color: #4b5563;
+                text-align: justify;
+            }
+            
+            /* Skills Section - Consulting Style */
+            .skills-consulting {
+                display: grid;
+                gap: 12px;
+            }
+            
+            .skill-category {
+                background: #f8fafc;
+                padding: 15px;
+                border-radius: 6px;
+                border-left: 4px solid ${primaryColor};
+            }
+            
+            .category-title {
+                font-size: 11pt;
+                font-weight: 700;
+                color: ${primaryColor};
+                margin-bottom: 8px;
+            }
+            
+            .skill-items {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            .skill-tag {
+                padding: 4px 10px;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 4px;
+                font-size: 9.5pt;
+                color: #4b5563;
+                font-weight: 500;
+            }
+            
+            /* Languages Section */
+            .languages-list {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .language-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                padding: 6px 0;
+                font-size: 10.5pt;
+                color: #4b5563;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            
+            .language-level {
+                color: ${primaryColor};
+                font-weight: 600;
+            }
+            
+            /* Experience Section */
+            .experience-item {
+                margin-bottom: 20px;
+                padding: 18px;
+                background: #f8fafc;
+                border-radius: 6px;
+                border: 1px solid #e5e7eb;
+            }
+            
+            .experience-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 10px;
+            }
+            
+            .experience-title {
+                font-weight: 700;
+                font-size: 11.5pt;
+                color: #1f2937;
+                margin-bottom: 4px;
+            }
+            
+            .experience-company {
+                font-size: 10.5pt;
+                color: ${primaryColor};
+                font-weight: 600;
+            }
+            
+            .experience-period {
+                font-size: 10pt;
+                color: #6b7280;
+                font-weight: 500;
+                white-space: nowrap;
+            }
+            
+            .experience-description {
+                color: #4b5563;
+                font-size: 10.5pt;
+                line-height: 1.6;
+            }
+            
+            /* Education Section */
+            .education-item {
+                margin-bottom: 15px;
+                padding: 15px;
+                background: white;
+                border-radius: 6px;
+                border: 1px solid #e5e7eb;
+            }
+            
+            .education-degree {
+                font-weight: 700;
+                font-size: 11pt;
+                color: #1f2937;
+                margin-bottom: 4px;
+            }
+            
+            .education-school {
+                font-size: 10.5pt;
+                color: ${primaryColor};
+                margin-bottom: 4px;
+                font-weight: 600;
+            }
+            
+            .education-period {
+                font-size: 10pt;
+                color: #6b7280;
+                font-style: italic;
+            }
+            
+            /* Consulting Approach */
+            .approach-section {
+                background: linear-gradient(135deg, ${primaryColor}15 0%, ${accentColor}15 100%);
+                padding: 20px;
+                border-radius: 8px;
+                border: 1px solid ${primaryColor}20;
+                margin-bottom: 25px;
+            }
+            
+            .approach-title {
+                font-size: 12pt;
+                font-weight: 700;
+                color: ${primaryColor};
+                margin-bottom: 10px;
+            }
+            
+            .approach-text {
+                font-size: 10.5pt;
+                line-height: 1.6;
+                color: #4b5563;
+            }
+            
+            @media print {
+                body {
+                    padding: 10px; /* CORREÇÃO: consistente com px */
+                }
+                .resume-container {
+                    min-height: 1103px; /* CORREÇÃO: ajustado para print */
+                }
+            }
+        </style>
+    `;
+
+    // Função para formatar número de telefone
+    function formatPhoneNumber(phone) {
+        if (!phone) return '';
+        const cleaned = phone.replace(/\D/g, '');
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        return phone;
+    }
+
+    // Processar informações de contato
+    const contactItems = [];
+    
+    if (data.personal.phone) {
+        const formattedPhone = formatPhoneNumber(data.personal.phone);
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span>${formattedPhone}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.email) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>${data.personal.email}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.linkedin) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span>${data.personal.linkedin}</span>
+            </div>
+        `);
+    }
+    
+    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
+        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>${location}</span>
+            </div>
+        `);
+    }
+
+    let html = `
+        ${styles}
+        
+        <div class="resume-container">
+            <!-- Consulting Header -->
+            <div class="header-consulting">
+                <div class="header-content">
+                    <div class="contact-left">
+                        <div class="contact-consulting">
+                            ${contactItems.slice(0,2).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="name-title">
+                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
+                        <div class="title">${data.personal.title || 'Consultor'}</div>
+                    </div>
+                    
+                    ${photoHTML ? `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            <div style="width:100%;height:100%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    `}
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Consulting Approach -->
+                    <div class="approach-section">
+                        <div class="approach-title">Abordagem Consultiva</div>
+                        <div class="approach-text">
+                            Foco em soluções personalizadas baseadas em análise de dados e melhores 
+                            práticas do mercado. Metodologia centrada no cliente com entrega de 
+                            resultados mensuráveis e impacto sustentável.
+                        </div>
+                    </div>
+
+                    <!-- Skills -->
+                    ${data.skills ? `
+                    <div class="section">
+                        <h2 class="section-title">Especialidades</h2>
+                        <div class="skills-consulting">
+                            <div class="skill-category">
+                                <div class="category-title">Estratégia</div>
+                                <div class="skill-items">
+                                    ${data.skills.split(',').slice(0,4).map(skill => `
+                                        <div class="skill-tag">${skill.trim()}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="skill-category">
+                                <div class="category-title">Operações</div>
+                                <div class="skill-items">
+                                    ${data.skills.split(',').slice(4,8).map(skill => `
+                                        <div class="skill-tag">${skill.trim()}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Languages -->
+                    ${data.languages.length > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">Idiomas</h2>
+                        <ul class="languages-list">
+                            ${data.languages.map(lang => `
+                                <li class="language-item">
+                                    <span>${lang.name}</span>
+                                    <span class="language-level">${lang.level}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
+                    ${data.objective ? `
+                    <div class="section">
+                        <h2 class="section-title">Sobre Mim</h2>
+                        <div class="profile-text">${data.objective}</div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Experience -->
+                    ${data.experience.length > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">Experiência em Consultoria</h2>
+                        ${data.experience.map(exp => `
+                            <div class="experience-item">
+                                <div class="experience-header">
+                                    <div>
+                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                    </div>
+                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                </div>
+                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <!-- Education -->
+                    ${data.education.length > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">Formação Acadêmica</h2>
+                        ${data.education.map(edu => `
+                            <div class="education-item">
+                                <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                <div class="education-school">${edu.school || 'Instituição'}</div>
+                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+// ======================
+// TEMPLATE 6: CRIATIVO (CORRIGIDO)
+// ======================
+
+function generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+    const primaryColor = color || '#191919';
+    const accentColor = '#000000';
+
+    const styles = `
+        <style>
+            * { 
+                margin: 0; 
+                padding: 0; 
+                box-sizing: border-box; 
+                font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            }
+
+            body { 
+                background: white; 
+                color: #222; 
+                line-height: 1.5; 
+                padding: 0; /* CORREÇÃO: removido padding do body */
+                width: 794px; /* CORREÇÃO: de 210mm para 794px */
+                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                margin: 0 auto; 
+            }
+
+            .resume-container { 
+                width: 100%; 
+                margin: 0 auto; 
+                display: grid;
+                grid-template-columns: 40% 60%;
+                min-height: 1123px; /* CORREÇÃO: altura total em px */
+                background: white;
+                border: 1px solid #efefef;
+                box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+            }
+
+            /* Sidebar (esquerda) */
+            .sidebar {
+                background: ${primaryColor};
+                color: #fff;
+                padding: 50px 36px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: flex-start;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .photo-container {
+                text-align: center;
+                margin: 25px 0 35px 0;
+                width: 160px;
+                height: 160px;
+                border-radius: 50%;
+                border: 2px solid #fff;
+                overflow: hidden;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+                align-self: center;
+            }
+
+            .photo-container img.photo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            /* Contato */
+            .contact-section {
+                width: 100%;
+                margin-bottom: 30px;
+            }
+
+            .section-title {
+                font-size: 14px;
+                font-weight: 700;
+                color: ${accentColor};
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                border-bottom: 2px solid ${accentColor};
+                padding-bottom: 6px;
+                margin-bottom: 14px;
+            }
+
+            .contact-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                margin-bottom: 12px;
+                font-size: 14px;
+                color: rgba(255,255,255,0.95);
+            }
+
+            .contact-icon {
+                width: 16px;
+                height: 16px;
+                color: ${accentColor};
+                stroke: ${accentColor};
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
+
+            .contact-value {
+                flex: 1;
+            }
+
+            /* Skills e Idiomas */
+            .skills-list, .languages-list {
+                list-style: none;
+                padding: 0;
+            }
+
+            .skill-item, .language-item {
+                font-size: 14px;
+                color: rgba(255,255,255,0.95);
+                margin-bottom: 8px;
+                position: relative;
+                padding-left: 14px;
+            }
+
+            .skill-item::before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: ${accentColor};
+                font-weight: 700;
+            }
+
+            .language-item {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .language-name {
+                color: white;
+                font-weight: 500;
+            }
+
+            .language-level {
+                color: rgba(255,255,255,0.8);
+                font-size: 12px;
+            }
+
+            /* Conteúdo principal (direita) */
+            .main-content {
+                padding: 50px 44px;
+                background: white;
+                color: #222;
+            }
+
+            .section {
+                margin-bottom: 28px;
+            }
+
+            .main-title {
+                font-size: 28px;
+                font-weight: 700;
+                color: ${accentColor};
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 10px;
+            }
+
+            .about-text {
+                font-size: 14px;
+                color: #555;
+                text-align: justify;
+                line-height: 1.6;
+            }
+
+            /* Experiência */
+            .experience-item {
+                margin-bottom: 22px;
+                border-bottom: 1px solid #efefef;
+                padding-bottom: 12px;
+            }
+
+            .experience-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 6px;
+            }
+
+            .experience-title {
+                font-weight: 700;
+                font-size: 15px;
+                color: #222;
+            }
+
+            .experience-company {
+                font-weight: 600;
+                color: ${accentColor};
+                margin-top: 2px;
+                font-size: 14px;
+            }
+
+            .experience-period {
+                font-size: 13px;
+                color: ${accentColor};
+                font-weight: 600;
+            }
+
+            .experience-description {
+                color: #555;
+                font-size: 13.5px;
+                line-height: 1.6;
+                text-align: justify;
+                margin-top: 6px;
+            }
+
+            /* Formação */
+            .education-item {
+                margin-bottom: 16px;
+            }
+
+            .education-degree {
+                font-weight: 600;
+                color: #222;
+                font-size: 14px;
+                margin-bottom: 2px;
+            }
+
+            .education-school {
+                font-size: 13.5px;
+                color: ${accentColor};
+            }
+
+            .education-period {
+                font-size: 12.5px;
+                color: #666;
+                font-style: italic;
+            }
+
+            @media print {
+                body { 
+                    background: white; 
+                    padding: 0; 
+                    width: 794px;
+                    min-height: 1123px;
+                }
+                .resume-container { 
+                    box-shadow: none; 
+                    border: none; 
+                    min-height: 1123px;
+                }
+            }
+        </style>
+    `;
+
+    // Função para formatar número de telefone
+    function formatPhoneNumber(phone) {
+        if (!phone) return '';
+        const cleaned = phone.replace(/\D/g, '');
+        
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        
+        return phone;
+    }
+
+    const fullName = data.personal.fullName || 'Seu Nome Completo';
+
+    // Processar informações de contato
+    const contactItems = [];
+    if (data.personal.phone) {
+        const formattedPhone = formatPhoneNumber(data.personal.phone);
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span class="contact-value">${formattedPhone}</span>
+            </div>
+        `);
+    }
+    if (data.personal.email) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span class="contact-value">${data.personal.email}</span>
+            </div>
+        `);
+    }
+    if (data.personal.linkedin) {
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span class="contact-value">${data.personal.linkedin}</span>
+            </div>
+        `);
+    }
+    if (data.personal.neighborhood || data.personal.city || data.personal.state) {
+        const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
+        contactItems.push(`
+            <div class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span class="contact-value">${location}</span>
+            </div>
+        `);
+    }
+
+    let html = `
+        ${styles}
+        
+        <div class="resume-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                ${photoHTML ? `
+                    <div class="photo-container">
+                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
+                    </div>
+                ` : `
+                    <div class="photo-container">
+                        <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                    </div>
+                `}
+
+                <div class="contact-section">
+                    <div class="section-title">Contato</div>
+                    ${contactItems.join('')}
+                </div>
+
+                ${data.skills ? `
+                    <div class="section">
+                        <div class="section-title">Habilidades</div>
+                        <ul class="skills-list">
+                            ${data.skills.split(',').map(skill => `<li class="skill-item">${skill.trim()}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                ${data.languages.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Idiomas</div>
+                        <ul class="languages-list">
+                            ${data.languages.map(lang => `
+                                <li class="language-item">
+                                    <span class="language-name">${lang.name}</span>
+                                    <span class="language-level">${lang.level}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="main-title">${fullName}</div>
+
+                <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
+                ${data.objective ? `
+                    <div class="section">
+                        <div class="section-title">Sobre Mim</div>
+                        <div class="about-text">${data.objective}</div>
+                    </div>
+                ` : ''}
+
+                ${data.experience.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Experiência Profissional</div>
+                        ${data.experience.map(exp => `
+                            <div class="experience-item">
+                                <div class="experience-header">
+                                    <div>
+                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                    </div>
+                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                </div>
+                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${data.education.length > 0 ? `
+                    <div class="section">
+                        <div class="section-title">Formação Acadêmica</div>
+                        ${data.education.map(edu => `
+                            <div class="education-item">
+                                <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                <div class="education-school">${edu.school || 'Instituição'}</div>
+                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    return html;
 }
 
 // ================================================
@@ -4255,6 +4186,39 @@ async function generatePDF() {
     }
 }
 
+function waitForPreviewReady(previewFrame, timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+
+        function checkReady() {
+            if (previewFrame.contentDocument && previewFrame.contentDocument.readyState === 'complete') {
+                // Verificar se as imagens estão carregadas
+                const images = previewFrame.contentDocument.images;
+                let imagesLoaded = true;
+
+                for (let i = 0; i < images.length; i++) {
+                    if (!images[i].complete) {
+                        imagesLoaded = false;
+                        break;
+                    }
+                }
+
+                if (imagesLoaded || Date.now() - startTime > timeout) {
+                    resolve();
+                } else {
+                    setTimeout(checkReady, 100);
+                }
+            } else if (Date.now() - startTime > timeout) {
+                resolve(); // Resolver mesmo que não esteja totalmente pronto
+            } else {
+                setTimeout(checkReady, 100);
+            }
+        }
+
+        checkReady();
+    });
+}
+
 // ================================================
 // GERAÇÃO DE PDF E COMPARTILHAMENTO
 // ================================================
@@ -4263,73 +4227,10 @@ async function downloadPDF(encodedHTML, fileName) {
     try {
         showToast('Gerando PDF... Aguarde.', 'info');
 
-        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+        // Capturar exatamente o que está sendo exibido
+        const canvas = await captureCurrentPreview();
+
         const { jsPDF } = window.jspdf;
-
-        // Configurações para mobile
-        const isMobile = isMobileDevice();
-        const dimensions = getMobileDimensions();
-        const scale = getMobileScale();
-
-        // Criar container temporário com dimensões responsivas
-        const tempContainer = document.createElement('div');
-        tempContainer.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: ${dimensions.width}px;
-            min-height: ${dimensions.height}px;
-            background: white;
-            padding: ${isMobile ? '20px' : '40px'};
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            transform: ${isMobile ? 'scale(1)' : 'none'};
-            transform-origin: top left;
-        `;
-
-        tempContainer.innerHTML = templateHTML;
-        document.body.appendChild(tempContainer);
-
-        // Aguardar carregamento das imagens
-        await waitForImages(tempContainer);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        const canvas = await html2canvas(tempContainer, {
-            scale: scale,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            width: dimensions.width,
-            height: tempContainer.scrollHeight,
-            scrollX: 0,
-            scrollY: 0,
-            windowWidth: dimensions.width,
-            windowHeight: tempContainer.scrollHeight,
-            onclone: function (clonedDoc, element) {
-                // Otimizar para mobile
-                if (isMobile) {
-                    element.style.width = dimensions.width + 'px';
-                    element.style.overflow = 'hidden';
-                }
-                
-                const images = element.querySelectorAll('img');
-                images.forEach(img => {
-                    if (img.src.startsWith('data:')) {
-                        img.removeAttribute('crossorigin');
-                        img.style.objectFit = 'cover';
-                        img.style.objectPosition = 'center center';
-                        // Garantir que imagens não ultrapassem o container
-                        img.style.maxWidth = '100%';
-                        img.style.height = 'auto';
-                    }
-                });
-            }
-        });
-
-        document.body.removeChild(tempContainer);
-
-        // Criar PDF
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
@@ -4339,25 +4240,25 @@ async function downloadPDF(encodedHTML, fileName) {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        const imgData = canvas.toDataURL('image/png', 1.0);
-
-        // Calcular dimensões mantendo proporção
+        // Calcular dimensões para caber na página A4
         const imgWidth = canvas.width;
         const imgHeight = canvas.height;
-        const ratio = imgWidth / imgHeight;
+        const ratio = imgHeight / imgWidth;
 
-        let finalWidth = pdfWidth;
-        let finalHeight = pdfWidth / ratio;
+        let displayWidth = pdfWidth;
+        let displayHeight = pdfWidth * ratio;
 
-        if (finalHeight > pdfHeight) {
-            finalHeight = pdfHeight;
-            finalWidth = pdfHeight * ratio;
+        // Se for muito alto, ajustar
+        if (displayHeight > pdfHeight) {
+            displayHeight = pdfHeight;
+            displayWidth = pdfHeight / ratio;
         }
 
-        const x = (pdfWidth - finalWidth) / 2;
-        const y = (pdfHeight - finalHeight) / 2;
+        const x = (pdfWidth - displayWidth) / 2;
+        const y = (pdfHeight - displayHeight) / 2;
 
-        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        pdf.addImage(imgData, 'PNG', x, y, displayWidth, displayHeight);
 
         const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`;
         pdf.save(safeFileName);
@@ -4374,65 +4275,21 @@ async function downloadJPG(encodedHTML, fileName) {
     try {
         showToast('Gerando JPG... Aguarde.', 'info');
 
-        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
-        const isMobile = isMobileDevice();
-        const dimensions = getMobileDimensions();
-        const scale = getMobileScale();
+        // Usar a pré-visualização atual
+        const canvas = await captureCurrentPreview();
 
-        const tempContainer = document.createElement('div');
-        tempContainer.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: ${dimensions.width}px;
-            min-height: ${dimensions.height}px;
-            background: white;
-            padding: ${isMobile ? '20px' : '40px'};
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            transform: ${isMobile ? 'scale(1)' : 'none'};
-            transform-origin: top left;
-        `;
-
-        tempContainer.innerHTML = templateHTML;
-        document.body.appendChild(tempContainer);
-
-        await waitForImages(tempContainer);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        const canvas = await html2canvas(tempContainer, {
-            scale: scale,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            width: dimensions.width,
-            height: tempContainer.scrollHeight,
-            scrollX: 0,
-            scrollY: 0,
-            windowWidth: dimensions.width,
-            windowHeight: tempContainer.scrollHeight
-        });
-
-        document.body.removeChild(tempContainer);
-
-        // Resto do código permanece igual...
-        const pngData = canvas.toDataURL('image/png', 1.0);
-
+        // Criar canvas para JPG com fundo branco
         const jpgCanvas = document.createElement('canvas');
         jpgCanvas.width = canvas.width;
         jpgCanvas.height = canvas.height;
         const ctx = jpgCanvas.getContext('2d');
 
+        // Fundo branco
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, jpgCanvas.width, jpgCanvas.height);
 
-        const img = new Image();
-        await new Promise((resolve) => {
-            img.onload = resolve;
-            img.src = pngData;
-        });
-        ctx.drawImage(img, 0, 0);
+        // Desenhar a imagem original
+        ctx.drawImage(canvas, 0, 0);
 
         const imgData = jpgCanvas.toDataURL('image/jpeg', 0.95);
         const link = document.createElement('a');
@@ -4457,47 +4314,8 @@ async function downloadPNG(encodedHTML, fileName) {
     try {
         showToast('Gerando PNG... Aguarde.', 'info');
 
-        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
-
-        const tempContainer = document.createElement('div');
-        tempContainer.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 794px;
-            min-height: 1123px;
-            background: white;
-            padding: 40px;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        `;
-
-        tempContainer.innerHTML = templateHTML;
-        document.body.appendChild(tempContainer);
-
-        // Aguardar carregamento
-        await waitForImages(tempContainer);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const canvas = await html2canvas(tempContainer, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            width: 794,
-            height: tempContainer.scrollHeight,
-            onclone: function (clonedDoc, element) {
-                const images = element.querySelectorAll('img');
-                images.forEach(img => {
-                    if (img.src.startsWith('blob:')) {
-                        img.crossOrigin = 'anonymous';
-                    }
-                });
-            }
-        });
-
-        document.body.removeChild(tempContainer);
+        // Usar a pré-visualização atual
+        const canvas = await captureCurrentPreview();
 
         const imgData = canvas.toDataURL('image/png', 1.0);
         const link = document.createElement('a');
@@ -4518,17 +4336,169 @@ async function downloadPNG(encodedHTML, fileName) {
     }
 }
 
+function getPreviewHTML() {
+    const previewFrame = document.getElementById('pdf-preview-iframe');
+    if (previewFrame && previewFrame.contentDocument) {
+        return previewFrame.contentDocument.documentElement.outerHTML;
+    }
+
+    // Fallback: gerar o HTML novamente
+    const data = getFormData();
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
+    const useGradient = document.getElementById('useGradient')?.checked || false;
+
+    return generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
+}
+
+async function captureCurrentPreview() {
+    let startTime = Date.now();
+    console.log('Iniciando captura de preview...');
+
+    try {
+        const previewFrame = document.getElementById('pdf-preview-iframe');
+
+        if (!previewFrame || !previewFrame.contentDocument) {
+            throw new Error('Pré-visualização não encontrada');
+        }
+
+        // AGUARDAR MAIS TEMPO para mobile
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const iframeDoc = previewFrame.contentDocument;
+        const iframeBody = iframeDoc.body;
+        const iframeHtml = iframeDoc.documentElement;
+
+        // FORÇAR DIMENSÕES ABSOLUTAS
+        iframeHtml.style.width = '794px';
+        iframeHtml.style.height = '1123px';
+        iframeHtml.style.overflow = 'hidden';
+        iframeHtml.style.margin = '0';
+        iframeHtml.style.padding = '0';
+
+        iframeBody.style.width = '794px';
+        iframeBody.style.minHeight = '1123px';
+        iframeBody.style.margin = '0';
+        iframeBody.style.padding = '20px';
+        iframeBody.style.overflow = 'hidden';
+        iframeBody.style.boxSizing = 'border-box';
+        iframeBody.style.background = 'white';
+
+        // AGUARDAR renderização
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        console.log('Capturando screenshot...');
+        const canvas = await html2canvas(iframeBody, {
+            scale: 2, // QUALIDADE ALTA FIXA
+            useCORS: true,
+            allowTaint: false,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: iframeBody.scrollHeight,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 794,
+            windowHeight: iframeBody.scrollHeight,
+            onclone: function (clonedDoc, element) {
+                // GARANTIR CONSISTÊNCIA MÁXIMA
+                const clonedHtml = clonedDoc.documentElement;
+                clonedHtml.style.width = '794px';
+                clonedHtml.style.height = '1123px';
+                clonedHtml.style.overflow = 'hidden';
+
+                element.style.width = '794px';
+                element.style.minHeight = '1123px';
+                element.style.overflow = 'visible';
+                element.style.boxSizing = 'border-box';
+
+                // Otimizar imagens
+                const images = element.querySelectorAll('img');
+                images.forEach(img => {
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                    img.style.display = 'block';
+                    if (img.classList.contains('photo')) {
+                        img.style.objectFit = 'cover';
+                        img.style.objectPosition = 'center';
+                    }
+                });
+            }
+        });
+
+        const endTime = Date.now();
+        console.log(`Canvas gerado em ${endTime - startTime}ms:`, canvas.width, 'x', canvas.height);
+        return canvas;
+
+    } catch (error) {
+        console.error('Erro detalhado ao capturar preview:', error);
+
+        // FALLBACK MAIS ROBUSTO
+        try {
+            console.log('Tentando fallback...');
+            const previewFrame = document.getElementById('pdf-preview-iframe');
+            if (previewFrame && previewFrame.contentDocument) {
+                const canvas = await html2canvas(previewFrame.contentDocument.body, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+                return canvas;
+            }
+        } catch (fallbackError) {
+            console.error('Fallback também falhou:', fallbackError);
+        }
+
+        throw new Error('Não foi possível capturar a pré-visualização');
+    }
+}
+
+function ensurePreviewFrameReady() {
+    return new Promise((resolve, reject) => {
+        const previewFrame = document.getElementById('pdf-preview-iframe');
+        if (!previewFrame) {
+            reject(new Error('Iframe de preview não encontrado'));
+            return;
+        }
+
+        const checkReady = () => {
+            try {
+                if (previewFrame.contentDocument &&
+                    previewFrame.contentDocument.readyState === 'complete' &&
+                    previewFrame.contentDocument.body &&
+                    previewFrame.contentDocument.body.children.length > 0) {
+
+                    // Verificar se há conteúdo visível
+                    const hasContent = previewFrame.contentDocument.body.scrollWidth > 10;
+                    if (hasContent) {
+                        resolve(previewFrame);
+                    } else {
+                        setTimeout(checkReady, 100);
+                    }
+                } else {
+                    setTimeout(checkReady, 100);
+                }
+            } catch (e) {
+                // Pode ocorrer erro de CORS, mas tentamos continuar
+                setTimeout(checkReady, 100);
+            }
+        };
+
+        // Timeout de segurança
+        setTimeout(() => {
+            resolve(previewFrame); // Resolver mesmo que não esteja perfeito
+        }, 5000);
+
+        checkReady();
+    });
+}
+
 // Função waitForImages
 function waitForImages(container) {
     const images = container.querySelectorAll('img');
     const promises = Array.from(images).map(img => {
         return new Promise((resolve) => {
             if (img.complete && img.naturalHeight !== 0) {
-                // Otimizar imagem para mobile
-                if (isMobileDevice()) {
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
-                }
                 resolve();
             } else if (img.src.startsWith('data:')) {
                 resolve();
@@ -4540,11 +4510,6 @@ function waitForImages(container) {
                         loaded = true;
                         img.removeEventListener('load', onLoad);
                         img.removeEventListener('error', onError);
-                        // Otimizar após carregar
-                        if (isMobileDevice()) {
-                            img.style.maxWidth = '100%';
-                            img.style.height = 'auto';
-                        }
                         resolve();
                     }
                 };
@@ -4561,6 +4526,7 @@ function waitForImages(container) {
                 img.addEventListener('load', onLoad);
                 img.addEventListener('error', onError);
 
+                // Timeout fixo para todos os dispositivos
                 setTimeout(() => {
                     if (!loaded) {
                         loaded = true;
@@ -4568,7 +4534,7 @@ function waitForImages(container) {
                         img.removeEventListener('error', onError);
                         resolve();
                     }
-                }, isMobileDevice() ? 5000 : 3000);
+                }, 3000);
             }
         });
     });
@@ -4724,6 +4690,117 @@ function copyShareLink(fileName) {
     navigator.clipboard.writeText(currentUrl).then(() => {
         showToast('Link copiado para a área de transferência!', 'success');
     });
+}
+
+// Função para adicionar efeitos de hover (chamada em showPDFPreviewModal)
+function addHoverEffects() {
+    const downloadOptions = document.querySelectorAll('.download-option');
+    downloadOptions.forEach(option => {
+        option.addEventListener('mouseenter', function () {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        });
+
+        option.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        });
+    });
+}
+
+// Função para configurar interações do modal (chamada em showPDFPreviewModal)
+function setupModalInteractions() {
+    const modal = document.getElementById('pdf-preview-modal');
+    if (!modal) return;
+
+    // Fechar modal ao clicar fora do conteúdo
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) {
+            closePDFPreviewModal();
+        }
+    });
+
+    // Prevenir fechamento ao clicar dentro do conteúdo
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
+}
+
+// Função para lidar com teclas no modal (chamada em showPDFPreviewModal)
+function handleModalKeydown(e) {
+    if (e.key === 'Escape') {
+        closePDFPreviewModal();
+    }
+}
+
+// Função para copiar link compartilhável (chamada no modal)
+function copyShareableLink(encodedHTML, fileName) {
+    const currentUrl = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(currentUrl).then(() => {
+        showToast('Link copiado para a área de transferência!', 'success');
+    }).catch(err => {
+        console.error('Erro ao copiar link:', err);
+        showToast('Erro ao copiar link', 'error');
+    });
+}
+
+// Método alternativo para download de PDF (chamado em downloadPDF)
+async function downloadPDFAlternative(encodedHTML, fileName) {
+    try {
+        showToast('Usando método alternativo...', 'info');
+
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+
+        // Criar um container temporário simples
+        const tempDiv = document.createElement('div');
+        tempDiv.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+        `;
+        tempDiv.innerHTML = templateHTML;
+        document.body.appendChild(tempDiv);
+
+        const canvas = await html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`;
+        pdf.save(safeFileName);
+
+        showToast('PDF gerado com método alternativo!', 'success');
+
+    } catch (error) {
+        console.error('Erro no método alternativo:', error);
+        throw error;
+    }
 }
 
 // ================================================
@@ -4984,57 +5061,6 @@ function openFinalPreviewFullscreen() {
     }
 }
 
-function downloadFinalPDF() {
-    const data = getFormData();
-    if (!data) {
-        showToast('Preencha pelo menos algumas informações antes de baixar.', 'error');
-        return;
-    }
-
-    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
-    const useGradient = document.getElementById('useGradient')?.checked || false;
-
-    const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
-    const encodedHTML = btoa(unescape(encodeURIComponent(templateHTML)));
-    const fileName = data.personal.fullName || 'curriculo';
-
-    downloadPDF(encodedHTML, fileName);
-}
-
-function downloadFinalJPG() {
-    const data = getFormData();
-    if (!data) {
-        showToast('Preencha pelo menos algumas informações antes de baixar.', 'error');
-        return;
-    }
-
-    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
-    const useGradient = document.getElementById('useGradient')?.checked || false;
-
-    const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
-    const encodedHTML = btoa(unescape(encodeURIComponent(templateHTML)));
-    const fileName = data.personal.fullName || 'curriculo';
-
-    downloadJPG(encodedHTML, fileName);
-}
-
-function downloadFinalPNG() {
-    const data = getFormData();
-    if (!data) {
-        showToast('Preencha pelo menos algumas informações antes de baixar.', 'error');
-        return;
-    }
-
-    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
-    const useGradient = document.getElementById('useGradient')?.checked || false;
-
-    const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
-    const encodedHTML = btoa(unescape(encodeURIComponent(templateHTML)));
-    const fileName = data.personal.fullName || 'curriculo';
-
-    downloadPNG(encodedHTML, fileName);
-}
-
 function shareViaEmailFinal() {
     const data = getFormData();
     const fileName = data.personal.fullName || 'curriculo';
@@ -5155,3 +5181,11 @@ window.copyShareLink = copyShareLink;
 window.closePDFPreviewModal = closePDFPreviewModal;
 window.toggleShareOptions = toggleShareOptions;
 window.showPDFPreviewModal = showPDFPreviewModal;
+window.captureCurrentPreview = captureCurrentPreview;
+window.downloadFinalPDF = downloadFinalPDF;
+window.downloadFinalJPG = downloadFinalJPG;
+window.downloadFinalPNG = downloadFinalPNG;
+window.shareViaEmailFinal = shareViaEmailFinal;
+window.shareViaWhatsAppFinal = shareViaWhatsAppFinal;
+window.copyShareableLinkFinal = copyShareableLinkFinal;
+window.copyShareableLink = copyShareableLink;
