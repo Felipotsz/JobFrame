@@ -1004,35 +1004,43 @@ const AVAILABLE_TEMPLATES = {
 };
 
 // ================================================
-// SISTEMA DE TEMPLATES COM FOTO
+// SISTEMA DE TEMPLATES COM FOTO RESPONSIVO PARA MOBILE
 // ================================================
 
 function generateTemplateHTML(data, template, color, secondaryColor, useGradient) {
     if (!data) return '<div style="padding: 2rem; text-align: center; color: #666;">Preencha os dados do formulário para ver a pré-visualização</div>';
 
-    // CORREÇÃO: Processamento consistente da foto para todos os templates
+    // Detectar se é mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Meta viewport para mobile
+    const viewportMeta = isMobile ? 
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">' : 
+        '';
+
+    // Processamento consistente da foto para todos os templates
     let photoHTML = '';
     if (data.personal.photo) {
-        // CORREÇÃO CRÍTICA: Usar o Data URL diretamente sem conversões
-        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo" crossorigin="anonymous" style="object-fit: cover; object-position: center;">`;
+        // Usar o Data URL diretamente sem conversões
+        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo" crossorigin="anonymous" style="object-fit: cover; object-position: center; ${isMobile ? 'max-width: 100%; height: auto;' : ''}">`;
     }
 
     // Sistema de templates
     switch (template) {
         case 'minimal':
-            return generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML);
+            return generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
         case 'classic':
-            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
+            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
         case 'executive':
-            return generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML);
+            return generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
         case 'elegant':
-            return generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML);
+            return generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
         case 'professional':
-            return generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML);
+            return generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
         case 'creative':
-            return generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML);
+            return generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
         default:
-            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
+            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile, viewportMeta);
     }
 }
 
@@ -1040,7 +1048,7 @@ function generateTemplateHTML(data, template, color, secondaryColor, useGradient
 // TEMPLATE 1: CLÁSSICO
 // ======================
 
-function generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+function generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
     const primaryColor = color || '#424242';
     const accentColor = '#000000';
 
@@ -1057,11 +1065,11 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
                 background: white; 
                 color: #424242; 
                 line-height: 1.5; 
-                padding: 20mm 15mm; 
+                padding: ${isMobile ? '10mm 8mm' : '20mm 15mm'}; 
                 width: 210mm; 
                 min-height: 297mm; 
                 margin: 0 auto; 
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
             }
             
             .resume-container { 
@@ -1069,26 +1077,27 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
                 margin: 0 auto; 
                 background: white; 
                 display: grid;
-                grid-template-columns: 35% 65%;
-                gap: 0;
+                grid-template-columns: ${isMobile ? '1fr' : '35% 65%'};
+                gap: ${isMobile ? '20px' : '0'};
                 min-height: 257mm;
             }
             
             /* Left Column */
             .left-column {
-                padding: 0 20px 0 0;
-                border-right: 2px solid ${primaryColor};
+                padding: ${isMobile ? '0' : '0 20px 0 0'};
+                ${isMobile ? '' : 'border-right: 2px solid ${primaryColor};'}
+                ${isMobile ? 'margin-bottom: 20px;' : ''}
             }
             
             /* Photo Section */
             .photo-section {
                 text-align: center;
-                margin-bottom: 25px;
+                margin-bottom: ${isMobile ? '20px' : '25px'};
             }
             
             .photo-container {
-                width: 150px;
-                height: 150px;
+                width: ${isMobile ? '120px' : '150px'};
+                height: ${isMobile ? '120px' : '150px'};
                 margin: 0 auto;
                 border-radius: 50%;
                 border: 3px solid ${primaryColor};
@@ -1104,14 +1113,14 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Contact Section */
             .contact-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .section-title {
-                font-size: 16px;
+                font-size: ${isMobile ? '14px' : '16px'};
                 font-weight: 600;
                 color: ${primaryColor};
-                margin-bottom: 15px;
+                margin-bottom: ${isMobile ? '12px' : '15px'};
                 text-transform: uppercase;
                 letter-spacing: 1px;
                 border-bottom: 1px solid ${primaryColor};
@@ -1119,8 +1128,8 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             }
             
             .contact-item {
-                margin-bottom: 12px;
-                font-size: 10pt;
+                margin-bottom: ${isMobile ? '10px' : '12px'};
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #555;
                 display: flex;
                 align-items: flex-start;
@@ -1137,7 +1146,7 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Skills Section */
             .skills-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .skills-list {
@@ -1146,9 +1155,9 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             }
             
             .skill-item {
-                margin-bottom: 8px;
+                margin-bottom: ${isMobile ? '6px' : '8px'};
                 padding-left: 0;
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #444;
                 position: relative;
             }
@@ -1162,46 +1171,46 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Education Section */
             .education-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .education-item {
-                margin-bottom: 20px;
+                margin-bottom: ${isMobile ? '15px' : '20px'};
             }
             
             .education-degree {
                 font-weight: 600;
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #222;
                 margin-bottom: 3px;
             }
             
             .education-school {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: ${primaryColor};
                 margin-bottom: 3px;
             }
             
             .education-period {
-                font-size: 9pt;
+                font-size: ${isMobile ? '10pt' : '9pt'};
                 color: #666;
                 font-style: italic;
             }
             
             /* Right Column */
             .right-column {
-                padding: 0 0 0 25px;
+                padding: ${isMobile ? '0' : '0 0 0 25px'};
             }
             
             /* Header Section */
             .header-section {
-                margin-bottom: 30px;
-                padding-bottom: 20px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
+                padding-bottom: ${isMobile ? '15px' : '20px'};
                 border-bottom: 2px solid ${primaryColor};
             }
             
             .name {
-                font-size: 28px;
+                font-size: ${isMobile ? '24px' : '28px'};
                 font-weight: 700;
                 color: ${primaryColor};
                 margin-bottom: 5px;
@@ -1211,11 +1220,11 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Profile Section */
             .profile-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .profile-text {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 line-height: 1.6;
                 color: #555;
                 text-align: justify;
@@ -1223,12 +1232,12 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Experience Section */
             .experience-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .experience-item {
-                margin-bottom: 25px;
-                padding-bottom: 20px;
+                margin-bottom: ${isMobile ? '20px' : '25px'};
+                padding-bottom: ${isMobile ? '15px' : '20px'};
                 border-bottom: 1px solid #e0e0e0;
             }
             
@@ -1239,48 +1248,67 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             .experience-header {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
                 margin-bottom: 8px;
+                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
             }
             
             .experience-title {
                 font-weight: 600;
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 color: #222;
                 margin-bottom: 3px;
             }
             
             .experience-company {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: ${primaryColor};
                 margin-bottom: 5px;
                 font-weight: 500;
             }
             
             .experience-period {
-                font-size: 9.5pt;
+                font-size: ${isMobile ? '10.5pt' : '9.5pt'};
                 color: #666;
                 font-weight: 500;
-                white-space: nowrap;
+                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
             }
             
             .experience-description {
                 color: #555;
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 line-height: 1.5;
                 text-align: justify;
             }
             
-            /* Decorative Elements */
-            .divider {
-                height: 1px;
-                background: #e0e0e0;
-                margin: 20px 0;
+            /* Mobile-specific styles */
+            @media (max-width: 768px) {
+                body {
+                    padding: 8mm 6mm;
+                    font-size: 12pt;
+                }
+                
+                .resume-container {
+                    grid-template-columns: 1fr;
+                    gap: 15px;
+                }
+                
+                .left-column, .right-column {
+                    padding: 0;
+                }
+                
+                .name {
+                    font-size: 22px;
+                }
+                
+                .section-title {
+                    font-size: 15px;
+                }
             }
             
             @media print {
                 body {
-                    padding: 15mm 10mm;
+                    padding: ${isMobile ? '8mm 6mm' : '15mm 10mm'};
                 }
                 .resume-container {
                     min-height: 267mm;
@@ -1292,17 +1320,14 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
     // Função para formatar número de telefone
     function formatPhoneNumber(phone) {
         if (!phone) return '';
-        // Remove tudo que não é número
         const cleaned = phone.replace(/\D/g, '');
         
-        // Formata para (00) 00000-0000
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
         
-        // Retorna o número original se não conseguir formatar
         return phone;
     }
 
@@ -1359,6 +1384,7 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
         <html>
         <head>
             <meta charset="UTF-8">
+            ${viewportMeta}
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
             ${styles}
         </head>
@@ -1465,7 +1491,7 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
 // TEMPLATE 2: EXECUTIVO
 // =======================
 
-function generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+function generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
     const primaryColor = color || '#000000';
     const goldColor = '#000000';
 
@@ -1482,11 +1508,11 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
                 background: white; 
                 color: #333; 
                 line-height: 1.5; 
-                padding: 20mm 25mm; 
+                padding: ${isMobile ? '10mm 15mm' : '20mm 25mm'}; 
                 width: 210mm; 
                 min-height: 297mm; 
                 margin: 0 auto; 
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
             }
             
             .resume-container { 
@@ -1501,11 +1527,12 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             .header-section {
                 display: flex;
                 align-items: center;
-                margin-bottom: 35px;
-                padding-bottom: 25px;
+                margin-bottom: ${isMobile ? '25px' : '35px'};
+                padding-bottom: ${isMobile ? '15px' : '25px'};
                 border-bottom: 2px solid ${goldColor};
                 position: relative;
-                gap: 30px;
+                gap: ${isMobile ? '20px' : '30px'};
+                ${isMobile ? 'flex-direction: column; text-align: center;' : ''}
             }
             
             .header-section::before {
@@ -1524,8 +1551,8 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             }
             
             .photo-container {
-                width: 160px;
-                height: 160px;
+                width: ${isMobile ? '140px' : '160px'};
+                height: ${isMobile ? '140px' : '160px'};
                 border-radius: 50%;
                 border: 3px solid ${goldColor};
                 overflow: hidden;
@@ -1540,11 +1567,11 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             
             .header-content {
                 flex: 1;
-                text-align: left;
+                text-align: ${isMobile ? 'center' : 'left'};
             }
             
             .name {
-                font-size: 36px;
+                font-size: ${isMobile ? '28px' : '36px'};
                 font-weight: 400;
                 margin-bottom: 8px;
                 color: ${primaryColor};
@@ -1554,12 +1581,13 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             
             .contact-elegant {
                 display: flex;
-                justify-content: flex-start;
+                justify-content: ${isMobile ? 'center' : 'flex-start'};
                 flex-wrap: wrap;
-                gap: 25px;
-                font-size: 10.5pt;
+                gap: ${isMobile ? '15px' : '25px'};
+                font-size: ${isMobile ? '11pt' : '10.5pt'};
                 color: #666;
                 margin-top: 15px;
+                ${isMobile ? 'flex-direction: column; align-items: center;' : ''}
             }
             
             .contact-item {
@@ -1578,27 +1606,27 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             .main-content {
                 display: grid;
                 grid-template-columns: 1fr;
-                gap: 25px;
+                gap: ${isMobile ? '20px' : '25px'};
             }
             
             /* Two Column Sections */
             .two-column-section {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
-                margin-bottom: 25px;
+                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
+                gap: ${isMobile ? '20px' : '30px'};
+                margin-bottom: ${isMobile ? '20px' : '25px'};
             }
             
             /* Section Styling */
             .section {
-                margin-bottom: 25px;
+                margin-bottom: ${isMobile ? '20px' : '25px'};
             }
             
             .section-title {
-                font-size: 14px;
+                font-size: ${isMobile ? '13px' : '14px'};
                 font-weight: 600;
                 color: ${primaryColor};
-                margin-bottom: 15px;
+                margin-bottom: ${isMobile ? '12px' : '15px'};
                 text-transform: uppercase;
                 letter-spacing: 2px;
                 border-bottom: 1px solid #e0e0e0;
@@ -1618,7 +1646,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             
             /* Profile Section */
             .profile-text {
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 line-height: 1.6;
                 color: #555;
                 text-align: justify;
@@ -1626,8 +1654,8 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             
             /* Experience Section */
             .experience-item {
-                margin-bottom: 18px;
-                padding-bottom: 15px;
+                margin-bottom: ${isMobile ? '15px' : '18px'};
+                padding-bottom: ${isMobile ? '12px' : '15px'};
                 border-bottom: 1px solid #f0f0f0;
             }
             
@@ -1637,39 +1665,39 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             
             .experience-title {
                 font-weight: 600;
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 color: #222;
                 margin-bottom: 3px;
             }
             
             .experience-company {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: ${primaryColor};
                 margin-bottom: 3px;
             }
             
             .experience-period {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #666;
                 font-style: italic;
             }
             
             .experience-description {
                 color: #555;
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 line-height: 1.5;
                 margin-top: 8px;
             }
             
             /* Education Section */
             .education-section {
-                margin-top: 10px;
-                margin-bottom: 15px;
+                margin-top: ${isMobile ? '5px' : '10px'};
+                margin-bottom: ${isMobile ? '10px' : '15px'};
             }
             
             .education-item {
-                margin-bottom: 18px;
-                padding-bottom: 15px;
+                margin-bottom: ${isMobile ? '15px' : '18px'};
+                padding-bottom: ${isMobile ? '12px' : '15px'};
                 border-bottom: 1px solid #f0f0f0;
             }
             
@@ -1679,27 +1707,27 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             
             .education-degree {
                 font-weight: 600;
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 color: #222;
                 margin-bottom: 3px;
             }
             
             .education-school {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: ${primaryColor};
                 margin-bottom: 3px;
             }
             
             .education-period {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #666;
                 font-style: italic;
             }
             
             /* Skills and Languages Section */
             .skills-languages-section {
-                margin-top: 10px;
-                margin-bottom: 15px;
+                margin-top: ${isMobile ? '5px' : '10px'};
+                margin-bottom: ${isMobile ? '10px' : '15px'};
             }
             
             /* Skills Section */
@@ -1709,8 +1737,8 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             }
             
             .skill-item {
-                margin-bottom: 8px;
-                font-size: 10.5pt;
+                margin-bottom: ${isMobile ? '6px' : '8px'};
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #555;
                 position: relative;
                 padding-left: 15px;
@@ -1732,22 +1760,35 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             .language-item {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 8px;
-                font-size: 10.5pt;
+                margin-bottom: ${isMobile ? '6px' : '8px'};
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #555;
             }
             
-            /* Signature Section */
-            .signature-section {
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #e0e0e0;
-                text-align: right;
+            /* Mobile-specific styles */
+            @media (max-width: 768px) {
+                body {
+                    padding: 8mm 10mm;
+                }
+                
+                .header-section {
+                    flex-direction: column;
+                    text-align: center;
+                }
+                
+                .contact-elegant {
+                    flex-direction: column;
+                    align-items: center;
+                }
+                
+                .two-column-section {
+                    grid-template-columns: 1fr;
+                }
             }
             
             @media print {
                 body {
-                    padding: 15mm 20mm;
+                    padding: ${isMobile ? '8mm 10mm' : '15mm 20mm'};
                 }
                 .resume-container {
                     min-height: 267mm;
@@ -1770,7 +1811,6 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
         return phone;
     }
 
-    // Processar informações de contato
     const contactItems = [];
     
     if (data.personal.phone) {
@@ -1828,6 +1868,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
         <html>
         <head>
             <meta charset="UTF-8">
+            ${viewportMeta}
             <link href="https://fonts.googleapis.com/css2?family=Georgia&display=swap" rel="stylesheet">
             ${styles}
         </head>
@@ -1864,7 +1905,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
 
                 <!-- Main Content -->
                 <div class="main-content">
-                    <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
+                    <!-- Profile Section -->
                     ${data.objective ? `
                     <div class="section">
                         <h2 class="section-title">Sobre mim</h2>
@@ -1940,10 +1981,10 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
 }
 
 // =========================
-// TEMPLATE 3: MINIMALISTA 
+// TEMPLATE 3: MINIMALISTA
 // =========================
 
-function generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+function generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
     const primaryColor = color || '#2c2c2c';
     const accentColor = '#000000';
     const subtleColor = '#a8a8a8';
@@ -1961,11 +2002,11 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
                 background: #fefefe; 
                 color: #2c2c2c; 
                 line-height: 1.5; 
-                padding: 15mm 20mm; 
+                padding: ${isMobile ? '8mm 12mm' : '15mm 20mm'}; 
                 width: 210mm; 
                 min-height: 297mm; 
                 margin: 0 auto; 
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 font-weight: 300;
             }
             
@@ -1979,18 +2020,20 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             /* Header */
             .header-standard {
                 display: grid;
-                grid-template-columns: auto 1fr;
-                gap: 25px;
-                align-items: start;
-                margin-bottom: 30px;
-                padding-bottom: 25px;
+                grid-template-columns: ${isMobile ? '1fr' : 'auto 1fr'};
+                gap: ${isMobile ? '20px' : '25px'};
+                align-items: ${isMobile ? 'center' : 'start'};
+                margin-bottom: ${isMobile ? '25px' : '30px'};
+                padding-bottom: ${isMobile ? '20px' : '25px'};
                 border-bottom: 1px solid #e8e8e8;
+                ${isMobile ? 'text-align: center;' : ''}
             }
             
             /* Photo Section */
             .photo-section {
-                width: 120px;
-                height: 120px;
+                width: ${isMobile ? '100px' : '120px'};
+                height: ${isMobile ? '100px' : '120px'};
+                ${isMobile ? 'margin: 0 auto;' : ''}
             }
             
             .photo-container {
@@ -2011,10 +2054,11 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             
             .header-content {
                 flex: 1;
+                ${isMobile ? 'text-align: center;' : ''}
             }
             
             .name-standard {
-                font-size: 28px;
+                font-size: ${isMobile ? '24px' : '28px'};
                 font-weight: 600;
                 color: ${primaryColor};
                 margin-bottom: 8px;
@@ -2023,9 +2067,9 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             
             .contact-standard {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: 8px;
-                font-size: 10pt;
+                grid-template-columns: ${isMobile ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))'};
+                gap: ${isMobile ? '10px' : '8px'};
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: ${subtleColor};
                 margin-top: 10px;
             }
@@ -2034,6 +2078,7 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
                 display: flex;
                 align-items: center;
                 gap: 6px;
+                ${isMobile ? 'justify-content: center;' : ''}
             }
             
             .contact-icon {
@@ -2045,20 +2090,20 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             /* Standard Layout */
             .standard-layout {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
+                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
+                gap: ${isMobile ? '25px' : '30px'};
             }
             
             /* Section Styling */
             .section {
-                margin-bottom: 25px;
+                margin-bottom: ${isMobile ? '20px' : '25px'};
             }
             
             .section-title {
-                font-size: 12px;
+                font-size: ${isMobile ? '13px' : '12px'};
                 font-weight: 600;
                 color: ${primaryColor};
-                margin-bottom: 15px;
+                margin-bottom: ${isMobile ? '12px' : '15px'};
                 text-transform: uppercase;
                 letter-spacing: 1.2px;
                 padding-bottom: 6px;
@@ -2072,7 +2117,7 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             }
             
             .profile-text {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 line-height: 1.6;
                 color: #555;
                 text-align: justify;
@@ -2080,8 +2125,8 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Experience Section */
             .experience-item {
-                margin-bottom: 18px;
-                padding-bottom: 15px;
+                margin-bottom: ${isMobile ? '15px' : '18px'};
+                padding-bottom: ${isMobile ? '12px' : '15px'};
                 border-bottom: 1px solid #f5f5f5;
             }
             
@@ -2094,29 +2139,30 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             .experience-header {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
                 margin-bottom: 6px;
+                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
             }
             
             .experience-title {
                 font-weight: 600;
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 color: ${primaryColor};
                 margin-bottom: 3px;
             }
             
             .experience-company {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: ${accentColor};
                 margin-bottom: 4px;
                 font-weight: 500;
             }
             
             .experience-period {
-                font-size: 9pt;
+                font-size: ${isMobile ? '10pt' : '9pt'};
                 color: ${subtleColor};
                 font-weight: 400;
-                white-space: nowrap;
+                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
                 background: #f8f8f8;
                 padding: 3px 8px;
                 border-radius: 4px;
@@ -2124,15 +2170,15 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             
             .experience-description {
                 color: #666;
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 line-height: 1.5;
                 margin-top: 4px;
             }
             
             /* Education Section */
             .education-item {
-                margin-bottom: 15px;
-                padding-bottom: 12px;
+                margin-bottom: ${isMobile ? '12px' : '15px'};
+                padding-bottom: ${isMobile ? '10px' : '12px'};
                 border-bottom: 1px solid #f5f5f5;
             }
             
@@ -2142,19 +2188,19 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             
             .education-degree {
                 font-weight: 600;
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: ${primaryColor};
                 margin-bottom: 3px;
             }
             
             .education-school {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: ${accentColor};
                 margin-bottom: 3px;
             }
             
             .education-period {
-                font-size: 9pt;
+                font-size: ${isMobile ? '10pt' : '9pt'};
                 color: ${subtleColor};
             }
             
@@ -2171,7 +2217,7 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
                 color: ${accentColor};
                 padding: 4px 10px;
                 border-radius: 12px;
-                font-size: 9.5pt;
+                font-size: ${isMobile ? '10.5pt' : '9.5pt'};
                 border: 1px solid ${accentColor}30;
                 font-weight: 400;
             }
@@ -2180,10 +2226,10 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             .language-item {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 8px;
+                margin-bottom: ${isMobile ? '6px' : '8px'};
                 padding: 6px 0;
                 border-bottom: 1px dashed #f0f0f0;
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #666;
             }
             
@@ -2191,9 +2237,29 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
                 border-bottom: none;
             }
             
+            /* Mobile-specific styles */
+            @media (max-width: 768px) {
+                body {
+                    padding: 6mm 8mm;
+                }
+                
+                .header-standard {
+                    grid-template-columns: 1fr;
+                    text-align: center;
+                }
+                
+                .standard-layout {
+                    grid-template-columns: 1fr;
+                }
+                
+                .contact-standard {
+                    grid-template-columns: 1fr;
+                }
+            }
+            
             @media print {
                 body {
-                    padding: 10mm 15mm;
+                    padding: ${isMobile ? '6mm 8mm' : '10mm 15mm'};
                 }
                 .resume-container {
                     min-height: 277mm;
@@ -2272,6 +2338,7 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
         <html>
         <head>
             <meta charset="UTF-8">
+            ${viewportMeta}
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
             ${styles}
         </head>
@@ -2308,7 +2375,7 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
 
                 <!-- Standard Layout -->
                 <div class="standard-layout">
-                    <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
+                    <!-- Profile Section -->
                     ${data.objective ? `
                     <div class="section profile-section">
                         <h2 class="section-title">Sobre mim</h2>
@@ -2383,10 +2450,10 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
 }
 
 // ======================
-// TEMPLATE 4: ELEGANTE 
+// TEMPLATE 4: ELEGANTE
 // ======================
 
-function generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+function generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
     const primaryColor = color || '#2c3e50';
     const goldColor = '#000000';
 
@@ -2403,11 +2470,11 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 background: #fefefe; 
                 color: #2c3e50; 
                 line-height: 1.6; 
-                padding: 15mm 20mm; 
+                padding: ${isMobile ? '8mm 12mm' : '15mm 20mm'}; 
                 width: 210mm; 
                 min-height: 297mm; 
                 margin: 0 auto; 
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 background-image: linear-gradient(to bottom, #fefefe 0%, #f8f9fa 100%);
             }
             
@@ -2423,7 +2490,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Header */
             .header-elegant {
-                padding: 35px 40px 25px;
+                padding: ${isMobile ? '25px 25px 15px' : '35px 40px 25px'};
                 border-bottom: 3px double ${goldColor};
                 position: relative;
                 background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%);
@@ -2434,10 +2501,11 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 justify-content: space-between;
                 align-items: flex-end;
                 margin-bottom: 15px;
+                ${isMobile ? 'flex-direction: column; align-items: center; text-align: center; gap: 15px;' : ''}
             }
             
             .name {
-                font-size: 42px;
+                font-size: ${isMobile ? '32px' : '42px'};
                 font-weight: 400;
                 color: ${primaryColor};
                 letter-spacing: 1.5px;
@@ -2448,12 +2516,13 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             .contact-elegant {
                 display: flex;
-                justify-content: space-between;
+                justify-content: ${isMobile ? 'center' : 'space-between'};
                 flex-wrap: wrap;
-                gap: 15px;
-                font-size: 10.5pt;
+                gap: ${isMobile ? '12px' : '15px'};
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #7f8c8d;
                 margin-top: 10px;
+                ${isMobile ? 'flex-direction: column; align-items: center;' : ''}
             }
             
             .contact-item {
@@ -2471,16 +2540,17 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             /* Main Content Layout */
             .main-content {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
                 gap: 0;
             }
             
             /* Left Column - Photo and Personal Info */
             .left-column {
-                padding: 30px;
+                padding: ${isMobile ? '20px' : '30px'};
                 background: #fcfcfc;
-                border-right: 1px solid #f0f0f0;
+                ${isMobile ? '' : 'border-right: 1px solid #f0f0f0;'}
                 position: relative;
+                ${isMobile ? 'order: 2;' : ''}
             }
             
             .left-column::after {
@@ -2491,16 +2561,17 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 height: 100%;
                 width: 1px;
                 background: linear-gradient(to bottom, transparent, ${goldColor}, transparent);
+                ${isMobile ? 'display: none;' : ''}
             }
             
             .photo-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
                 text-align: center;
             }
             
             .photo-container {
-                width: 180px;
-                height: 180px;
+                width: ${isMobile ? '140px' : '180px'};
+                height: ${isMobile ? '140px' : '180px'};
                 margin: 0 auto;
                 border-radius: 50%;
                 overflow: hidden;
@@ -2517,14 +2588,14 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Profile Section */
             .profile-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .section-title {
-                font-size: 16px;
+                font-size: ${isMobile ? '15px' : '16px'};
                 font-weight: 600;
                 color: ${primaryColor};
-                margin-bottom: 15px;
+                margin-bottom: ${isMobile ? '12px' : '15px'};
                 text-transform: uppercase;
                 letter-spacing: 2px;
                 position: relative;
@@ -2542,7 +2613,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             }
             
             .profile-text {
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 line-height: 1.7;
                 color: #555;
                 text-align: justify;
@@ -2551,7 +2622,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Skills Section */
             .skills-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .skills-list {
@@ -2560,10 +2631,10 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             }
             
             .skill-item {
-                margin-bottom: 10px;
+                margin-bottom: ${isMobile ? '8px' : '10px'};
                 padding-left: 20px;
                 position: relative;
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #555;
                 font-family: 'Source Sans Pro', sans-serif;
             }
@@ -2578,7 +2649,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Languages Section */
             .languages-section {
-                margin-bottom: 20px;
+                margin-bottom: ${isMobile ? '15px' : '20px'};
             }
             
             .languages-list {
@@ -2589,25 +2660,26 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             .language-item {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 8px;
-                font-size: 10.5pt;
+                margin-bottom: ${isMobile ? '6px' : '8px'};
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #555;
                 font-family: 'Source Sans Pro', sans-serif;
             }
             
             /* Right Column - Professional Experience */
             .right-column {
-                padding: 30px;
+                padding: ${isMobile ? '20px' : '30px'};
+                ${isMobile ? 'order: 1;' : ''}
             }
             
             /* Experience Section */
             .experience-section {
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
             
             .experience-item {
-                margin-bottom: 25px;
-                padding-bottom: 20px;
+                margin-bottom: ${isMobile ? '20px' : '25px'};
+                padding-bottom: ${isMobile ? '15px' : '20px'};
                 border-bottom: 1px solid #f0f0f0;
                 position: relative;
             }
@@ -2619,20 +2691,21 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             .experience-header {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
                 margin-bottom: 8px;
+                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
             }
             
             .experience-title {
                 font-weight: 600;
-                font-size: 12pt;
+                font-size: ${isMobile ? '13pt' : '12pt'};
                 color: #222;
                 margin-bottom: 3px;
                 font-family: 'Source Sans Pro', sans-serif;
             }
             
             .experience-company {
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 color: ${primaryColor};
                 margin-bottom: 5px;
                 font-weight: 500;
@@ -2640,10 +2713,10 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             }
             
             .experience-period {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #7f8c8d;
                 font-weight: 400;
-                white-space: nowrap;
+                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
                 background: #f8f9fa;
                 padding: 3px 8px;
                 border-radius: 3px;
@@ -2652,7 +2725,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             .experience-description {
                 color: #555;
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 line-height: 1.6;
                 text-align: justify;
                 font-family: 'Source Sans Pro', sans-serif;
@@ -2660,12 +2733,12 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             /* Education Section */
             .education-section {
-                margin-bottom: 25px;
+                margin-bottom: ${isMobile ? '20px' : '25px'};
             }
             
             .education-item {
-                margin-bottom: 20px;
-                padding-bottom: 15px;
+                margin-bottom: ${isMobile ? '15px' : '20px'};
+                padding-bottom: ${isMobile ? '12px' : '15px'};
                 border-bottom: 1px solid #f0f0f0;
             }
             
@@ -2675,49 +2748,58 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             .education-degree {
                 font-weight: 600;
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 color: #222;
                 margin-bottom: 3px;
                 font-family: 'Source Sans Pro', sans-serif;
             }
             
             .education-school {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: ${primaryColor};
                 margin-bottom: 3px;
                 font-style: italic;
             }
             
             .education-period {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #7f8c8d;
                 font-style: italic;
             }
             
-            /* Decorative Elements */
-            .ornament {
-                position: absolute;
-                width: 80px;
-                height: 80px;
-                opacity: 0.05;
-                pointer-events: none;
-            }
-            
-            .ornament-1 {
-                top: 20px;
-                right: 20px;
-                background: radial-gradient(circle, ${primaryColor} 0%, transparent 70%);
-            }
-            
-            .ornament-2 {
-                bottom: 20px;
-                left: 20px;
-                background: radial-gradient(circle, ${goldColor} 0%, transparent 70%);
+            /* Mobile-specific styles */
+            @media (max-width: 768px) {
+                body {
+                    padding: 6mm 8mm;
+                }
+                
+                .resume-container {
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                }
+                
+                .main-content {
+                    grid-template-columns: 1fr;
+                }
+                
+                .left-column, .right-column {
+                    padding: 15px;
+                }
+                
+                .name-title-container {
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                }
+                
+                .contact-elegant {
+                    flex-direction: column;
+                    align-items: center;
+                }
             }
             
             @media print {
                 body {
-                    padding: 10mm 15mm;
+                    padding: ${isMobile ? '6mm 8mm' : '10mm 15mm'};
                     background: white;
                 }
                 .resume-container {
@@ -2801,15 +2883,12 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
         <html>
         <head>
             <meta charset="UTF-8">
+            ${viewportMeta}
             <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
             ${styles}
         </head>
         <body>
             <div class="resume-container">
-                <!-- Decorative Elements -->
-                <div class="ornament ornament-1"></div>
-                <div class="ornament ornament-2"></div>
-                
                 <!-- Elegant Header -->
                 <div class="header-elegant">
                     <div class="name-title-container">
@@ -2844,7 +2923,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                         </div>
                         `}
 
-                        <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
+                        <!-- Profile Section -->
                         ${data.objective ? `
                         <div class="profile-section">
                             <h2 class="section-title">Sobre mim</h2>
@@ -2925,10 +3004,10 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
 }
 
 // ==========================
-// TEMPLATE 5: PROFISSIONAL 
+// TEMPLATE 5: PROFISSIONAL
 // ==========================
 
-function generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+function generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
     const primaryColor = color || '#7c3aed';
     const accentColor = secondaryColor || '#5b21b6';
     const neutralColor = '#6d28d9';
@@ -2946,11 +3025,11 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 background: #ffffff; 
                 color: #1f2937; 
                 line-height: 1.5; 
-                padding: 15mm 20mm; 
+                padding: ${isMobile ? '8mm 12mm' : '15mm 20mm'}; 
                 width: 210mm; 
                 min-height: 297mm; 
                 margin: 0 auto; 
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
             }
             
             .resume-container { 
@@ -2963,24 +3042,25 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             
             /* Professional Header */
             .header-professional {
-                padding: 35px 0 25px;
+                padding: ${isMobile ? '25px 0 15px' : '35px 0 25px'};
                 border-bottom: 3px solid ${primaryColor};
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '25px' : '30px'};
                 position: relative;
             }
             
             .header-content {
                 display: grid;
-                grid-template-columns: 1fr auto 1fr;
-                gap: 30px;
+                grid-template-columns: ${isMobile ? '1fr' : '1fr auto 1fr'};
+                gap: ${isMobile ? '20px' : '30px'};
                 align-items: center;
-                margin-bottom: 20px;
+                margin-bottom: ${isMobile ? '15px' : '20px'};
+                ${isMobile ? 'text-align: center;' : ''}
             }
             
             .contact-info {
                 display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
+                grid-template-columns: ${isMobile ? '1fr 1fr' : 'repeat(4, 1fr)'};
+                gap: ${isMobile ? '15px' : '20px'};
                 text-align: center;
             }
             
@@ -2989,17 +3069,18 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             }
             
             .photo-section {
-                text-align: right;
+                ${isMobile ? 'order: -1; text-align: center; margin-bottom: 15px;' : 'text-align: right;'}
             }
             
             .photo-container {
-                width: 120px;
-                height: 120px;
+                width: ${isMobile ? '100px' : '120px'};
+                height: ${isMobile ? '100px' : '120px'};
                 border-radius: 50%;
                 overflow: hidden;
                 border: 3px solid ${primaryColor};
                 background: white;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                ${isMobile ? 'margin: 0 auto;' : ''}
             }
             
             .photo {
@@ -3009,7 +3090,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             }
             
             .name {
-                font-size: 32px;
+                font-size: ${isMobile ? '26px' : '32px'};
                 font-weight: 700;
                 color: ${primaryColor};
                 margin-bottom: 10px;
@@ -3021,7 +3102,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 flex-direction: column;
                 align-items: center;
                 gap: 5px;
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #6b7280;
             }
             
@@ -3033,7 +3114,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             }
             
             .contact-label {
-                font-size: 9pt;
+                font-size: ${isMobile ? '10pt' : '9pt'};
                 color: #9ca3af;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
@@ -3046,20 +3127,20 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             /* Main Content */
             .main-content {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 35px;
+                grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
+                gap: ${isMobile ? '25px' : '35px'};
             }
             
             /* Sections */
             .section {
-                margin-bottom: 25px;
+                margin-bottom: ${isMobile ? '20px' : '25px'};
             }
             
             .section-title {
-                font-size: 13px;
+                font-size: ${isMobile ? '14px' : '13px'};
                 font-weight: 700;
                 color: ${primaryColor};
-                margin-bottom: 15px;
+                margin-bottom: ${isMobile ? '12px' : '15px'};
                 text-transform: uppercase;
                 letter-spacing: 1.5px;
                 padding-bottom: 8px;
@@ -3079,7 +3160,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             
             /* Profile Section */
             .profile-text {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 line-height: 1.6;
                 color: #4b5563;
                 text-align: justify;
@@ -3090,12 +3171,12 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 list-style: none;
                 padding: 0;
                 display: grid;
-                gap: 8px;
+                gap: ${isMobile ? '10px' : '8px'};
             }
             
             .skill-item {
-                padding: 8px 0;
-                font-size: 10.5pt;
+                padding: ${isMobile ? '10px 0' : '8px 0'};
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #4b5563;
                 position: relative;
                 padding-left: 15px;
@@ -3123,9 +3204,9 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             .language-item {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 8px;
-                padding: 8px 0;
-                font-size: 10.5pt;
+                margin-bottom: ${isMobile ? '10px' : '8px'};
+                padding: ${isMobile ? '10px 0' : '8px 0'};
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: #4b5563;
                 border-bottom: 1px solid #f3f4f6;
             }
@@ -3141,8 +3222,8 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             
             /* Experience Section - Clean Style */
             .experience-item {
-                margin-bottom: 22px;
-                padding-bottom: 20px;
+                margin-bottom: ${isMobile ? '18px' : '22px'};
+                padding-bottom: ${isMobile ? '15px' : '20px'};
                 border-bottom: 1px solid #f3f4f6;
             }
             
@@ -3155,40 +3236,41 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             .experience-header {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
                 margin-bottom: 8px;
+                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
             }
             
             .experience-title {
                 font-weight: 700;
-                font-size: 11.5pt;
+                font-size: ${isMobile ? '12.5pt' : '11.5pt'};
                 color: #1f2937;
                 margin-bottom: 4px;
             }
             
             .experience-company {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: ${primaryColor};
                 font-weight: 600;
             }
             
             .experience-period {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #6b7280;
                 font-weight: 500;
-                white-space: nowrap;
+                ${isMobile ? 'align-self: flex-start;' : 'white-space: nowrap;'}
             }
             
             .experience-description {
                 color: #4b5563;
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 line-height: 1.6;
             }
             
             /* Education Section - Clean Style */
             .education-item {
-                margin-bottom: 18px;
-                padding-bottom: 15px;
+                margin-bottom: ${isMobile ? '15px' : '18px'};
+                padding-bottom: ${isMobile ? '12px' : '15px'};
                 border-bottom: 1px solid #f3f4f6;
             }
             
@@ -3200,39 +3282,46 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             
             .education-degree {
                 font-weight: 700;
-                font-size: 11pt;
+                font-size: ${isMobile ? '12pt' : '11pt'};
                 color: #1f2937;
                 margin-bottom: 4px;
             }
             
             .education-school {
-                font-size: 10.5pt;
+                font-size: ${isMobile ? '11.5pt' : '10.5pt'};
                 color: ${primaryColor};
                 margin-bottom: 4px;
                 font-weight: 600;
             }
             
             .education-period {
-                font-size: 10pt;
+                font-size: ${isMobile ? '11pt' : '10pt'};
                 color: #6b7280;
                 font-style: italic;
             }
             
-            /* Professional Summary */
-            .summary-section {
-                padding: 0;
-                margin-bottom: 25px;
-            }
-            
-            .summary-text {
-                font-size: 10.5pt;
-                line-height: 1.6;
-                color: #4b5563;
+            /* Mobile-specific styles */
+            @media (max-width: 768px) {
+                body {
+                    padding: 6mm 8mm;
+                }
+                
+                .header-content {
+                    grid-template-columns: 1fr;
+                }
+                
+                .contact-info {
+                    grid-template-columns: 1fr;
+                }
+                
+                .main-content {
+                    grid-template-columns: 1fr;
+                }
             }
             
             @media print {
                 body {
-                    padding: 10mm 15mm;
+                    padding: ${isMobile ? '6mm 8mm' : '10mm 15mm'};
                 }
             }
         </style>
@@ -3320,6 +3409,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
         <html>
         <head>
             <meta charset="UTF-8">
+            ${viewportMeta}
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
             ${styles}
         </head>
@@ -3328,7 +3418,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 <!-- Professional Header -->
                 <div class="header-professional">
                     <div class="header-content">
-                        <div></div> <!-- Espaço vazio à esquerda -->
+                        ${isMobile ? '' : '<div></div>'} <!-- Espaço vazio à esquerda -->
                         
                         <div class="name-title">
                             <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
@@ -3453,33 +3543,6 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                                         e excelência operacional.
                                     </div>
                                 </div>
-                                <div class="experience-item">
-                                    <div class="experience-header">
-                                        <div>
-                                            <div class="experience-title">Coordenador de Operações</div>
-                                            <div class="experience-company">Consultoria Empresarial</div>
-                                        </div>
-                                        <div class="experience-period">2018 – 2020</div>
-                                    </div>
-                                    <div class="experience-description">
-                                        Coordenação de operações e implementação de melhorias contínuas 
-                                        nos processos organizacionais, resultando em aumento de 
-                                        eficiência e produtividade.
-                                    </div>
-                                </div>
-                                <div class="experience-item">
-                                    <div class="experience-header">
-                                        <div>
-                                            <div class="experience-title">Analista Sênior</div>
-                                            <div class="experience-company">Organização Reconhecida</div>
-                                        </div>
-                                        <div class="experience-period">2016 – 2018</div>
-                                    </div>
-                                    <div class="experience-description">
-                                        Análise de dados e desenvolvimento de recomendações estratégicas 
-                                        para melhorias de processos e eficiência operacional.
-                                    </div>
-                                </div>
                             `}
                         </div>
 
@@ -3498,11 +3561,6 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                                     <div class="education-school">Instituição de Ensino Superior</div>
                                     <div class="education-period">2018 – 2020</div>
                                 </div>
-                                <div class="education-item">
-                                    <div class="education-degree">Bacharelado em Administração</div>
-                                    <div class="education-school">Universidade Federal</div>
-                                    <div class="education-period">2012 – 2016</div>
-                                </div>
                             `}
                         </div>
                     </div>
@@ -3516,10 +3574,10 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
 }
 
 // ======================
-// TEMPLATE 6: CRIATIVO 
+// TEMPLATE 6: CRIATIVO
 // ======================
 
-function generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML) {
+function generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML, isMobile = false, viewportMeta = '') {
     const primaryColor = color || '#191919';
     const accentColor = '#000000';
 
@@ -3546,7 +3604,7 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
                 width: 100%; 
                 margin: 0 auto; 
                 display: grid;
-                grid-template-columns: 40% 60%;
+                grid-template-columns: ${isMobile ? '1fr' : '40% 60%'};
                 min-height: 297mm;
                 background: white;
                 border: 1px solid #efefef;
@@ -3557,20 +3615,21 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
             .sidebar {
                 background: ${primaryColor};
                 color: #fff;
-                padding: 50px 36px;
+                padding: ${isMobile ? '30px 20px' : '50px 36px'};
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
                 align-items: flex-start;
                 position: relative;
                 overflow: hidden;
+                ${isMobile ? 'order: 2;' : ''}
             }
 
             .photo-container {
                 text-align: center;
-                margin: 25px 0 35px 0;
-                width: 160px;
-                height: 160px;
+                margin: ${isMobile ? '20px 0 25px 0' : '25px 0 35px 0'};
+                width: ${isMobile ? '120px' : '160px'};
+                height: ${isMobile ? '120px' : '160px'};
                 border-radius: 50%;
                 border: 2px solid #fff;
                 overflow: hidden;
@@ -3587,26 +3646,26 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
             /* Contato */
             .contact-section {
                 width: 100%;
-                margin-bottom: 30px;
+                margin-bottom: ${isMobile ? '20px' : '30px'};
             }
 
             .section-title {
-                font-size: 14px;
+                font-size: ${isMobile ? '13px' : '14px'};
                 font-weight: 700;
                 color: ${accentColor};
                 text-transform: uppercase;
                 letter-spacing: 2px;
                 border-bottom: 2px solid ${accentColor};
                 padding-bottom: 6px;
-                margin-bottom: 14px;
+                margin-bottom: ${isMobile ? '12px' : '14px'};
             }
 
             .contact-item {
                 display: flex;
                 align-items: flex-start;
                 gap: 10px;
-                margin-bottom: 12px;
-                font-size: 14px;
+                margin-bottom: ${isMobile ? '10px' : '12px'};
+                font-size: ${isMobile ? '13px' : '14px'};
                 color: rgba(255,255,255,0.95);
             }
 
@@ -3630,9 +3689,9 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
             }
 
             .skill-item, .language-item {
-                font-size: 14px;
+                font-size: ${isMobile ? '13px' : '14px'};
                 color: rgba(255,255,255,0.95);
-                margin-bottom: 8px;
+                margin-bottom: ${isMobile ? '6px' : '8px'};
                 position: relative;
                 padding-left: 14px;
             }
@@ -3657,22 +3716,23 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
 
             .language-level {
                 color: rgba(255,255,255,0.8);
-                font-size: 12px;
+                font-size: ${isMobile ? '11px' : '12px'};
             }
 
             /* Conteúdo principal (direita) */
             .main-content {
-                padding: 50px 44px;
+                padding: ${isMobile ? '30px 25px' : '50px 44px'};
                 background: white;
                 color: #222;
+                ${isMobile ? 'order: 1;' : ''}
             }
 
             .section {
-                margin-bottom: 28px;
+                margin-bottom: ${isMobile ? '20px' : '28px'};
             }
 
             .main-title {
-                font-size: 28px;
+                font-size: ${isMobile ? '24px' : '28px'};
                 font-weight: 700;
                 color: ${accentColor};
                 text-transform: uppercase;
@@ -3681,7 +3741,7 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
             }
 
             .about-text {
-                font-size: 14px;
+                font-size: ${isMobile ? '13px' : '14px'};
                 color: #555;
                 text-align: justify;
                 line-height: 1.6;
@@ -3689,21 +3749,22 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
 
             /* Experiência */
             .experience-item {
-                margin-bottom: 22px;
+                margin-bottom: ${isMobile ? '18px' : '22px'};
                 border-bottom: 1px solid #efefef;
-                padding-bottom: 12px;
+                padding-bottom: ${isMobile ? '10px' : '12px'};
             }
 
             .experience-header {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: ${isMobile ? 'flex-start' : 'flex-start'};
                 margin-bottom: 6px;
+                ${isMobile ? 'flex-direction: column; gap: 5px;' : ''}
             }
 
             .experience-title {
                 font-weight: 700;
-                font-size: 15px;
+                font-size: ${isMobile ? '14px' : '15px'};
                 color: #222;
             }
 
@@ -3711,18 +3772,19 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
                 font-weight: 600;
                 color: ${accentColor};
                 margin-top: 2px;
-                font-size: 14px;
+                font-size: ${isMobile ? '13px' : '14px'};
             }
 
             .experience-period {
-                font-size: 13px;
+                font-size: ${isMobile ? '12px' : '13px'};
                 color: ${accentColor};
                 font-weight: 600;
+                ${isMobile ? 'align-self: flex-start;' : ''}
             }
 
             .experience-description {
                 color: #555;
-                font-size: 13.5px;
+                font-size: ${isMobile ? '12.5px' : '13.5px'};
                 line-height: 1.6;
                 text-align: justify;
                 margin-top: 6px;
@@ -3730,25 +3792,40 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
 
             /* Formação */
             .education-item {
-                margin-bottom: 16px;
+                margin-bottom: ${isMobile ? '12px' : '16px'};
             }
 
             .education-degree {
                 font-weight: 600;
                 color: #222;
-                font-size: 14px;
+                font-size: ${isMobile ? '13px' : '14px'};
                 margin-bottom: 2px;
             }
 
             .education-school {
-                font-size: 13.5px;
+                font-size: ${isMobile ? '12.5px' : '13.5px'};
                 color: ${accentColor};
             }
 
             .education-period {
-                font-size: 12.5px;
+                font-size: ${isMobile ? '11.5px' : '12.5px'};
                 color: #666;
                 font-style: italic;
+            }
+
+            /* Mobile-specific styles */
+            @media (max-width: 768px) {
+                .resume-container {
+                    grid-template-columns: 1fr;
+                }
+                
+                .sidebar, .main-content {
+                    padding: 20px 15px;
+                }
+                
+                .main-title {
+                    font-size: 22px;
+                }
             }
 
             @media print {
@@ -3828,6 +3905,7 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
         <html>
         <head>
             <meta charset="UTF-8">
+            ${viewportMeta}
             <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
             ${styles}
         </head>
@@ -3883,7 +3961,7 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
                 <div class="main-content">
                     <div class="main-title">${fullName}</div>
 
-                    <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre Mim" -->
+                    <!-- Profile Section -->
                     ${data.objective ? `
                         <div class="section">
                             <div class="section-title">Sobre Mim</div>
@@ -4077,6 +4155,52 @@ function initializePreviewHandlers() {
     setTimeout(updatePreview, 500);
 }
 
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function getMobileScale() {
+    return isMobileDevice() ? 1.5 : 2;
+}
+
+function getMobileDimensions() {
+    if (isMobileDevice()) {
+        return {
+            width: 375, // Largura mais adequada para mobile
+            height: 667
+        };
+    }
+    return {
+        width: 794,
+        height: 1123
+    };
+}
+
+function getMobileOptimizedStyles() {
+    if (!isMobileDevice()) return '';
+    
+    return `
+        <style>
+            @media (max-width: 768px) {
+                body {
+                    font-size: 14px !important;
+                    line-height: 1.4 !important;
+                }
+                .resume-container {
+                    padding: 10px !important;
+                }
+                .section-title {
+                    font-size: 16px !important;
+                }
+                .photo-container {
+                    width: 120px !important;
+                    height: 120px !important;
+                }
+            }
+        </style>
+    `;
+}
+
 // ================================================
 // FUNÇÃO PRINCIPAL PARA GERAR CURRÍCULO
 // ================================================
@@ -4142,46 +4266,62 @@ async function downloadPDF(encodedHTML, fileName) {
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
         const { jsPDF } = window.jspdf;
 
-        // Criar container temporário
+        // Configurações para mobile
+        const isMobile = isMobileDevice();
+        const dimensions = getMobileDimensions();
+        const scale = getMobileScale();
+
+        // Criar container temporário com dimensões responsivas
         const tempContainer = document.createElement('div');
         tempContainer.style.cssText = `
             position: fixed;
             left: -9999px;
             top: 0;
-            width: 794px;
-            min-height: 1123px;
+            width: ${dimensions.width}px;
+            min-height: ${dimensions.height}px;
             background: white;
-            padding: 40px;
+            padding: ${isMobile ? '20px' : '40px'};
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
+            transform: ${isMobile ? 'scale(1)' : 'none'};
+            transform-origin: top left;
         `;
 
         tempContainer.innerHTML = templateHTML;
         document.body.appendChild(tempContainer);
 
-        // CORREÇÃO: Aguardar carregamento das imagens
+        // Aguardar carregamento das imagens
         await waitForImages(tempContainer);
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // CORREÇÃO: Configurações otimizadas do html2canvas
         const canvas = await html2canvas(tempContainer, {
-            scale: 2,
+            scale: scale,
             useCORS: true,
             allowTaint: true,
             logging: false,
             backgroundColor: '#ffffff',
-            width: 794,
+            width: dimensions.width,
             height: tempContainer.scrollHeight,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: dimensions.width,
+            windowHeight: tempContainer.scrollHeight,
             onclone: function (clonedDoc, element) {
-                // CORREÇÃO: Otimizar imagens no clone
+                // Otimizar para mobile
+                if (isMobile) {
+                    element.style.width = dimensions.width + 'px';
+                    element.style.overflow = 'hidden';
+                }
+                
                 const images = element.querySelectorAll('img');
                 images.forEach(img => {
                     if (img.src.startsWith('data:')) {
-                        // Data URLs não precisam de crossOrigin
                         img.removeAttribute('crossorigin');
-                        // Forçar object-fit
                         img.style.objectFit = 'cover';
                         img.style.objectPosition = 'center center';
+                        // Garantir que imagens não ultrapassem o container
+                        img.style.maxWidth = '100%';
+                        img.style.height = 'auto';
                     }
                 });
             }
@@ -4199,7 +4339,6 @@ async function downloadPDF(encodedHTML, fileName) {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        // CORREÇÃO: Usar PNG para manter qualidade com fotos
         const imgData = canvas.toDataURL('image/png', 1.0);
 
         // Calcular dimensões mantendo proporção
@@ -4210,13 +4349,11 @@ async function downloadPDF(encodedHTML, fileName) {
         let finalWidth = pdfWidth;
         let finalHeight = pdfWidth / ratio;
 
-        // Se a altura for maior que a página, ajustar
         if (finalHeight > pdfHeight) {
             finalHeight = pdfHeight;
             finalWidth = pdfHeight * ratio;
         }
 
-        // Centralizar no PDF
         const x = (pdfWidth - finalWidth) / 2;
         const y = (pdfHeight - finalHeight) / 2;
 
@@ -4238,61 +4375,58 @@ async function downloadJPG(encodedHTML, fileName) {
         showToast('Gerando JPG... Aguarde.', 'info');
 
         const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+        const isMobile = isMobileDevice();
+        const dimensions = getMobileDimensions();
+        const scale = getMobileScale();
 
         const tempContainer = document.createElement('div');
         tempContainer.style.cssText = `
             position: fixed;
             left: -9999px;
             top: 0;
-            width: 794px;
-            min-height: 1123px;
+            width: ${dimensions.width}px;
+            min-height: ${dimensions.height}px;
             background: white;
-            padding: 40px;
+            padding: ${isMobile ? '20px' : '40px'};
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
+            transform: ${isMobile ? 'scale(1)' : 'none'};
+            transform-origin: top left;
         `;
 
         tempContainer.innerHTML = templateHTML;
         document.body.appendChild(tempContainer);
 
-        // CORREÇÃO: Aguardar carregamento
         await waitForImages(tempContainer);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         const canvas = await html2canvas(tempContainer, {
-            scale: 2,
+            scale: scale,
             useCORS: true,
             allowTaint: true,
             logging: false,
             backgroundColor: '#ffffff',
-            width: 794,
+            width: dimensions.width,
             height: tempContainer.scrollHeight,
-            onclone: function (clonedDoc, element) {
-                const images = element.querySelectorAll('img');
-                images.forEach(img => {
-                    if (img.src.startsWith('blob:')) {
-                        img.crossOrigin = 'anonymous';
-                    }
-                });
-            }
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: dimensions.width,
+            windowHeight: tempContainer.scrollHeight
         });
 
         document.body.removeChild(tempContainer);
 
-        // CORREÇÃO: Usar PNG convertido para JPG para manter qualidade
+        // Resto do código permanece igual...
         const pngData = canvas.toDataURL('image/png', 1.0);
 
-        // Converter PNG para JPG
         const jpgCanvas = document.createElement('canvas');
         jpgCanvas.width = canvas.width;
         jpgCanvas.height = canvas.height;
         const ctx = jpgCanvas.getContext('2d');
 
-        // Preencher com fundo branco primeiro
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, jpgCanvas.width, jpgCanvas.height);
 
-        // Desenhar a imagem original
         const img = new Image();
         await new Promise((resolve) => {
             img.onload = resolve;
@@ -4341,7 +4475,7 @@ async function downloadPNG(encodedHTML, fileName) {
         tempContainer.innerHTML = templateHTML;
         document.body.appendChild(tempContainer);
 
-        // CORREÇÃO: Aguardar carregamento
+        // Aguardar carregamento
         await waitForImages(tempContainer);
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -4384,22 +4518,21 @@ async function downloadPNG(encodedHTML, fileName) {
     }
 }
 
-// CORREÇÃO: Função waitForImages melhorada
+// Função waitForImages
 function waitForImages(container) {
     const images = container.querySelectorAll('img');
     const promises = Array.from(images).map(img => {
         return new Promise((resolve) => {
             if (img.complete && img.naturalHeight !== 0) {
-                // Imagem já carregada
+                // Otimizar imagem para mobile
+                if (isMobileDevice()) {
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                }
                 resolve();
             } else if (img.src.startsWith('data:')) {
-                // CORREÇÃO: Data URL - considerar como carregada imediatamente
                 resolve();
-            } else if (img.src.startsWith('blob:')) {
-                // Blob URL - dar um pouco mais de tempo
-                setTimeout(resolve, 500);
             } else {
-                // Esperar carregamento de URL externa
                 let loaded = false;
 
                 const onLoad = () => {
@@ -4407,6 +4540,11 @@ function waitForImages(container) {
                         loaded = true;
                         img.removeEventListener('load', onLoad);
                         img.removeEventListener('error', onError);
+                        // Otimizar após carregar
+                        if (isMobileDevice()) {
+                            img.style.maxWidth = '100%';
+                            img.style.height = 'auto';
+                        }
                         resolve();
                     }
                 };
@@ -4416,15 +4554,13 @@ function waitForImages(container) {
                         loaded = true;
                         img.removeEventListener('load', onLoad);
                         img.removeEventListener('error', onError);
-                        console.warn('Erro ao carregar imagem:', img.src);
-                        resolve(); // Continuar mesmo com erro
+                        resolve();
                     }
                 };
 
                 img.addEventListener('load', onLoad);
                 img.addEventListener('error', onError);
 
-                // Timeout de segurança
                 setTimeout(() => {
                     if (!loaded) {
                         loaded = true;
@@ -4432,7 +4568,7 @@ function waitForImages(container) {
                         img.removeEventListener('error', onError);
                         resolve();
                     }
-                }, 3000);
+                }, isMobileDevice() ? 5000 : 3000);
             }
         });
     });
@@ -4472,62 +4608,6 @@ function optimizeImageElement(img) {
         img.style.objectFit = 'cover';
         img.style.objectPosition = 'center center';
     }
-}
-
-// Função waitForImages melhorada
-function waitForImages(container) {
-    const images = container.querySelectorAll('img');
-    const promises = Array.from(images).map(img => {
-        return new Promise((resolve) => {
-            if (img.complete && img.naturalHeight !== 0) {
-                // Imagem já carregada
-                if (img.naturalWidth === 0) {
-                    // Imagem quebrada, tentar recarregar
-                    img.src = img.src;
-                    setTimeout(resolve, 500);
-                } else {
-                    resolve();
-                }
-            } else {
-                // Esperar carregamento
-                let loaded = false;
-
-                const onLoad = () => {
-                    if (!loaded) {
-                        loaded = true;
-                        img.removeEventListener('load', onLoad);
-                        img.removeEventListener('error', onError);
-                        resolve();
-                    }
-                };
-
-                const onError = () => {
-                    if (!loaded) {
-                        loaded = true;
-                        img.removeEventListener('load', onLoad);
-                        img.removeEventListener('error', onError);
-                        // Continuar mesmo com erro
-                        resolve();
-                    }
-                };
-
-                img.addEventListener('load', onLoad);
-                img.addEventListener('error', onError);
-
-                // Timeout de segurança
-                setTimeout(() => {
-                    if (!loaded) {
-                        loaded = true;
-                        img.removeEventListener('load', onLoad);
-                        img.removeEventListener('error', onError);
-                        resolve();
-                    }
-                }, 3000);
-            }
-        });
-    });
-
-    return Promise.all(promises);
 }
 
 // ================================================
@@ -4622,23 +4702,6 @@ function fixSingleImageAspectRatio(img) {
     // Forçar object-fit: cover para manter a proporção sem distorcer
     img.style.objectFit = 'cover';
     img.style.objectPosition = 'center center';
-}
-
-// Função auxiliar para aguardar o carregamento das imagens
-function waitForImages(container) {
-    const images = container.querySelectorAll('img');
-    const promises = Array.from(images).map(img => {
-        return new Promise((resolve) => {
-            if (img.complete && img.naturalHeight !== 0) {
-                resolve();
-            } else {
-                img.onload = resolve;
-                img.onerror = resolve;
-                setTimeout(resolve, 2000);
-            }
-        });
-    });
-    return Promise.all(promises);
 }
 
 // ============================
