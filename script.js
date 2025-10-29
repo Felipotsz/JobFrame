@@ -201,87 +201,63 @@ function showPDFPreviewModal(templateHTML, data) {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // CONFIGURAÇÃO MELHORADA DO IFRAME
+    // CONFIGURAÇÃO MELHORADA - RESPEITAR TEMPLATES
     setTimeout(() => {
         const iframe = document.getElementById('pdf-preview-iframe');
         if (iframe && iframe.contentDocument) {
             const body = iframe.contentDocument.body;
             const html = iframe.contentDocument.documentElement;
-            
+
             if (body) {
-                // FORÇAR DIMENSÕES CONSISTENTES PARA TODOS OS DISPOSITIVOS
-                html.style.width = '794px';
-                html.style.height = '1123px';
-                html.style.overflow = 'hidden';
+                // APENAS garantir dimensões básicas SEM sobrescrever estilos
                 html.style.margin = '0';
                 html.style.padding = '0';
-                
-                body.style.width = '794px';
-                body.style.minHeight = '1123px';
-                body.style.margin = '0 auto';
-                body.style.padding = '20px';
-                body.style.overflow = 'hidden';
-                body.style.boxSizing = 'border-box';
-                body.style.background = 'white';
-                
-                // GARANTIR QUE AS IMAGENS MANTENHAM QUALIDADE
+
+                // MANTER os estilos originais do template
+                // NÃO forçar width/height específicos
+
+                // Apenas garantir que imagens funcionem bem
                 const images = body.querySelectorAll('img');
                 images.forEach(img => {
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
                     if (img.classList.contains('photo')) {
                         img.style.objectFit = 'cover';
                         img.style.objectPosition = 'center';
                     }
                 });
 
-                // ADICIONAR CSS CRÍTICO PARA CONSISTÊNCIA
+                // CSS CRÍTICO MINIMALISTA
                 const criticalStyles = document.createElement('style');
                 criticalStyles.textContent = `
-                    * {
-                        box-sizing: border-box !important;
-                        max-width: 100% !important;
-                    }
+                    /* Apenas garantias essenciais */
                     body {
-                        width: 794px !important;
-                        min-height: 1123px !important;
-                        max-width: 794px !important;
                         margin: 0 auto !important;
-                        padding: 20px !important;
-                        overflow: hidden !important;
-                        background: white !important;
+                        overflow-x: hidden !important;
                     }
                     .photo, img {
-                        object-fit: cover !important;
-                        object-position: center !important;
                         max-width: 100% !important;
                         height: auto !important;
                     }
-                    .resume-container, .container {
-                        width: 100% !important;
-                        max-width: 794px !important;
-                    }
                 `;
-                
+
                 if (!iframe.contentDocument.head.querySelector('style[data-critical]')) {
                     criticalStyles.setAttribute('data-critical', 'true');
                     iframe.contentDocument.head.appendChild(criticalStyles);
                 }
             }
         }
-    }, 800); // Aumentado para garantir carregamento completo
+    }, 800);
 
     // AGUARDAR MAIS TEMPO E VERIFICAR NOVAMENTE (especialmente para mobile)
     setTimeout(() => {
         const iframe = document.getElementById('pdf-preview-iframe');
         if (iframe && iframe.contentDocument) {
             const body = iframe.contentDocument.body;
-            
+
             // VERIFICAR SE O CONTEÚDO FOI RENDERIZADO CORRETAMENTE
             if (body && body.children.length > 0) {
-                console.log('Iframe carregado com sucesso. Dimensões:', 
+                console.log('Iframe carregado com sucesso. Dimensões:',
                     body.scrollWidth, 'x', body.scrollHeight);
-                
+
                 // FORÇAR REDIMENSIONAMENTO FINAL
                 body.style.width = '794px';
                 body.style.minHeight = '1123px';
@@ -1090,52 +1066,24 @@ const AVAILABLE_TEMPLATES = {
 function generateTemplateHTML(data, template, color, secondaryColor, useGradient) {
     if (!data) return '<div style="padding: 2rem; text-align: center; color: #666;">Preencha os dados do formulário para ver a pré-visualização</div>';
 
-    // CSS FIXO CRÍTICO para consistência máxima
+    // CSS FIXO MINIMALISTA - APENAS para garantir dimensões básicas
     const fixedCSS = `
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=794, initial-scale=1.0">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-                /* RESET ABSOLUTO PARA GARANTIR CONSISTÊNCIA */
-                * {
-                    box-sizing: border-box !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    max-width: 100% !important;
-                }
+                /* APENAS garantias mínimas sem sobrescrever templates */
                 html, body {
-                    width: 794px !important;
-                    height: 1123px !important;
-                    min-height: 1123px !important;
-                    max-width: 794px !important;
-                    margin: 0 auto !important;
-                    padding: 0 !important;
-                    overflow: hidden !important;
-                    background: white !important;
-                    font-family: Arial, Helvetica, sans-serif !important;
-                    line-height: 1.4 !important;
+                    width: 210mm; /* MANTER unidades originais dos templates */
+                    min-height: 297mm;
+                    margin: 0 auto;
                 }
-                body {
-                    padding: 20px !important;
-                }
-                .photo, img[class*="photo"], img {
-                    object-fit: cover !important;
-                    object-position: center !important;
-                    max-width: 100% !important;
-                    height: auto !important;
-                    display: block !important;
-                }
-                .resume-container, .container, [class*="container"] {
-                    width: 100% !important;
-                    max-width: 794px !important;
-                    margin: 0 auto !important;
-                }
-                /* Garantir que elementos não quebrem */
-                .row, .column, .section {
-                    box-sizing: border-box !important;
-                    max-width: 100% !important;
+                /* Garantir que imagens não quebrem */
+                .photo, img {
+                    max-width: 100%;
+                    height: auto;
                 }
             </style>
         </head>
@@ -1147,7 +1095,7 @@ function generateTemplateHTML(data, template, color, secondaryColor, useGradient
     // CORREÇÃO: Processamento consistente da foto
     let photoHTML = '';
     if (data.personal.photo) {
-        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo" style="object-fit: cover; object-position: center; max-width: 100%; height: auto; display: block;">`;
+        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo">`;
     }
 
     // Sistema de templates (gerar o HTML primeiro)
@@ -1180,7 +1128,7 @@ function generateTemplateHTML(data, template, color, secondaryColor, useGradient
         templateContent = '<div style="padding: 2rem; text-align: center; color: red;">Erro ao gerar template</div>';
     }
 
-    // Combinar CSS fixo com o conteúdo do template
+    // Combinar CSS fixo mínimo com o conteúdo do template
     return fixedCSS + templateContent + fixedEnd;
 }
 
@@ -1332,7 +1280,7 @@ function initializePreviewHandlers() {
 }
 
 // ======================
-// TEMPLATE 1: CLÁSSICO (CORRIGIDO)
+// TEMPLATE 1: CLÁSSICO
 // ======================
 
 function generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML) {
@@ -1345,16 +1293,16 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
                 margin: 0; 
                 padding: 0; 
                 box-sizing: border-box; 
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+                font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
             }
             
             body { 
                 background: white; 
                 color: #424242; 
                 line-height: 1.5; 
-                padding: 20px; /* CORREÇÃO: de mm para px */
-                width: 794px; /* CORREÇÃO: de 210mm para 794px */
-                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                padding: 20mm 15mm; 
+                width: 210mm; 
+                min-height: 297mm; 
                 margin: 0 auto; 
                 font-size: 10pt;
             }
@@ -1366,7 +1314,7 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
                 display: grid;
                 grid-template-columns: 35% 65%;
                 gap: 0;
-                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                min-height: 257mm;
             }
             
             /* Left Column */
@@ -1504,7 +1452,7 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
                 letter-spacing: 1px;
             }
             
-            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            /* Profile Section */
             .profile-section {
                 margin-bottom: 30px;
             }
@@ -1575,10 +1523,10 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
             
             @media print {
                 body {
-                    padding: 15px; /* CORREÇÃO: consistente com px */
+                    padding: 15mm 10mm;
                 }
                 .resume-container {
-                    min-height: 1093px; /* CORREÇÃO: ajustado para print */
+                    min-height: 267mm;
                 }
             }
         </style>
@@ -1589,14 +1537,14 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
         if (!phone) return '';
         // Remove tudo que não é número
         const cleaned = phone.replace(/\D/g, '');
-        
+
         // Formata para (00) 00000-0000
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-        
+
         // Retorna o número original se não conseguir formatar
         return phone;
     }
@@ -1650,106 +1598,114 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
     }
 
     let html = `
-        ${styles}
-        
-        <div class="resume-container">
-            <!-- Left Column -->
-            <div class="left-column">
-                <!-- Photo -->
-                ${photoHTML ? `
-                <div class="photo-section">
-                    <div class="photo-container">
-                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
-                    </div>
-                </div>
-                ` : `
-                <div class="photo-section">
-                    <div class="photo-container">
-                        <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Photo -->
+                    ${photoHTML ? `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            ${photoHTML.replace('class="photo"', 'class="photo"')}
                         </div>
                     </div>
-                </div>
-                `}
-
-                <!-- Contact Information -->
-                <div class="contact-section">
-                    <h2 class="section-title">Contato</h2>
-                    ${contactItems.join('')}
-                </div>
-
-                <!-- Skills -->
-                ${data.skills ? `
-                <div class="skills-section">
-                    <h2 class="section-title">Habilidades</h2>
-                    <ul class="skills-list">
-                        ${data.skills.split(',').map(skill => `
-                            <li class="skill-item">${skill.trim()}</li>
-                        `).join('')}
-                    </ul>
-                </div>
-                ` : ''}
-
-                <!-- Education -->
-                ${data.education.length > 0 ? `
-                <div class="education-section">
-                    <h2 class="section-title">Formação Acadêmica</h2>
-                    ${data.education.map(edu => `
-                        <div class="education-item">
-                            <div class="education-degree">${edu.degree || 'Curso'}</div>
-                            <div class="education-school">${edu.school || 'Instituição'}</div>
-                            <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                ` : ''}
-            </div>
-
-            <!-- Right Column -->
-            <div class="right-column">
-                <!-- Header -->
-                <div class="header-section">
-                    <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                </div>
-
-                <!-- Profile - CORREÇÃO: Mudado para "Sobre Mim" -->
-                ${data.objective ? `
-                <div class="profile-section">
-                    <h2 class="section-title">Sobre Mim</h2>
-                    <div class="profile-text">${data.objective}</div>
-                </div>
-                ` : ''}
-
-                <!-- Experience -->
-                ${data.experience.length > 0 ? `
-                <div class="experience-section">
-                    <h2 class="section-title">Experiência Profissional</h2>
-                    ${data.experience.map(exp => `
-                        <div class="experience-item">
-                            <div class="experience-header">
-                                <div>
-                                    <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                    <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                </div>
-                                <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                    ` : `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
                             </div>
-                            ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
                         </div>
-                    `).join('')}
+                    </div>
+                    `}
+
+                    <!-- Contact Information -->
+                    <div class="contact-section">
+                        <h2 class="section-title">Contato</h2>
+                        ${contactItems.join('')}
+                    </div>
+
+                    <!-- Skills -->
+                    ${data.skills ? `
+                    <div class="skills-section">
+                        <h2 class="section-title">Habilidades</h2>
+                        <ul class="skills-list">
+                            ${data.skills.split(',').map(skill => `
+                                <li class="skill-item">${skill.trim()}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+
+                    <!-- Education -->
+                    ${data.education.length > 0 ? `
+                    <div class="education-section">
+                        <h2 class="section-title">Formação Acadêmica</h2>
+                        ${data.education.map(edu => `
+                            <div class="education-item">
+                                <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                <div class="education-school">${edu.school || 'Instituição'}</div>
+                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
                 </div>
-                ` : ''}
+
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Header -->
+                    <div class="header-section">
+                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
+                    </div>
+
+                    <!-- Profile -->
+                    ${data.objective ? `
+                    <div class="profile-section">
+                        <h2 class="section-title">Sobre Mim</h2>
+                        <div class="profile-text">${data.objective}</div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Experience -->
+                    ${data.experience.length > 0 ? `
+                    <div class="experience-section">
+                        <h2 class="section-title">Experiência Profissional</h2>
+                        ${data.experience.map(exp => `
+                            <div class="experience-item">
+                                <div class="experience-header">
+                                    <div>
+                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                    </div>
+                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                </div>
+                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
             </div>
-        </div>
+        </body>
+        </html>
     `;
 
     return html;
 }
 
 // =======================
-// TEMPLATE 2: EXECUTIVO (CORRIGIDO)
+// TEMPLATE 2: EXECUTIVO
 // =======================
 
 function generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML) {
@@ -1762,16 +1718,16 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
                 margin: 0; 
                 padding: 0; 
                 box-sizing: border-box; 
-                font-family: 'Georgia', 'Times New Roman', 'Times', serif;
+                font-family: 'Georgia', 'Times New Roman', serif;
             }
             
             body { 
                 background: white; 
                 color: #333; 
                 line-height: 1.5; 
-                padding: 20px; /* CORREÇÃO: de mm para px */
-                width: 794px; /* CORREÇÃO: de 210mm para 794px */
-                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                padding: 20mm 25mm; 
+                width: 210mm; 
+                min-height: 297mm; 
                 margin: 0 auto; 
                 font-size: 11pt;
             }
@@ -1780,7 +1736,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
                 max-width: 100%; 
                 margin: 0 auto; 
                 background: white; 
-                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                min-height: 257mm;
                 position: relative;
             }
             
@@ -1903,7 +1859,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
                 background: ${goldColor};
             }
             
-            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            /* Profile Section */
             .profile-text {
                 font-size: 11pt;
                 line-height: 1.6;
@@ -2034,10 +1990,10 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             
             @media print {
                 body {
-                    padding: 15px; /* CORREÇÃO: consistente com px */
+                    padding: 15mm 20mm;
                 }
                 .resume-container {
-                    min-height: 1093px; /* CORREÇÃO: ajustado para print */
+                    min-height: 267mm;
                 }
             }
         </style>
@@ -2047,19 +2003,19 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
     function formatPhoneNumber(phone) {
         if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
-        
+
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-        
+
         return phone;
     }
 
     // Processar informações de contato
     const contactItems = [];
-    
+
     if (data.personal.phone) {
         const formattedPhone = formatPhoneNumber(data.personal.phone);
         contactItems.push(`
@@ -2071,7 +2027,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             </div>
         `);
     }
-    
+
     if (data.personal.email) {
         contactItems.push(`
             <div class="contact-item">
@@ -2083,7 +2039,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             </div>
         `);
     }
-    
+
     if (data.personal.linkedin) {
         contactItems.push(`
             <div class="contact-item">
@@ -2096,7 +2052,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             </div>
         `);
     }
-    
+
     if (data.personal.neighborhood || data.personal.city || data.personal.state) {
         const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
         contactItems.push(`
@@ -2111,115 +2067,123 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
     }
 
     let html = `
-        ${styles}
-        
-        <div class="resume-container">
-            <!-- Elegant Header with Photo -->
-            <div class="header-section">
-                ${photoHTML ? `
-                <div class="photo-section">
-                    <div class="photo-container">
-                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Georgia&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <!-- Elegant Header with Photo -->
+                <div class="header-section">
+                    ${photoHTML ? `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            ${photoHTML.replace('class="photo"', 'class="photo"')}
+                        </div>
                     </div>
-                </div>
-                ` : `
-                <div class="photo-section">
-                    <div class="photo-container">
-                        <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
+                    ` : `
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    `}
+                    
+                    <div class="header-content">
+                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
+                        <div class="contact-elegant">
+                            ${contactItems.join('')}
                         </div>
                     </div>
                 </div>
-                `}
-                
-                <div class="header-content">
-                    <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                    <div class="contact-elegant">
-                        ${contactItems.join('')}
+
+                <!-- Main Content -->
+                <div class="main-content">
+                    <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
+                    ${data.objective ? `
+                    <div class="section">
+                        <h2 class="section-title">Sobre mim</h2>
+                        <div class="profile-text">${data.objective}</div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Experience Section -->
+                    <div class="section">
+                        <h2 class="section-title">Experiência Profissional</h2>
+                        ${data.experience.length > 0 ? data.experience.map(exp => `
+                            <div class="experience-item">
+                                <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                            </div>
+                        `).join('') : ''}
+                    </div>
+
+                    <!-- Education Section -->
+                    ${data.education.length > 0 ? `
+                    <div class="education-section">
+                        <h2 class="section-title">Formação Acadêmica</h2>
+                        ${data.education.map(edu => `
+                            <div class="education-item">
+                                <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                <div class="education-school">${edu.school || 'Instituição'}</div>
+                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <!-- Skills and Languages Section -->
+                    <div class="skills-languages-section">
+                        <div class="two-column-section">
+                            <!-- Skills -->
+                            ${data.skills ? `
+                            <div class="section">
+                                <h2 class="section-title">Habilidades</h2>
+                                <ul class="skills-list">
+                                    ${data.skills.split(',').map(skill => `
+                                        <li class="skill-item">${skill.trim()}</li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            ` : ''}
+
+                            <!-- Languages -->
+                            ${data.languages.length > 0 ? `
+                            <div class="section">
+                                <h2 class="section-title">Idiomas</h2>
+                                <ul class="languages-list">
+                                    ${data.languages.map(lang => `
+                                        <li class="language-item">
+                                            <span>${lang.name}</span>
+                                            <span>${lang.level}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Main Content -->
-            <div class="main-content">
-                <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
-                ${data.objective ? `
-                <div class="section">
-                    <h2 class="section-title">Sobre Mim</h2>
-                    <div class="profile-text">${data.objective}</div>
-                </div>
-                ` : ''}
-
-                <!-- Experience Section -->
-                <div class="section">
-                    <h2 class="section-title">Experiência Profissional</h2>
-                    ${data.experience.length > 0 ? data.experience.map(exp => `
-                        <div class="experience-item">
-                            <div class="experience-title">${exp.title || 'Cargo'}</div>
-                            <div class="experience-company">${exp.company || 'Empresa'}</div>
-                            <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
-                            ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
-                        </div>
-                    `).join('') : '<div class="experience-item">Adicione suas experiências profissionais</div>'}
-                </div>
-
-                <!-- Education Section -->
-                ${data.education.length > 0 ? `
-                <div class="education-section">
-                    <h2 class="section-title">Formação Acadêmica</h2>
-                    ${data.education.map(edu => `
-                        <div class="education-item">
-                            <div class="education-degree">${edu.degree || 'Curso'}</div>
-                            <div class="education-school">${edu.school || 'Instituição'}</div>
-                            <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                ` : ''}
-
-                <!-- Skills and Languages Section -->
-                <div class="skills-languages-section">
-                    <div class="two-column-section">
-                        <!-- Skills -->
-                        ${data.skills ? `
-                        <div class="section">
-                            <h2 class="section-title">Habilidades</h2>
-                            <ul class="skills-list">
-                                ${data.skills.split(',').map(skill => `
-                                    <li class="skill-item">${skill.trim()}</li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        ` : ''}
-
-                        <!-- Languages -->
-                        ${data.languages.length > 0 ? `
-                        <div class="section">
-                            <h2 class="section-title">Idiomas</h2>
-                            <ul class="languages-list">
-                                ${data.languages.map(lang => `
-                                    <li class="language-item">
-                                        <span>${lang.name}</span>
-                                        <span>${lang.level}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        </div>
+        </body>
+        </html>
     `;
 
     return html;
 }
 
 // =========================
-// TEMPLATE 3: MINIMALISTA (CORRIGIDO)
+// TEMPLATE 3: MINIMALISTA 
 // =========================
 
 function generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML) {
@@ -2233,16 +2197,16 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
                 margin: 0; 
                 padding: 0; 
                 box-sizing: border-box; 
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+                font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
             }
             
             body { 
                 background: #fefefe; 
                 color: #2c2c2c; 
                 line-height: 1.5; 
-                padding: 20px; /* CORREÇÃO: de mm para px */
-                width: 794px; /* CORREÇÃO: de 210mm para 794px */
-                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                padding: 15mm 20mm; 
+                width: 210mm; 
+                min-height: 297mm; 
                 margin: 0 auto; 
                 font-size: 10.5pt;
                 font-weight: 300;
@@ -2252,7 +2216,7 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
                 max-width: 100%; 
                 margin: 0 auto; 
                 background: #fefefe; 
-                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                min-height: 267mm;
             }
             
             /* Header */
@@ -2345,7 +2309,7 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
                 display: inline-block;
             }
             
-            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            /* Profile Section */
             .profile-section {
                 grid-column: 1 / -1;
             }
@@ -2472,10 +2436,10 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
             
             @media print {
                 body {
-                    padding: 10px; /* CORREÇÃO: consistente com px */
+                    padding: 10mm 15mm;
                 }
                 .resume-container {
-                    min-height: 1103px; /* CORREÇÃO: ajustado para print */
+                    min-height: 277mm;
                 }
             }
         </style>
@@ -2547,114 +2511,123 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
     }
 
     let html = `
-        ${styles}
-        
-        <div class="resume-container">
-            <!-- Header with Photo -->
-            <div class="header-standard">
-                <!-- Photo Section -->
-                <div class="photo-section">
-                    ${photoHTML ? `
-                    <div class="photo-container">
-                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
-                    </div>
-                    ` : `
-                    <div class="photo-container">
-                        <div style="width:100%;height:100%;background:#f8f8f8;display:flex;align-items:center;justify-content:center;color:#ddd;">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <!-- Header with Photo -->
+                <div class="header-standard">
+                    <!-- Photo Section -->
+                    <div class="photo-section">
+                        ${photoHTML ? `
+                        <div class="photo-container">
+                            ${photoHTML.replace('class="photo"', 'class="photo"')}
                         </div>
-                    </div>
-                    `}
-                </div>
-
-                <!-- Header Content -->
-                <div class="header-content">
-                    <h1 class="name-standard">${data.personal.fullName || 'Nome Completo'}</h1>
-                    <div class="contact-standard">
-                        ${contactItems.join('')}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Standard Layout -->
-            <div class="standard-layout">
-                <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
-                ${data.objective ? `
-                <div class="section profile-section">
-                    <h2 class="section-title">Sobre Mim</h2>
-                    <div class="profile-text">${data.objective}</div>
-                </div>
-                ` : ''}
-
-                <!-- Experience Section -->
-                ${data.experience.length > 0 ? `
-                <div class="section">
-                    <h2 class="section-title">Experiência</h2>
-                    ${data.experience.map(exp => `
-                        <div class="experience-item">
-                            <div class="experience-header">
-                                <div>
-                                    <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                    <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                </div>
-                                <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                        ` : `
+                        <div class="photo-container">
+                            <div style="width:100%;height:100%;background:#f8f8f8;display:flex;align-items:center;justify-content:center;color:#ddd;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
                             </div>
-                            ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
                         </div>
-                    `).join('')}
-                </div>
-                ` : ''}
+                        `}
+                    </div>
 
-                <!-- Education Section -->
-                ${data.education.length > 0 ? `
-                <div class="section">
-                    <h2 class="section-title">Formação</h2>
-                    ${data.education.map(edu => `
-                        <div class="education-item">
-                            <div class="education-degree">${edu.degree || 'Curso'}</div>
-                            <div class="education-school">${edu.school || 'Instituição'}</div>
-                            <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                    <!-- Header Content -->
+                    <div class="header-content">
+                        <h1 class="name-standard">${data.personal.fullName || 'Nome Completo'}</h1>
+                        <div class="contact-standard">
+                            ${contactItems.join('')}
                         </div>
-                    `).join('')}
+                    </div>
                 </div>
-                ` : ''}
 
-                <!-- Skills Section -->
-                ${data.skills ? `
-                <div class="section">
-                    <h2 class="section-title">Habilidades</h2>
-                    <div class="skills-tags">
-                        ${data.skills.split(',').map(skill => `
-                            <span class="skill-tag">${skill.trim()}</span>
+                <!-- Standard Layout -->
+                <div class="standard-layout">
+                    <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
+                    ${data.objective ? `
+                    <div class="section profile-section">
+                        <h2 class="section-title">Sobre mim</h2>
+                        <div class="profile-text">${data.objective}</div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Experience Section -->
+                    ${data.experience.length > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">Experiência</h2>
+                        ${data.experience.map(exp => `
+                            <div class="experience-item">
+                                <div class="experience-header">
+                                    <div>
+                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                    </div>
+                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                </div>
+                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                            </div>
                         `).join('')}
                     </div>
-                </div>
-                ` : ''}
+                    ` : ''}
 
-                <!-- Languages Section -->
-                ${data.languages.length > 0 ? `
-                <div class="section">
-                    <h2 class="section-title">Idiomas</h2>
-                    ${data.languages.map(lang => `
-                        <div class="language-item">
-                            <span>${lang.name}</span>
-                            <span>${lang.level}</span>
+                    <!-- Education Section -->
+                    ${data.education.length > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">Formação</h2>
+                        ${data.education.map(edu => `
+                            <div class="education-item">
+                                <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                <div class="education-school">${edu.school || 'Instituição'}</div>
+                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <!-- Skills Section -->
+                    ${data.skills ? `
+                    <div class="section">
+                        <h2 class="section-title">Habilidades</h2>
+                        <div class="skills-tags">
+                            ${data.skills.split(',').map(skill => `
+                                <span class="skill-tag">${skill.trim()}</span>
+                            `).join('')}
                         </div>
-                    `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <!-- Languages Section -->
+                    ${data.languages.length > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">Idiomas</h2>
+                        ${data.languages.map(lang => `
+                            <div class="language-item">
+                                <span>${lang.name}</span>
+                                <span>${lang.level}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
                 </div>
-                ` : ''}
             </div>
-        </div>
+        </body>
+        </html>
     `;
 
     return html;
 }
 
+
 // ======================
-// TEMPLATE 4: ELEGANTE (CORRIGIDO)
+// TEMPLATE 4: ELEGANTE 
 // ======================
 
 function generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML) {
@@ -2667,16 +2640,16 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 margin: 0; 
                 padding: 0; 
                 box-sizing: border-box; 
-                font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+                font-family: 'Playfair Display', 'Georgia', serif;
             }
             
             body { 
                 background: #fefefe; 
                 color: #2c3e50; 
                 line-height: 1.6; 
-                padding: 20px; /* CORREÇÃO: de mm para px */
-                width: 794px; /* CORREÇÃO: de 210mm para 794px */
-                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                padding: 15mm 20mm; 
+                width: 210mm; 
+                min-height: 297mm; 
                 margin: 0 auto; 
                 font-size: 11pt;
                 background-image: linear-gradient(to bottom, #fefefe 0%, #f8f9fa 100%);
@@ -2686,7 +2659,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 max-width: 100%; 
                 margin: 0 auto; 
                 background: white; 
-                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                min-height: 267mm;
                 position: relative;
                 box-shadow: 0 5px 25px rgba(0,0,0,0.08);
                 border: 1px solid #f0f0f0;
@@ -2786,7 +2759,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 object-fit: cover;
             }
             
-            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            /* Profile Section */
             .profile-section {
                 margin-bottom: 30px;
             }
@@ -2817,7 +2790,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 line-height: 1.7;
                 color: #555;
                 text-align: justify;
-                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-family: 'Source Sans Pro', sans-serif;
             }
             
             /* Skills Section */
@@ -2836,7 +2809,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 position: relative;
                 font-size: 10.5pt;
                 color: #555;
-                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-family: 'Source Sans Pro', sans-serif;
             }
             
             .skill-item::before {
@@ -2863,7 +2836,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 margin-bottom: 8px;
                 font-size: 10.5pt;
                 color: #555;
-                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-family: 'Source Sans Pro', sans-serif;
             }
             
             /* Right Column - Professional Experience */
@@ -2899,7 +2872,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 font-size: 12pt;
                 color: #222;
                 margin-bottom: 3px;
-                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-family: 'Source Sans Pro', sans-serif;
             }
             
             .experience-company {
@@ -2926,7 +2899,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 font-size: 10.5pt;
                 line-height: 1.6;
                 text-align: justify;
-                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-family: 'Source Sans Pro', sans-serif;
             }
             
             /* Education Section */
@@ -2949,7 +2922,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
                 font-size: 11pt;
                 color: #222;
                 margin-bottom: 3px;
-                font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-family: 'Source Sans Pro', sans-serif;
             }
             
             .education-school {
@@ -2988,13 +2961,13 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             
             @media print {
                 body {
-                    padding: 10px; /* CORREÇÃO: consistente com px */
+                    padding: 10mm 15mm;
                     background: white;
                 }
                 .resume-container {
                     box-shadow: none;
                     border: none;
-                    min-height: 1103px; /* CORREÇÃO: ajustado para print */
+                    min-height: 277mm;
                 }
             }
         </style>
@@ -3004,19 +2977,19 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
     function formatPhoneNumber(phone) {
         if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
-        
+
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-        
+
         return phone;
     }
 
     // Processar informações de contato
     const contactItems = [];
-    
+
     if (data.personal.phone) {
         const formattedPhone = formatPhoneNumber(data.personal.phone);
         contactItems.push(`
@@ -3028,7 +3001,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             </div>
         `);
     }
-    
+
     if (data.personal.email) {
         contactItems.push(`
             <div class="contact-item">
@@ -3040,7 +3013,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             </div>
         `);
     }
-    
+
     if (data.personal.linkedin) {
         contactItems.push(`
             <div class="contact-item">
@@ -3053,7 +3026,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             </div>
         `);
     }
-    
+
     if (data.personal.neighborhood || data.personal.city || data.personal.state) {
         const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
         contactItems.push(`
@@ -3068,127 +3041,135 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
     }
 
     let html = `
-        ${styles}
-        
-        <div class="resume-container">
-            <!-- Decorative Elements -->
-            <div class="ornament ornament-1"></div>
-            <div class="ornament ornament-2"></div>
-            
-            <!-- Elegant Header -->
-            <div class="header-elegant">
-                <div class="name-title-container">
-                    <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                </div>
-                <div class="contact-elegant">
-                    ${contactItems.join('')}
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="main-content">
-                <!-- Left Column -->
-                <div class="left-column">
-                    <!-- Photo -->
-                    ${photoHTML ? `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
-                        </div>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <!-- Decorative Elements -->
+                <div class="ornament ornament-1"></div>
+                <div class="ornament ornament-2"></div>
+                
+                <!-- Elegant Header -->
+                <div class="header-elegant">
+                    <div class="name-title-container">
+                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
                     </div>
-                    ` : `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            <div style="width:100%;height:100%;background:#f8f9fa;display:flex;align-items:center;justify-content:center;color:#bdc3c7;font-size:12px;">
-                                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#bdc3c7" stroke-width="1.5">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
+                    <div class="contact-elegant">
+                        ${contactItems.join('')}
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="main-content">
+                    <!-- Left Column -->
+                    <div class="left-column">
+                        <!-- Photo -->
+                        ${photoHTML ? `
+                        <div class="photo-section">
+                            <div class="photo-container">
+                                ${photoHTML.replace('class="photo"', 'class="photo"')}
                             </div>
                         </div>
-                    </div>
-                    `}
-
-                    <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
-                    ${data.objective ? `
-                    <div class="profile-section">
-                        <h2 class="section-title">Sobre Mim</h2>
-                        <div class="profile-text">${data.objective}</div>
-                    </div>
-                    ` : ''}
-
-                    <!-- Skills -->
-                    ${data.skills ? `
-                    <div class="skills-section">
-                        <h2 class="section-title">Competências</h2>
-                        <ul class="skills-list">
-                            ${data.skills.split(',').map(skill => `
-                                <li class="skill-item">${skill.trim()}</li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                    ` : ''}
-
-                    <!-- Languages -->
-                    ${data.languages.length > 0 ? `
-                    <div class="languages-section">
-                        <h2 class="section-title">Idiomas</h2>
-                        <ul class="languages-list">
-                            ${data.languages.map(lang => `
-                                <li class="language-item">
-                                    <span>${lang.name}</span>
-                                    <span>${lang.level}</span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                    ` : ''}
-                </div>
-
-                <!-- Right Column -->
-                <div class="right-column">
-                    <!-- Experience -->
-                    ${data.experience.length > 0 ? `
-                    <div class="experience-section">
-                        <h2 class="section-title">Experiência Profissional</h2>
-                        ${data.experience.map(exp => `
-                            <div class="experience-item">
-                                <div class="experience-header">
-                                    <div>
-                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
-                                    </div>
-                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                        ` : `
+                        <div class="photo-section">
+                            <div class="photo-container">
+                                <div style="width:100%;height:100%;background:#f8f9fa;display:flex;align-items:center;justify-content:center;color:#bdc3c7;font-size:12px;">
+                                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#bdc3c7" stroke-width="1.5">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
                                 </div>
-                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
                             </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
+                        </div>
+                        `}
 
-                    <!-- Education -->
-                    ${data.education.length > 0 ? `
-                    <div class="education-section">
-                        <h2 class="section-title">Formação Acadêmica</h2>
-                        ${data.education.map(edu => `
-                            <div class="education-item">
-                                <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                <div class="education-school">${edu.school || 'Instituição'}</div>
-                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                            </div>
-                        `).join('')}
+                        <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
+                        ${data.objective ? `
+                        <div class="profile-section">
+                            <h2 class="section-title">Sobre mim</h2>
+                            <div class="profile-text">${data.objective}</div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Skills -->
+                        ${data.skills ? `
+                        <div class="skills-section">
+                            <h2 class="section-title">Competências</h2>
+                            <ul class="skills-list">
+                                ${data.skills.split(',').map(skill => `
+                                    <li class="skill-item">${skill.trim()}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+
+                        <!-- Languages -->
+                        ${data.languages.length > 0 ? `
+                        <div class="languages-section">
+                            <h2 class="section-title">Idiomas</h2>
+                            <ul class="languages-list">
+                                ${data.languages.map(lang => `
+                                    <li class="language-item">
+                                        <span>${lang.name}</span>
+                                        <span>${lang.level}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
                     </div>
-                    ` : ''}
+
+                    <!-- Right Column -->
+                    <div class="right-column">
+                        <!-- Experience -->
+                        ${data.experience.length > 0 ? `
+                        <div class="experience-section">
+                            <h2 class="section-title">Experiência Profissional</h2>
+                            ${data.experience.map(exp => `
+                                <div class="experience-item">
+                                    <div class="experience-header">
+                                        <div>
+                                            <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                            <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                        </div>
+                                        <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                    </div>
+                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+
+                        <!-- Education -->
+                        ${data.education.length > 0 ? `
+                        <div class="education-section">
+                            <h2 class="section-title">Formação Acadêmica</h2>
+                            ${data.education.map(edu => `
+                                <div class="education-item">
+                                    <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                    <div class="education-school">${edu.school || 'Instituição'}</div>
+                                    <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
-        </div>
+        </body>
+        </html>
     `;
 
     return html;
 }
 
 // ==========================
-// TEMPLATE 5: PROFISSIONAL (CORRIGIDO)
+// TEMPLATE 5: PROFISSIONAL 
 // ==========================
 
 function generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML) {
@@ -3202,16 +3183,16 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 margin: 0; 
                 padding: 0; 
                 box-sizing: border-box; 
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+                font-family: 'SF Pro Display', 'Helvetica Neue', sans-serif;
             }
             
             body { 
                 background: #ffffff; 
                 color: #1f2937; 
                 line-height: 1.5; 
-                padding: 20px; /* CORREÇÃO: de mm para px */
-                width: 794px; /* CORREÇÃO: de 210mm para 794px */
-                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                padding: 15mm 20mm; 
+                width: 210mm; 
+                min-height: 297mm; 
                 margin: 0 auto; 
                 font-size: 10.5pt;
             }
@@ -3220,7 +3201,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 max-width: 100%; 
                 margin: 0 auto; 
                 background: white; 
-                min-height: 1083px; /* CORREÇÃO: 1123px - 40px de padding */
+                min-height: 267mm;
                 position: relative;
             }
             
@@ -3338,7 +3319,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 background: ${primaryColor};
             }
             
-            /* Profile Section - CORREÇÃO: Mudado para "Sobre Mim" */
+            /* Profile Section */
             .profile-text {
                 font-size: 10.5pt;
                 line-height: 1.6;
@@ -3498,16 +3479,13 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             
             @media print {
                 body {
-                    padding: 10px; /* CORREÇÃO: consistente com px */
-                }
-                .resume-container {
-                    min-height: 1103px; /* CORREÇÃO: ajustado para print */
+                    padding: 10mm 15mm;
                 }
             }
         </style>
     `;
 
-    // Função para formatar número de telefone
+    // CORREÇÃO 1: Função para formatar número de telefone
     function formatPhoneNumber(phone) {
         if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
@@ -3521,7 +3499,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
 
     // Processar informações de contato
     const contactItems = [];
-    
+
     if (data.personal.phone) {
         const formattedPhone = formatPhoneNumber(data.personal.phone);
         contactItems.push(`
@@ -3533,7 +3511,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             </div>
         `);
     }
-    
+
     if (data.personal.email) {
         contactItems.push(`
             <div class="contact-item">
@@ -3545,7 +3523,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             </div>
         `);
     }
-    
+
     if (data.personal.linkedin) {
         contactItems.push(`
             <div class="contact-item">
@@ -3558,7 +3536,7 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             </div>
         `);
     }
-    
+
     if (data.personal.neighborhood || data.personal.city || data.personal.state) {
         const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
         contactItems.push(`
@@ -3573,151 +3551,159 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
     }
 
     let html = `
-        ${styles}
-        
-        <div class="resume-container">
-            <!-- Consulting Header -->
-            <div class="header-consulting">
-                <div class="header-content">
-                    <div class="contact-left">
-                        <div class="contact-consulting">
-                            ${contactItems.slice(0,2).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="name-title">
-                        <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                        <div class="title">${data.personal.title || 'Consultor'}</div>
-                    </div>
-                    
-                    ${photoHTML ? `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
-                        </div>
-                    </div>
-                    ` : `
-                    <div class="photo-section">
-                        <div class="photo-container">
-                            <div style="width:100%;height:100%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;">
-                                <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <!-- Consulting Header -->
+                <div class="header-consulting">
+                    <div class="header-content">
+                        <div class="contact-left">
+                            <div class="contact-consulting">
+                                ${contactItems.slice(0, 2).join('')}
                             </div>
                         </div>
-                    </div>
-                    `}
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="main-content">
-                <!-- Left Column -->
-                <div class="left-column">
-                    <!-- Consulting Approach -->
-                    <div class="approach-section">
-                        <div class="approach-title">Abordagem Consultiva</div>
-                        <div class="approach-text">
-                            Foco em soluções personalizadas baseadas em análise de dados e melhores 
-                            práticas do mercado. Metodologia centrada no cliente com entrega de 
-                            resultados mensuráveis e impacto sustentável.
+                        
+                        <div class="name-title">
+                            <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
+                            <div class="title">${data.personal.title || 'Consultor'}</div>
                         </div>
-                    </div>
-
-                    <!-- Skills -->
-                    ${data.skills ? `
-                    <div class="section">
-                        <h2 class="section-title">Especialidades</h2>
-                        <div class="skills-consulting">
-                            <div class="skill-category">
-                                <div class="category-title">Estratégia</div>
-                                <div class="skill-items">
-                                    ${data.skills.split(',').slice(0,4).map(skill => `
-                                        <div class="skill-tag">${skill.trim()}</div>
-                                    `).join('')}
-                                </div>
+                        
+                        ${photoHTML ? `
+                        <div class="photo-section">
+                            <div class="photo-container">
+                                ${photoHTML.replace('class="photo"', 'class="photo"')}
                             </div>
-                            <div class="skill-category">
-                                <div class="category-title">Operações</div>
-                                <div class="skill-items">
-                                    ${data.skills.split(',').slice(4,8).map(skill => `
-                                        <div class="skill-tag">${skill.trim()}</div>
-                                    `).join('')}
+                        </div>
+                        ` : `
+                        <div class="photo-section">
+                            <div class="photo-container">
+                                <div style="width:100%;height:100%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                    <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
                                 </div>
                             </div>
                         </div>
+                        `}
                     </div>
-                    ` : ''}
-
-                    <!-- Languages -->
-                    ${data.languages.length > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">Idiomas</h2>
-                        <ul class="languages-list">
-                            ${data.languages.map(lang => `
-                                <li class="language-item">
-                                    <span>${lang.name}</span>
-                                    <span class="language-level">${lang.level}</span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                    ` : ''}
                 </div>
 
-                <!-- Right Column -->
-                <div class="right-column">
-                    <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
-                    ${data.objective ? `
-                    <div class="section">
-                        <h2 class="section-title">Sobre Mim</h2>
-                        <div class="profile-text">${data.objective}</div>
-                    </div>
-                    ` : ''}
+                <!-- Main Content -->
+                <div class="main-content">
+                    <!-- Left Column -->
+                    <div class="left-column">
+                        <!-- Consulting Approach -->
+                        <div class="approach-section">
+                            <div class="approach-title">Abordagem Consultiva</div>
+                            <div class="approach-text">
+                                Foco em soluções personalizadas baseadas em análise de dados e melhores 
+                                práticas do mercado. Metodologia centrada no cliente com entrega de 
+                                resultados mensuráveis e impacto sustentável.
+                            </div>
+                        </div>
 
-                    <!-- Experience -->
-                    ${data.experience.length > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">Experiência em Consultoria</h2>
-                        ${data.experience.map(exp => `
-                            <div class="experience-item">
-                                <div class="experience-header">
-                                    <div>
-                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
+                        <!-- Skills -->
+                        ${data.skills ? `
+                        <div class="section">
+                            <h2 class="section-title">Especialidades</h2>
+                            <div class="skills-consulting">
+                                <div class="skill-category">
+                                    <div class="category-title">Estratégia</div>
+                                    <div class="skill-items">
+                                        ${data.skills.split(',').slice(0, 4).map(skill => `
+                                            <div class="skill-tag">${skill.trim()}</div>
+                                        `).join('')}
                                     </div>
-                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
                                 </div>
-                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                                <div class="skill-category">
+                                    <div class="category-title">Operações</div>
+                                    <div class="skill-items">
+                                        ${data.skills.split(',').slice(4, 8).map(skill => `
+                                            <div class="skill-tag">${skill.trim()}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
                             </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
+                        </div>
+                        ` : ''}
 
-                    <!-- Education -->
-                    ${data.education.length > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">Formação Acadêmica</h2>
-                        ${data.education.map(edu => `
-                            <div class="education-item">
-                                <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                <div class="education-school">${edu.school || 'Instituição'}</div>
-                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                            </div>
-                        `).join('')}
+                        <!-- Languages -->
+                        ${data.languages.length > 0 ? `
+                        <div class="section">
+                            <h2 class="section-title">Idiomas</h2>
+                            <ul class="languages-list">
+                                ${data.languages.map(lang => `
+                                    <li class="language-item">
+                                        <span>${lang.name}</span>
+                                        <span class="language-level">${lang.level}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
                     </div>
-                    ` : ''}
+
+                    <!-- Right Column -->
+                    <div class="right-column">
+                        <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
+                        ${data.objective ? `
+                        <div class="section">
+                            <h2 class="section-title">Sobre mim</h2>
+                            <div class="profile-text">${data.objective}</div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Experience -->
+                        ${data.experience.length > 0 ? `
+                        <div class="section">
+                            <h2 class="section-title">Experiência em Consultoria</h2>
+                            ${data.experience.map(exp => `
+                                <div class="experience-item">
+                                    <div class="experience-header">
+                                        <div>
+                                            <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                            <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                        </div>
+                                        <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                    </div>
+                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+
+                        <!-- Education -->
+                        ${data.education.length > 0 ? `
+                        <div class="section">
+                            <h2 class="section-title">Formação Acadêmica</h2>
+                            ${data.education.map(edu => `
+                                <div class="education-item">
+                                    <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                    <div class="education-school">${edu.school || 'Instituição'}</div>
+                                    <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
-        </div>
+        </body>
+        </html>
     `;
 
     return html;
 }
 
 // ======================
-// TEMPLATE 6: CRIATIVO (CORRIGIDO)
+// TEMPLATE 6: CRIATIVO 
 // ======================
 
 function generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML) {
@@ -3730,16 +3716,16 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
                 margin: 0; 
                 padding: 0; 
                 box-sizing: border-box; 
-                font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+                font-family: 'Public Sans', 'Garet', 'Inter', sans-serif;
             }
 
             body { 
                 background: white; 
                 color: #222; 
                 line-height: 1.5; 
-                padding: 0; /* CORREÇÃO: removido padding do body */
-                width: 794px; /* CORREÇÃO: de 210mm para 794px */
-                min-height: 1123px; /* CORREÇÃO: de 297mm para 1123px */
+                padding: 0; 
+                width: 210mm; 
+                min-height: 297mm; 
                 margin: 0 auto; 
             }
 
@@ -3748,7 +3734,7 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
                 margin: 0 auto; 
                 display: grid;
                 grid-template-columns: 40% 60%;
-                min-height: 1123px; /* CORREÇÃO: altura total em px */
+                min-height: 297mm;
                 background: white;
                 border: 1px solid #efefef;
                 box-shadow: 0 6px 24px rgba(0,0,0,0.06);
@@ -3953,17 +3939,8 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
             }
 
             @media print {
-                body { 
-                    background: white; 
-                    padding: 0; 
-                    width: 794px;
-                    min-height: 1123px;
-                }
-                .resume-container { 
-                    box-shadow: none; 
-                    border: none; 
-                    min-height: 1123px;
-                }
+                body { background: white; padding: 0; }
+                .resume-container { box-shadow: none; border: none; }
             }
         </style>
     `;
@@ -3972,13 +3949,13 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
     function formatPhoneNumber(phone) {
         if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
-        
+
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-        
+
         return phone;
     }
 
@@ -4034,99 +4011,107 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
     }
 
     let html = `
-        ${styles}
-        
-        <div class="resume-container">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                ${photoHTML ? `
-                    <div class="photo-container">
-                        ${photoHTML} <!-- CORREÇÃO: sintaxe simplificada -->
-                    </div>
-                ` : `
-                    <div class="photo-container">
-                        <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+            ${styles}
+        </head>
+        <body>
+            <div class="resume-container">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    ${photoHTML ? `
+                        <div class="photo-container">
+                            ${photoHTML}
                         </div>
-                    </div>
-                `}
+                    ` : `
+                        <div class="photo-container">
+                            <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        </div>
+                    `}
 
-                <div class="contact-section">
-                    <div class="section-title">Contato</div>
-                    ${contactItems.join('')}
+                    <div class="contact-section">
+                        <div class="section-title">Contato</div>
+                        ${contactItems.join('')}
+                    </div>
+
+                    ${data.skills ? `
+                        <div class="section">
+                            <div class="section-title">Habilidades</div>
+                            <ul class="skills-list">
+                                ${data.skills.split(',').map(skill => `<li class="skill-item">${skill.trim()}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    ${data.languages.length > 0 ? `
+                        <div class="section">
+                            <div class="section-title">Idiomas</div>
+                            <ul class="languages-list">
+                                ${data.languages.map(lang => `
+                                    <li class="language-item">
+                                        <span class="language-name">${lang.name}</span>
+                                        <span class="language-level">${lang.level}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                 </div>
 
-                ${data.skills ? `
-                    <div class="section">
-                        <div class="section-title">Habilidades</div>
-                        <ul class="skills-list">
-                            ${data.skills.split(',').map(skill => `<li class="skill-item">${skill.trim()}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
+                <!-- Main Content -->
+                <div class="main-content">
+                    <div class="main-title">${fullName}</div>
 
-                ${data.languages.length > 0 ? `
-                    <div class="section">
-                        <div class="section-title">Idiomas</div>
-                        <ul class="languages-list">
-                            ${data.languages.map(lang => `
-                                <li class="language-item">
-                                    <span class="language-name">${lang.name}</span>
-                                    <span class="language-level">${lang.level}</span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-            </div>
+                    <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre Mim" -->
+                    ${data.objective ? `
+                        <div class="section">
+                            <div class="section-title">Sobre Mim</div>
+                            <div class="about-text">${data.objective}</div>
+                        </div>
+                    ` : ''}
 
-            <!-- Main Content -->
-            <div class="main-content">
-                <div class="main-title">${fullName}</div>
-
-                <!-- CORREÇÃO: Profile Section - Mudado para "Sobre Mim" -->
-                ${data.objective ? `
-                    <div class="section">
-                        <div class="section-title">Sobre Mim</div>
-                        <div class="about-text">${data.objective}</div>
-                    </div>
-                ` : ''}
-
-                ${data.experience.length > 0 ? `
-                    <div class="section">
-                        <div class="section-title">Experiência Profissional</div>
-                        ${data.experience.map(exp => `
-                            <div class="experience-item">
-                                <div class="experience-header">
-                                    <div>
-                                        <div class="experience-title">${exp.title || 'Cargo'}</div>
-                                        <div class="experience-company">${exp.company || 'Empresa'}</div>
+                    ${data.experience.length > 0 ? `
+                        <div class="section">
+                            <div class="section-title">Experiência Profissional</div>
+                            ${data.experience.map(exp => `
+                                <div class="experience-item">
+                                    <div class="experience-header">
+                                        <div>
+                                            <div class="experience-title">${exp.title || 'Cargo'}</div>
+                                            <div class="experience-company">${exp.company || 'Empresa'}</div>
+                                        </div>
+                                        <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
                                     </div>
-                                    <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
+                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
                                 </div>
-                                ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
+                            `).join('')}
+                        </div>
+                    ` : ''}
 
-                ${data.education.length > 0 ? `
-                    <div class="section">
-                        <div class="section-title">Formação Acadêmica</div>
-                        ${data.education.map(edu => `
-                            <div class="education-item">
-                                <div class="education-degree">${edu.degree || 'Curso'}</div>
-                                <div class="education-school">${edu.school || 'Instituição'}</div>
-                                <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
+                    ${data.education.length > 0 ? `
+                        <div class="section">
+                            <div class="section-title">Formação Acadêmica</div>
+                            ${data.education.map(edu => `
+                                <div class="education-item">
+                                    <div class="education-degree">${edu.degree || 'Curso'}</div>
+                                    <div class="education-school">${edu.school || 'Instituição'}</div>
+                                    <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
             </div>
-        </div>
+        </body>
+        </html>
     `;
 
     return html;
@@ -4361,62 +4346,27 @@ async function captureCurrentPreview() {
             throw new Error('Pré-visualização não encontrada');
         }
 
-        // AGUARDAR MAIS TEMPO para mobile
+        // AGUARDAR renderização completa
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         const iframeDoc = previewFrame.contentDocument;
         const iframeBody = iframeDoc.body;
-        const iframeHtml = iframeDoc.documentElement;
 
-        // FORÇAR DIMENSÕES ABSOLUTAS
-        iframeHtml.style.width = '794px';
-        iframeHtml.style.height = '1123px';
-        iframeHtml.style.overflow = 'hidden';
-        iframeHtml.style.margin = '0';
-        iframeHtml.style.padding = '0';
-
-        iframeBody.style.width = '794px';
-        iframeBody.style.minHeight = '1123px';
-        iframeBody.style.margin = '0';
-        iframeBody.style.padding = '20px';
-        iframeBody.style.overflow = 'hidden';
-        iframeBody.style.boxSizing = 'border-box';
-        iframeBody.style.background = 'white';
-
-        // AGUARDAR renderização
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        console.log('Capturando screenshot...');
+        // RESPEITAR O LAYOUT ORIGINAL DO TEMPLATE
+        console.log('Capturando screenshot respeitando template...');
         const canvas = await html2canvas(iframeBody, {
-            scale: 2, // QUALIDADE ALTA FIXA
+            scale: 2, // QUALIDADE ALTA
             useCORS: true,
             allowTaint: false,
             logging: false,
             backgroundColor: '#ffffff',
-            width: 794,
-            height: iframeBody.scrollHeight,
+            // NÃO forçar dimensões - deixar o template definir
             scrollX: 0,
             scrollY: 0,
-            windowWidth: 794,
-            windowHeight: iframeBody.scrollHeight,
             onclone: function (clonedDoc, element) {
-                // GARANTIR CONSISTÊNCIA MÁXIMA
-                const clonedHtml = clonedDoc.documentElement;
-                clonedHtml.style.width = '794px';
-                clonedHtml.style.height = '1123px';
-                clonedHtml.style.overflow = 'hidden';
-
-                element.style.width = '794px';
-                element.style.minHeight = '1123px';
-                element.style.overflow = 'visible';
-                element.style.boxSizing = 'border-box';
-
-                // Otimizar imagens
+                // APENAS otimizações mínimas
                 const images = element.querySelectorAll('img');
                 images.forEach(img => {
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
-                    img.style.display = 'block';
                     if (img.classList.contains('photo')) {
                         img.style.objectFit = 'cover';
                         img.style.objectPosition = 'center';
@@ -4430,25 +4380,7 @@ async function captureCurrentPreview() {
         return canvas;
 
     } catch (error) {
-        console.error('Erro detalhado ao capturar preview:', error);
-
-        // FALLBACK MAIS ROBUSTO
-        try {
-            console.log('Tentando fallback...');
-            const previewFrame = document.getElementById('pdf-preview-iframe');
-            if (previewFrame && previewFrame.contentDocument) {
-                const canvas = await html2canvas(previewFrame.contentDocument.body, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false
-                });
-                return canvas;
-            }
-        } catch (fallbackError) {
-            console.error('Fallback também falhou:', fallbackError);
-        }
-
+        console.error('Erro ao capturar preview:', error);
         throw new Error('Não foi possível capturar a pré-visualização');
     }
 }
