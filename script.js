@@ -34,7 +34,7 @@ function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-
+    
     // Ícones Lucide para cada tipo
     const icons = {
         success: 'check-circle',
@@ -101,14 +101,14 @@ function showPDFPreviewModal(templateHTML, data) {
                 </div>
                 
                 <div class="pdf-preview-container">
-                <iframe 
-                    id="pdf-preview-iframe" 
-                    srcdoc="${templateHTML.replace(/"/g, '&quot;')}"
-                    style="width: 100%; height: 500px; border: none; background: white;"
-                    title="Pré-visualização do currículo"
-                ></iframe>
+                    <iframe 
+                        id="pdf-preview-iframe" 
+                        srcdoc="${templateHTML.replace(/"/g, '&quot;')}"
+                        style="width: 100%; height: 500px; border: none; background: white;"
+                        title="Pré-visualização do currículo"
+                    ></iframe>
                 </div>
-
+                
                 <!-- Seção de Download -->
                 <div class="actions-section">
                     <h3 class="section-title">
@@ -201,71 +201,18 @@ function showPDFPreviewModal(templateHTML, data) {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // CONFIGURAÇÃO MELHORADA - RESPEITAR TEMPLATES
+    // Configurar iframe após carregamento
     setTimeout(() => {
         const iframe = document.getElementById('pdf-preview-iframe');
         if (iframe && iframe.contentDocument) {
+            // Garantir que o conteúdo seja exibido corretamente
             const body = iframe.contentDocument.body;
-            const html = iframe.contentDocument.documentElement;
-
             if (body) {
-                // APENAS garantir dimensões básicas SEM sobrescrever estilos
-                html.style.margin = '0';
-                html.style.padding = '0';
-
-                // MANTER os estilos originais do template
-                // NÃO forçar width/height específicos
-
-                // Apenas garantir que imagens funcionem bem
-                const images = body.querySelectorAll('img');
-                images.forEach(img => {
-                    if (img.classList.contains('photo')) {
-                        img.style.objectFit = 'cover';
-                        img.style.objectPosition = 'center';
-                    }
-                });
-
-                // CSS CRÍTICO MINIMALISTA
-                const criticalStyles = document.createElement('style');
-                criticalStyles.textContent = `
-                    /* Apenas garantias essenciais */
-                    body {
-                        margin: 0 auto !important;
-                        overflow-x: hidden !important;
-                    }
-                    .photo, img {
-                        max-width: 100% !important;
-                        height: auto !important;
-                    }
-                `;
-
-                if (!iframe.contentDocument.head.querySelector('style[data-critical]')) {
-                    criticalStyles.setAttribute('data-critical', 'true');
-                    iframe.contentDocument.head.appendChild(criticalStyles);
-                }
+                body.style.margin = '0';
+                body.style.padding = '20px';
             }
         }
-    }, 800);
-
-    // AGUARDAR MAIS TEMPO E VERIFICAR NOVAMENTE (especialmente para mobile)
-    setTimeout(() => {
-        const iframe = document.getElementById('pdf-preview-iframe');
-        if (iframe && iframe.contentDocument) {
-            const body = iframe.contentDocument.body;
-
-            // VERIFICAR SE O CONTEÚDO FOI RENDERIZADO CORRETAMENTE
-            if (body && body.children.length > 0) {
-                console.log('Iframe carregado com sucesso. Dimensões:',
-                    body.scrollWidth, 'x', body.scrollHeight);
-
-                // FORÇAR REDIMENSIONAMENTO FINAL
-                body.style.width = '794px';
-                body.style.minHeight = '1123px';
-            } else {
-                console.warn('Iframe pode não ter carregado completamente');
-            }
-        }
-    }, 1500);
+    }, 500);
 
     // Adicionar efeitos de hover
     setTimeout(() => {
@@ -283,9 +230,6 @@ function showPDFPreviewModal(templateHTML, data) {
 
     // Adicionar event listener para fechar modal com ESC
     document.addEventListener('keydown', handleModalKeydown);
-
-    // LOG para debug
-    console.log('Modal de preview aberto. Template length:', templateHTML.length);
 }
 
 // Função para fechar o modal corretamente
@@ -1066,217 +1010,30 @@ const AVAILABLE_TEMPLATES = {
 function generateTemplateHTML(data, template, color, secondaryColor, useGradient) {
     if (!data) return '<div style="padding: 2rem; text-align: center; color: #666;">Preencha os dados do formulário para ver a pré-visualização</div>';
 
-    // CSS FIXO MINIMALISTA - APENAS para garantir dimensões básicas
-    const fixedCSS = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                /* APENAS garantias mínimas sem sobrescrever templates */
-                html, body {
-                    width: 210mm; /* MANTER unidades originais dos templates */
-                    min-height: 297mm;
-                    margin: 0 auto;
-                }
-                /* Garantir que imagens não quebrem */
-                .photo, img {
-                    max-width: 100%;
-                    height: auto;
-                }
-            </style>
-        </head>
-        <body>
-    `;
-
-    const fixedEnd = `</body></html>`;
-
-    // CORREÇÃO: Processamento consistente da foto
+    // CORREÇÃO: Processamento consistente da foto para todos os templates
     let photoHTML = '';
     if (data.personal.photo) {
-        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo">`;
+        // CORREÇÃO CRÍTICA: Usar o Data URL diretamente sem conversões
+        photoHTML = `<img src="${data.personal.photo}" alt="Foto" class="photo" crossorigin="anonymous" style="object-fit: cover; object-position: center;">`;
     }
 
-    // Sistema de templates (gerar o HTML primeiro)
-    let templateContent = '';
-    try {
-        switch (template) {
-            case 'minimal':
-                templateContent = generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML);
-                break;
-            case 'classic':
-                templateContent = generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
-                break;
-            case 'executive':
-                templateContent = generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML);
-                break;
-            case 'elegant':
-                templateContent = generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML);
-                break;
-            case 'professional':
-                templateContent = generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML);
-                break;
-            case 'creative':
-                templateContent = generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML);
-                break;
-            default:
-                templateContent = generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
-        }
-    } catch (error) {
-        console.error('Erro ao gerar template:', error);
-        templateContent = '<div style="padding: 2rem; text-align: center; color: red;">Erro ao gerar template</div>';
+    // Sistema de templates
+    switch (template) {
+        case 'minimal':
+            return generateMinimalTemplate(data, color, secondaryColor, useGradient, photoHTML);
+        case 'classic':
+            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
+        case 'executive':
+            return generateExecutiveTemplate(data, color, secondaryColor, useGradient, photoHTML);
+        case 'elegant':
+            return generateElegantTemplate(data, color, secondaryColor, useGradient, photoHTML);
+        case 'professional':
+            return generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML);
+        case 'creative':
+            return generateCreativeTemplate(data, color, secondaryColor, useGradient, photoHTML);
+        default:
+            return generateClassicTemplate(data, color, secondaryColor, useGradient, photoHTML);
     }
-
-    // Combinar CSS fixo mínimo com o conteúdo do template
-    return fixedCSS + templateContent + fixedEnd;
-}
-
-// Função auxiliar para formatar datas
-function formatMonthYear(dateString) {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-
-    return `${month} ${year}`;
-}
-
-// ================================================
-// SALVAMENTO E CARREGAMENTO DE PROGRESSO
-// ================================================
-
-function saveProgress() {
-    const data = getFormData();
-    localStorage.setItem('jobframe_resume_data', JSON.stringify(data));
-    showToast('Progresso salvo com sucesso!', 'success');
-}
-
-function autoSaveProgress() {
-    const data = getFormData();
-    if (data.personal.fullName || data.personal.email) {
-        localStorage.setItem('jobframe_resume_data', JSON.stringify(data));
-    }
-}
-
-function loadSavedProgress() {
-    const savedData = localStorage.getItem('jobframe_resume_data');
-    if (savedData) {
-        try {
-            const data = JSON.parse(savedData);
-            populateForm(data);
-            showToast('Progresso anterior carregado!', 'info');
-        } catch (e) {
-            console.error('Error loading saved data:', e);
-        }
-    }
-}
-
-function updatePreview() {
-    const previewFrame = document.getElementById('resume-frame');
-    const placeholder = document.getElementById('preview-placeholder');
-
-    if (!previewFrame) return;
-
-    const data = getFormData();
-    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
-    const useGradient = document.getElementById('useGradient')?.checked || false;
-
-    if (!data) return;
-
-    const hasContent = data.personal.fullName || data.experience.length > 0 || data.education.length > 0;
-
-    if (hasContent) {
-        const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor);
-
-        const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(templateHTML);
-        iframeDoc.close();
-
-        if (placeholder) {
-            placeholder.style.display = 'none';
-        }
-        previewFrame.style.display = 'block';
-    } else {
-        if (placeholder) {
-            placeholder.style.display = 'flex';
-        }
-        previewFrame.style.display = 'none';
-    }
-}
-
-// ================================================
-// INICIALIZAÇÃO DOS TEMPLATES
-// ================================================
-
-function initializePreviewHandlers() {
-    // Event listeners para seleção de template
-    const templateCards = document.querySelectorAll('.template-card');
-    templateCards.forEach(card => {
-        card.addEventListener('click', function () {
-            templateCards.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            selectedTemplate = this.dataset.template;
-            localStorage.setItem("resume-template", selectedTemplate);
-            updatePreview();
-        });
-    });
-
-    // Event listeners para seleção de cor
-    const colorButtons = document.querySelectorAll('.color-btn');
-    colorButtons.forEach(btn => {
-        btn.addEventListener('click', function () {
-            colorButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            selectedColor = this.dataset.color;
-            localStorage.setItem("resume-color", selectedColor);
-            updatePreview();
-        });
-    });
-
-    // Event listener para cor personalizada
-    const customColorPicker = document.getElementById('customColor');
-    if (customColorPicker) {
-        customColorPicker.addEventListener('input', function (e) {
-            selectedColor = e.target.value;
-            colorButtons.forEach(b => b.classList.remove('active'));
-            localStorage.setItem("resume-color", selectedColor);
-            updatePreview();
-        });
-    }
-
-    // Event listeners para atualizar preview em tempo real
-    const form = document.getElementById('resume-form');
-    if (form) {
-        form.addEventListener('input', debounce(updatePreview, 500));
-        form.addEventListener('change', updatePreview);
-    }
-
-    // Botões de preview
-    const refreshBtn = document.getElementById('preview-refresh');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', updatePreview);
-    }
-
-    const fullscreenBtn = document.getElementById('preview-fullscreen');
-    if (fullscreenBtn) {
-        fullscreenBtn.addEventListener('click', function () {
-            const frame = document.getElementById('resume-frame');
-            if (frame.requestFullscreen) {
-                frame.requestFullscreen();
-            } else if (frame.webkitRequestFullscreen) {
-                frame.webkitRequestFullscreen();
-            }
-        });
-    }
-
-    // Atualiza preview inicial
-    setTimeout(updatePreview, 500);
 }
 
 // ======================
@@ -1537,14 +1294,14 @@ function generateClassicTemplate(data, color, secondaryColor, useGradient, photo
         if (!phone) return '';
         // Remove tudo que não é número
         const cleaned = phone.replace(/\D/g, '');
-
+        
         // Formata para (00) 00000-0000
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-
+        
         // Retorna o número original se não conseguir formatar
         return phone;
     }
@@ -2003,19 +1760,19 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
     function formatPhoneNumber(phone) {
         if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
-
+        
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-
+        
         return phone;
     }
 
     // Processar informações de contato
     const contactItems = [];
-
+    
     if (data.personal.phone) {
         const formattedPhone = formatPhoneNumber(data.personal.phone);
         contactItems.push(`
@@ -2027,7 +1784,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             </div>
         `);
     }
-
+    
     if (data.personal.email) {
         contactItems.push(`
             <div class="contact-item">
@@ -2039,7 +1796,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             </div>
         `);
     }
-
+    
     if (data.personal.linkedin) {
         contactItems.push(`
             <div class="contact-item">
@@ -2052,7 +1809,7 @@ function generateExecutiveTemplate(data, color, secondaryColor, useGradient, pho
             </div>
         `);
     }
-
+    
     if (data.personal.neighborhood || data.personal.city || data.personal.state) {
         const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
         contactItems.push(`
@@ -2625,7 +2382,6 @@ function generateMinimalTemplate(data, color, secondaryColor, useGradient, photo
     return html;
 }
 
-
 // ======================
 // TEMPLATE 4: ELEGANTE 
 // ======================
@@ -2977,19 +2733,19 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
     function formatPhoneNumber(phone) {
         if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
-
+        
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-
+        
         return phone;
     }
 
     // Processar informações de contato
     const contactItems = [];
-
+    
     if (data.personal.phone) {
         const formattedPhone = formatPhoneNumber(data.personal.phone);
         contactItems.push(`
@@ -3001,7 +2757,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             </div>
         `);
     }
-
+    
     if (data.personal.email) {
         contactItems.push(`
             <div class="contact-item">
@@ -3013,7 +2769,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             </div>
         `);
     }
-
+    
     if (data.personal.linkedin) {
         contactItems.push(`
             <div class="contact-item">
@@ -3026,7 +2782,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
             </div>
         `);
     }
-
+    
     if (data.personal.neighborhood || data.personal.city || data.personal.state) {
         const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
         contactItems.push(`
@@ -3174,7 +2930,7 @@ function generateElegantTemplate(data, color, secondaryColor, useGradient, photo
 
 function generateProfessionalTemplate(data, color, secondaryColor, useGradient, photoHTML) {
     const primaryColor = color || '#7c3aed';
-    const accentColor = '#000000';
+    const accentColor = secondaryColor || '#5b21b6';
     const neutralColor = '#6d28d9';
 
     const styles = `
@@ -3205,8 +2961,8 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 position: relative;
             }
             
-            /* Consulting Header */
-            .header-consulting {
+            /* Professional Header */
+            .header-professional {
                 padding: 35px 0 25px;
                 border-bottom: 3px solid ${primaryColor};
                 margin-bottom: 30px;
@@ -3218,10 +2974,14 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 grid-template-columns: 1fr auto 1fr;
                 gap: 30px;
                 align-items: center;
+                margin-bottom: 20px;
             }
             
-            .contact-left {
-                text-align: left;
+            .contact-info {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+                text-align: center;
             }
             
             .name-title {
@@ -3233,9 +2993,9 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
             }
             
             .photo-container {
-                width: 110px;
-                height: 110px;
-                border-radius: 8px;
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
                 overflow: hidden;
                 border: 3px solid ${primaryColor};
                 background: white;
@@ -3252,37 +3012,35 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 font-size: 32px;
                 font-weight: 700;
                 color: ${primaryColor};
-                margin-bottom: 5px;
+                margin-bottom: 10px;
                 letter-spacing: -0.5px;
-            }
-            
-            .title {
-                font-size: 16px;
-                font-weight: 500;
-                color: #6b7280;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-            }
-            
-            .contact-consulting {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
             }
             
             .contact-item {
                 display: flex;
+                flex-direction: column;
                 align-items: center;
-                gap: 8px;
+                gap: 5px;
                 font-size: 10pt;
                 color: #6b7280;
             }
             
             .contact-icon {
-                width: 12px;
-                height: 12px;
+                width: 14px;
+                height: 14px;
                 color: ${primaryColor};
                 flex-shrink: 0;
+            }
+            
+            .contact-label {
+                font-size: 9pt;
+                color: #9ca3af;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .contact-value {
+                font-weight: 500;
             }
             
             /* Main Content */
@@ -3327,40 +3085,33 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 text-align: justify;
             }
             
-            /* Skills Section - Consulting Style */
-            .skills-consulting {
+            /* Skills Section - Clean Style */
+            .skills-list {
+                list-style: none;
+                padding: 0;
                 display: grid;
-                gap: 12px;
+                gap: 8px;
             }
             
-            .skill-category {
-                background: #f8fafc;
-                padding: 15px;
-                border-radius: 6px;
-                border-left: 4px solid ${primaryColor};
-            }
-            
-            .category-title {
-                font-size: 11pt;
-                font-weight: 700;
-                color: ${primaryColor};
-                margin-bottom: 8px;
-            }
-            
-            .skill-items {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-            
-            .skill-tag {
-                padding: 4px 10px;
-                background: white;
-                border: 1px solid #e5e7eb;
-                border-radius: 4px;
-                font-size: 9.5pt;
+            .skill-item {
+                padding: 8px 0;
+                font-size: 10.5pt;
                 color: #4b5563;
-                font-weight: 500;
+                position: relative;
+                padding-left: 15px;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            
+            .skill-item:last-child {
+                border-bottom: none;
+            }
+            
+            .skill-item::before {
+                content: '•';
+                position: absolute;
+                left: 0;
+                color: ${primaryColor};
+                font-weight: bold;
             }
             
             /* Languages Section */
@@ -3373,10 +3124,14 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 8px;
-                padding: 6px 0;
+                padding: 8px 0;
                 font-size: 10.5pt;
                 color: #4b5563;
                 border-bottom: 1px solid #f3f4f6;
+            }
+            
+            .language-item:last-child {
+                border-bottom: none;
             }
             
             .language-level {
@@ -3384,20 +3139,24 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 font-weight: 600;
             }
             
-            /* Experience Section */
+            /* Experience Section - Clean Style */
             .experience-item {
-                margin-bottom: 20px;
-                padding: 18px;
-                background: #f8fafc;
-                border-radius: 6px;
-                border: 1px solid #e5e7eb;
+                margin-bottom: 22px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            
+            .experience-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
             }
             
             .experience-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
             }
             
             .experience-title {
@@ -3426,13 +3185,17 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 line-height: 1.6;
             }
             
-            /* Education Section */
+            /* Education Section - Clean Style */
             .education-item {
-                margin-bottom: 15px;
-                padding: 15px;
-                background: white;
-                border-radius: 6px;
-                border: 1px solid #e5e7eb;
+                margin-bottom: 18px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            
+            .education-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
             }
             
             .education-degree {
@@ -3455,23 +3218,13 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 font-style: italic;
             }
             
-            /* Consulting Approach */
-            .approach-section {
-                background: linear-gradient(135deg, ${primaryColor}15 0%, ${accentColor}15 100%);
-                padding: 20px;
-                border-radius: 8px;
-                border: 1px solid ${primaryColor}20;
+            /* Professional Summary */
+            .summary-section {
+                padding: 0;
                 margin-bottom: 25px;
             }
             
-            .approach-title {
-                font-size: 12pt;
-                font-weight: 700;
-                color: ${primaryColor};
-                margin-bottom: 10px;
-            }
-            
-            .approach-text {
+            .summary-text {
                 font-size: 10.5pt;
                 line-height: 1.6;
                 color: #4b5563;
@@ -3485,9 +3238,8 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
         </style>
     `;
 
-    // CORREÇÃO 1: Função para formatar número de telefone
+    // Função para formatar número de celular
     function formatPhoneNumber(phone) {
-        if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
@@ -3497,9 +3249,10 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
         return phone;
     }
 
-    // Processar informações de contato
+    // Processar informações de contato COMPLETAS
     const contactItems = [];
-
+    
+    // Telefone
     if (data.personal.phone) {
         const formattedPhone = formatPhoneNumber(data.personal.phone);
         contactItems.push(`
@@ -3507,11 +3260,13 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                 </svg>
-                <span>${formattedPhone}</span>
+                <div class="contact-label">Telefone</div>
+                <div class="contact-value">${formattedPhone}</div>
             </div>
         `);
     }
-
+    
+    // Email
     if (data.personal.email) {
         contactItems.push(`
             <div class="contact-item">
@@ -3519,11 +3274,13 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                     <polyline points="22,6 12,13 2,6"/>
                 </svg>
-                <span>${data.personal.email}</span>
+                <div class="contact-label">Email</div>
+                <div class="contact-value">${data.personal.email}</div>
             </div>
         `);
     }
-
+    
+    // LinkedIn
     if (data.personal.linkedin) {
         contactItems.push(`
             <div class="contact-item">
@@ -3532,11 +3289,13 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                     <rect x="2" y="9" width="4" height="12"/>
                     <circle cx="4" cy="4" r="2"/>
                 </svg>
-                <span>${data.personal.linkedin}</span>
+                <div class="contact-label">LinkedIn</div>
+                <div class="contact-value">${data.personal.linkedin}</div>
             </div>
         `);
     }
-
+    
+    // Endereço
     if (data.personal.neighborhood || data.personal.city || data.personal.state) {
         const location = [data.personal.neighborhood, data.personal.city, data.personal.state].filter(Boolean).join(', ');
         contactItems.push(`
@@ -3545,9 +3304,15 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                     <circle cx="12" cy="10" r="3"/>
                 </svg>
-                <span>${location}</span>
+                <div class="contact-label">Localização</div>
+                <div class="contact-value">${location}</div>
             </div>
         `);
+    }
+
+    // Se algum contato estiver faltando, preencher com espaços vazios
+    while (contactItems.length < 4) {
+        contactItems.push('<div class="contact-item"></div>');
     }
 
     let html = `
@@ -3560,28 +3325,21 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
         </head>
         <body>
             <div class="resume-container">
-                <!-- Consulting Header -->
-                <div class="header-consulting">
+                <!-- Professional Header -->
+                <div class="header-professional">
                     <div class="header-content">
-                        <div class="contact-left">
-                            <div class="contact-consulting">
-                                ${contactItems.slice(0, 2).join('')}
-                            </div>
-                        </div>
+                        <div></div> <!-- Espaço vazio à esquerda -->
                         
                         <div class="name-title">
                             <h1 class="name">${data.personal.fullName || 'NOME COMPLETO'}</h1>
-                            <div class="title">${data.personal.title || 'Consultor'}</div>
                         </div>
                         
-                        ${photoHTML ? `
                         <div class="photo-section">
+                            ${photoHTML ? `
                             <div class="photo-container">
                                 ${photoHTML.replace('class="photo"', 'class="photo"')}
                             </div>
-                        </div>
-                        ` : `
-                        <div class="photo-section">
+                            ` : `
                             <div class="photo-container">
                                 <div style="width:100%;height:100%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;">
                                     <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
@@ -3590,8 +3348,13 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                                     </svg>
                                 </div>
                             </div>
+                            `}
                         </div>
-                        `}
+                    </div>
+                    
+                    <!-- Contact Info Grid -->
+                    <div class="contact-info">
+                        ${contactItems.join('')}
                     </div>
                 </div>
 
@@ -3599,72 +3362,67 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                 <div class="main-content">
                     <!-- Left Column -->
                     <div class="left-column">
-                        <!-- Consulting Approach -->
-                        <div class="approach-section">
-                            <div class="approach-title">Abordagem Consultiva</div>
-                            <div class="approach-text">
-                                Foco em soluções personalizadas baseadas em análise de dados e melhores 
-                                práticas do mercado. Metodologia centrada no cliente com entrega de 
-                                resultados mensuráveis e impacto sustentável.
+                        <!-- Professional Summary -->
+                        <div class="section summary-section">
+                            <h2 class="section-title">Resumo Profissional</h2>
+                            <div class="summary-text">
+                                ${data.objective || `Profissional com sólida experiência e histórico comprovado de resultados. 
+                                Especializado em desenvolver estratégias eficazes que impulsionam o crescimento 
+                                e a excelência operacional. Comprometido com a inovação e a entrega de valor 
+                                sustentável.`}
                             </div>
                         </div>
 
                         <!-- Skills -->
-                        ${data.skills ? `
                         <div class="section">
-                            <h2 class="section-title">Especialidades</h2>
-                            <div class="skills-consulting">
-                                <div class="skill-category">
-                                    <div class="category-title">Estratégia</div>
-                                    <div class="skill-items">
-                                        ${data.skills.split(',').slice(0, 4).map(skill => `
-                                            <div class="skill-tag">${skill.trim()}</div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                                <div class="skill-category">
-                                    <div class="category-title">Operações</div>
-                                    <div class="skill-items">
-                                        ${data.skills.split(',').slice(4, 8).map(skill => `
-                                            <div class="skill-tag">${skill.trim()}</div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            </div>
+                            <h2 class="section-title">Competências</h2>
+                            <ul class="skills-list">
+                                ${data.skills ? data.skills.split(',').map(skill => `
+                                    <li class="skill-item">${skill.trim()}</li>
+                                `).join('') : `
+                                    <li class="skill-item">Gestão de Projetos</li>
+                                    <li class="skill-item">Liderança de Equipe</li>
+                                    <li class="skill-item">Comunicação Eficaz</li>
+                                    <li class="skill-item">Análise Estratégica</li>
+                                    <li class="skill-item">Resolução de Problemas</li>
+                                    <li class="skill-item">Planejamento e Organização</li>
+                                `}
+                            </ul>
                         </div>
-                        ` : ''}
 
                         <!-- Languages -->
-                        ${data.languages.length > 0 ? `
                         <div class="section">
                             <h2 class="section-title">Idiomas</h2>
                             <ul class="languages-list">
-                                ${data.languages.map(lang => `
+                                ${data.languages.length > 0 ? data.languages.map(lang => `
                                     <li class="language-item">
                                         <span>${lang.name}</span>
                                         <span class="language-level">${lang.level}</span>
                                     </li>
-                                `).join('')}
+                                `).join('') : `
+                                    <li class="language-item">
+                                        <span>Português</span>
+                                        <span class="language-level">Nativo</span>
+                                    </li>
+                                    <li class="language-item">
+                                        <span>Inglês</span>
+                                        <span class="language-level">Avançado</span>
+                                    </li>
+                                    <li class="language-item">
+                                        <span>Espanhol</span>
+                                        <span class="language-level">Intermediário</span>
+                                    </li>
+                                `}
                             </ul>
                         </div>
-                        ` : ''}
                     </div>
 
                     <!-- Right Column -->
                     <div class="right-column">
-                        <!-- CORREÇÃO 4: Profile Section - Mudado para "Sobre mim" -->
-                        ${data.objective ? `
-                        <div class="section">
-                            <h2 class="section-title">Sobre mim</h2>
-                            <div class="profile-text">${data.objective}</div>
-                        </div>
-                        ` : ''}
-
                         <!-- Experience -->
-                        ${data.experience.length > 0 ? `
                         <div class="section">
-                            <h2 class="section-title">Experiência em Consultoria</h2>
-                            ${data.experience.map(exp => `
+                            <h2 class="section-title">Experiência Profissional</h2>
+                            ${data.experience.length > 0 ? data.experience.map(exp => `
                                 <div class="experience-item">
                                     <div class="experience-header">
                                         <div>
@@ -3673,25 +3431,80 @@ function generateProfessionalTemplate(data, color, secondaryColor, useGradient, 
                                         </div>
                                         <div class="experience-period">${exp.startDate ? formatMonthYear(exp.startDate) : ''} - ${exp.current ? 'Atual' : (exp.endDate ? formatMonthYear(exp.endDate) : '')}</div>
                                     </div>
-                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+                                    ${exp.description ? `<div class="experience-description">${exp.description}</div>` : `
+                                    <div class="experience-description">
+                                        Desenvolvimento e implementação de estratégias que resultaram em 
+                                        crescimento significativo e otimização de processos organizacionais.
+                                    </div>
+                                    `}
                                 </div>
-                            `).join('')}
+                            `).join('') : `
+                                <div class="experience-item">
+                                    <div class="experience-header">
+                                        <div>
+                                            <div class="experience-title">Gerente de Projetos</div>
+                                            <div class="experience-company">Empresa de Tecnologia</div>
+                                        </div>
+                                        <div class="experience-period">2020 – Atual</div>
+                                    </div>
+                                    <div class="experience-description">
+                                        Liderança de equipes multidisciplinares no desenvolvimento e 
+                                        implementação de projetos estratégicos com foco em inovação 
+                                        e excelência operacional.
+                                    </div>
+                                </div>
+                                <div class="experience-item">
+                                    <div class="experience-header">
+                                        <div>
+                                            <div class="experience-title">Coordenador de Operações</div>
+                                            <div class="experience-company">Consultoria Empresarial</div>
+                                        </div>
+                                        <div class="experience-period">2018 – 2020</div>
+                                    </div>
+                                    <div class="experience-description">
+                                        Coordenação de operações e implementação de melhorias contínuas 
+                                        nos processos organizacionais, resultando em aumento de 
+                                        eficiência e produtividade.
+                                    </div>
+                                </div>
+                                <div class="experience-item">
+                                    <div class="experience-header">
+                                        <div>
+                                            <div class="experience-title">Analista Sênior</div>
+                                            <div class="experience-company">Organização Reconhecida</div>
+                                        </div>
+                                        <div class="experience-period">2016 – 2018</div>
+                                    </div>
+                                    <div class="experience-description">
+                                        Análise de dados e desenvolvimento de recomendações estratégicas 
+                                        para melhorias de processos e eficiência operacional.
+                                    </div>
+                                </div>
+                            `}
                         </div>
-                        ` : ''}
 
                         <!-- Education -->
-                        ${data.education.length > 0 ? `
                         <div class="section">
                             <h2 class="section-title">Formação Acadêmica</h2>
-                            ${data.education.map(edu => `
+                            ${data.education.length > 0 ? data.education.map(edu => `
                                 <div class="education-item">
                                     <div class="education-degree">${edu.degree || 'Curso'}</div>
                                     <div class="education-school">${edu.school || 'Instituição'}</div>
                                     <div class="education-period">${edu.startYear ? formatMonthYear(edu.startYear) : ''} - ${edu.current ? 'Em Andamento' : (edu.endYear ? formatMonthYear(edu.endYear) : '')}</div>
                                 </div>
-                            `).join('')}
+                            `).join('') : `
+                                <div class="education-item">
+                                    <div class="education-degree">MBA em Gestão Empresarial</div>
+                                    <div class="education-school">Instituição de Ensino Superior</div>
+                                    <div class="education-period">2018 – 2020</div>
+                                </div>
+                                <div class="education-item">
+                                    <div class="education-degree">Bacharelado em Administração</div>
+                                    <div class="education-school">Universidade Federal</div>
+                                    <div class="education-period">2012 – 2016</div>
+                                </div>
+                            `}
                         </div>
-                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -3949,13 +3762,13 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
     function formatPhoneNumber(phone) {
         if (!phone) return '';
         const cleaned = phone.replace(/\D/g, '');
-
+        
         if (cleaned.length === 11) {
             return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (cleaned.length === 10) {
             return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
-
+        
         return phone;
     }
 
@@ -4117,6 +3930,153 @@ function generateCreativeTemplate(data, color, secondaryColor, useGradient, phot
     return html;
 }
 
+// Função auxiliar para formatar datas
+function formatMonthYear(dateString) {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${month} ${year}`;
+}
+
+// ================================================
+// SALVAMENTO E CARREGAMENTO DE PROGRESSO
+// ================================================
+
+function saveProgress() {
+    const data = getFormData();
+    localStorage.setItem('jobframe_resume_data', JSON.stringify(data));
+    showToast('Progresso salvo com sucesso!', 'success');
+}
+
+function autoSaveProgress() {
+    const data = getFormData();
+    if (data.personal.fullName || data.personal.email) {
+        localStorage.setItem('jobframe_resume_data', JSON.stringify(data));
+    }
+}
+
+function loadSavedProgress() {
+    const savedData = localStorage.getItem('jobframe_resume_data');
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            populateForm(data);
+            showToast('Progresso anterior carregado!', 'info');
+        } catch (e) {
+            console.error('Error loading saved data:', e);
+        }
+    }
+}
+
+function updatePreview() {
+    const previewFrame = document.getElementById('resume-frame');
+    const placeholder = document.getElementById('preview-placeholder');
+
+    if (!previewFrame) return;
+
+    const data = getFormData();
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
+    const useGradient = document.getElementById('useGradient')?.checked || false;
+
+    if (!data) return;
+
+    const hasContent = data.personal.fullName || data.experience.length > 0 || data.education.length > 0;
+
+    if (hasContent) {
+        const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor);
+
+        const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(templateHTML);
+        iframeDoc.close();
+
+        if (placeholder) {
+            placeholder.style.display = 'none';
+        }
+        previewFrame.style.display = 'block';
+    } else {
+        if (placeholder) {
+            placeholder.style.display = 'flex';
+        }
+        previewFrame.style.display = 'none';
+    }
+}
+
+// ================================================
+// INICIALIZAÇÃO DOS TEMPLATES
+// ================================================
+
+function initializePreviewHandlers() {
+    // Event listeners para seleção de template
+    const templateCards = document.querySelectorAll('.template-card');
+    templateCards.forEach(card => {
+        card.addEventListener('click', function () {
+            templateCards.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            selectedTemplate = this.dataset.template;
+            localStorage.setItem("resume-template", selectedTemplate);
+            updatePreview();
+        });
+    });
+
+    // Event listeners para seleção de cor
+    const colorButtons = document.querySelectorAll('.color-btn');
+    colorButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            colorButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            selectedColor = this.dataset.color;
+            localStorage.setItem("resume-color", selectedColor);
+            updatePreview();
+        });
+    });
+
+    // Event listener para cor personalizada
+    const customColorPicker = document.getElementById('customColor');
+    if (customColorPicker) {
+        customColorPicker.addEventListener('input', function (e) {
+            selectedColor = e.target.value;
+            colorButtons.forEach(b => b.classList.remove('active'));
+            localStorage.setItem("resume-color", selectedColor);
+            updatePreview();
+        });
+    }
+
+    // Event listeners para atualizar preview em tempo real
+    const form = document.getElementById('resume-form');
+    if (form) {
+        form.addEventListener('input', debounce(updatePreview, 500));
+        form.addEventListener('change', updatePreview);
+    }
+
+    // Botões de preview
+    const refreshBtn = document.getElementById('preview-refresh');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', updatePreview);
+    }
+
+    const fullscreenBtn = document.getElementById('preview-fullscreen');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', function () {
+            const frame = document.getElementById('resume-frame');
+            if (frame.requestFullscreen) {
+                frame.requestFullscreen();
+            } else if (frame.webkitRequestFullscreen) {
+                frame.webkitRequestFullscreen();
+            }
+        });
+    }
+
+    // Atualiza preview inicial
+    setTimeout(updatePreview, 500);
+}
+
 // ================================================
 // FUNÇÃO PRINCIPAL PARA GERAR CURRÍCULO
 // ================================================
@@ -4171,39 +4131,6 @@ async function generatePDF() {
     }
 }
 
-function waitForPreviewReady(previewFrame, timeout = 5000) {
-    return new Promise((resolve, reject) => {
-        const startTime = Date.now();
-
-        function checkReady() {
-            if (previewFrame.contentDocument && previewFrame.contentDocument.readyState === 'complete') {
-                // Verificar se as imagens estão carregadas
-                const images = previewFrame.contentDocument.images;
-                let imagesLoaded = true;
-
-                for (let i = 0; i < images.length; i++) {
-                    if (!images[i].complete) {
-                        imagesLoaded = false;
-                        break;
-                    }
-                }
-
-                if (imagesLoaded || Date.now() - startTime > timeout) {
-                    resolve();
-                } else {
-                    setTimeout(checkReady, 100);
-                }
-            } else if (Date.now() - startTime > timeout) {
-                resolve(); // Resolver mesmo que não esteja totalmente pronto
-            } else {
-                setTimeout(checkReady, 100);
-            }
-        }
-
-        checkReady();
-    });
-}
-
 // ================================================
 // GERAÇÃO DE PDF E COMPARTILHAMENTO
 // ================================================
@@ -4212,10 +4139,57 @@ async function downloadPDF(encodedHTML, fileName) {
     try {
         showToast('Gerando PDF... Aguarde.', 'info');
 
-        // Capturar exatamente o que está sendo exibido
-        const canvas = await captureCurrentPreview();
-
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
         const { jsPDF } = window.jspdf;
+
+        // Criar container temporário
+        const tempContainer = document.createElement('div');
+        tempContainer.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        `;
+
+        tempContainer.innerHTML = templateHTML;
+        document.body.appendChild(tempContainer);
+
+        // CORREÇÃO: Aguardar carregamento das imagens
+        await waitForImages(tempContainer);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // CORREÇÃO: Configurações otimizadas do html2canvas
+        const canvas = await html2canvas(tempContainer, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: tempContainer.scrollHeight,
+            onclone: function (clonedDoc, element) {
+                // CORREÇÃO: Otimizar imagens no clone
+                const images = element.querySelectorAll('img');
+                images.forEach(img => {
+                    if (img.src.startsWith('data:')) {
+                        // Data URLs não precisam de crossOrigin
+                        img.removeAttribute('crossorigin');
+                        // Forçar object-fit
+                        img.style.objectFit = 'cover';
+                        img.style.objectPosition = 'center center';
+                    }
+                });
+            }
+        });
+
+        document.body.removeChild(tempContainer);
+
+        // Criar PDF
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
@@ -4225,25 +4199,28 @@ async function downloadPDF(encodedHTML, fileName) {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        // Calcular dimensões para caber na página A4
+        // CORREÇÃO: Usar PNG para manter qualidade com fotos
+        const imgData = canvas.toDataURL('image/png', 1.0);
+
+        // Calcular dimensões mantendo proporção
         const imgWidth = canvas.width;
         const imgHeight = canvas.height;
-        const ratio = imgHeight / imgWidth;
+        const ratio = imgWidth / imgHeight;
 
-        let displayWidth = pdfWidth;
-        let displayHeight = pdfWidth * ratio;
+        let finalWidth = pdfWidth;
+        let finalHeight = pdfWidth / ratio;
 
-        // Se for muito alto, ajustar
-        if (displayHeight > pdfHeight) {
-            displayHeight = pdfHeight;
-            displayWidth = pdfHeight / ratio;
+        // Se a altura for maior que a página, ajustar
+        if (finalHeight > pdfHeight) {
+            finalHeight = pdfHeight;
+            finalWidth = pdfHeight * ratio;
         }
 
-        const x = (pdfWidth - displayWidth) / 2;
-        const y = (pdfHeight - displayHeight) / 2;
+        // Centralizar no PDF
+        const x = (pdfWidth - finalWidth) / 2;
+        const y = (pdfHeight - finalHeight) / 2;
 
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        pdf.addImage(imgData, 'PNG', x, y, displayWidth, displayHeight);
+        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
 
         const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`;
         pdf.save(safeFileName);
@@ -4260,21 +4237,68 @@ async function downloadJPG(encodedHTML, fileName) {
     try {
         showToast('Gerando JPG... Aguarde.', 'info');
 
-        // Usar a pré-visualização atual
-        const canvas = await captureCurrentPreview();
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
 
-        // Criar canvas para JPG com fundo branco
+        const tempContainer = document.createElement('div');
+        tempContainer.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        `;
+
+        tempContainer.innerHTML = templateHTML;
+        document.body.appendChild(tempContainer);
+
+        // CORREÇÃO: Aguardar carregamento
+        await waitForImages(tempContainer);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const canvas = await html2canvas(tempContainer, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: tempContainer.scrollHeight,
+            onclone: function (clonedDoc, element) {
+                const images = element.querySelectorAll('img');
+                images.forEach(img => {
+                    if (img.src.startsWith('blob:')) {
+                        img.crossOrigin = 'anonymous';
+                    }
+                });
+            }
+        });
+
+        document.body.removeChild(tempContainer);
+
+        // CORREÇÃO: Usar PNG convertido para JPG para manter qualidade
+        const pngData = canvas.toDataURL('image/png', 1.0);
+
+        // Converter PNG para JPG
         const jpgCanvas = document.createElement('canvas');
         jpgCanvas.width = canvas.width;
         jpgCanvas.height = canvas.height;
         const ctx = jpgCanvas.getContext('2d');
 
-        // Fundo branco
+        // Preencher com fundo branco primeiro
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, jpgCanvas.width, jpgCanvas.height);
 
         // Desenhar a imagem original
-        ctx.drawImage(canvas, 0, 0);
+        const img = new Image();
+        await new Promise((resolve) => {
+            img.onload = resolve;
+            img.src = pngData;
+        });
+        ctx.drawImage(img, 0, 0);
 
         const imgData = jpgCanvas.toDataURL('image/jpeg', 0.95);
         const link = document.createElement('a');
@@ -4299,8 +4323,47 @@ async function downloadPNG(encodedHTML, fileName) {
     try {
         showToast('Gerando PNG... Aguarde.', 'info');
 
-        // Usar a pré-visualização atual
-        const canvas = await captureCurrentPreview();
+        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
+
+        const tempContainer = document.createElement('div');
+        tempContainer.style.cssText = `
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            min-height: 1123px;
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        `;
+
+        tempContainer.innerHTML = templateHTML;
+        document.body.appendChild(tempContainer);
+
+        // CORREÇÃO: Aguardar carregamento
+        await waitForImages(tempContainer);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const canvas = await html2canvas(tempContainer, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: tempContainer.scrollHeight,
+            onclone: function (clonedDoc, element) {
+                const images = element.querySelectorAll('img');
+                images.forEach(img => {
+                    if (img.src.startsWith('blob:')) {
+                        img.crossOrigin = 'anonymous';
+                    }
+                });
+            }
+        });
+
+        document.body.removeChild(tempContainer);
 
         const imgData = canvas.toDataURL('image/png', 1.0);
         const link = document.createElement('a');
@@ -4321,120 +4384,22 @@ async function downloadPNG(encodedHTML, fileName) {
     }
 }
 
-function getPreviewHTML() {
-    const previewFrame = document.getElementById('pdf-preview-iframe');
-    if (previewFrame && previewFrame.contentDocument) {
-        return previewFrame.contentDocument.documentElement.outerHTML;
-    }
-
-    // Fallback: gerar o HTML novamente
-    const data = getFormData();
-    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
-    const useGradient = document.getElementById('useGradient')?.checked || false;
-
-    return generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
-}
-
-async function captureCurrentPreview() {
-    let startTime = Date.now();
-    console.log('Iniciando captura de preview...');
-
-    try {
-        const previewFrame = document.getElementById('pdf-preview-iframe');
-
-        if (!previewFrame || !previewFrame.contentDocument) {
-            throw new Error('Pré-visualização não encontrada');
-        }
-
-        // AGUARDAR renderização completa
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        const iframeDoc = previewFrame.contentDocument;
-        const iframeBody = iframeDoc.body;
-
-        // RESPEITAR O LAYOUT ORIGINAL DO TEMPLATE
-        console.log('Capturando screenshot respeitando template...');
-        const canvas = await html2canvas(iframeBody, {
-            scale: 2, // QUALIDADE ALTA
-            useCORS: true,
-            allowTaint: false,
-            logging: false,
-            backgroundColor: '#ffffff',
-            // NÃO forçar dimensões - deixar o template definir
-            scrollX: 0,
-            scrollY: 0,
-            onclone: function (clonedDoc, element) {
-                // APENAS otimizações mínimas
-                const images = element.querySelectorAll('img');
-                images.forEach(img => {
-                    if (img.classList.contains('photo')) {
-                        img.style.objectFit = 'cover';
-                        img.style.objectPosition = 'center';
-                    }
-                });
-            }
-        });
-
-        const endTime = Date.now();
-        console.log(`Canvas gerado em ${endTime - startTime}ms:`, canvas.width, 'x', canvas.height);
-        return canvas;
-
-    } catch (error) {
-        console.error('Erro ao capturar preview:', error);
-        throw new Error('Não foi possível capturar a pré-visualização');
-    }
-}
-
-function ensurePreviewFrameReady() {
-    return new Promise((resolve, reject) => {
-        const previewFrame = document.getElementById('pdf-preview-iframe');
-        if (!previewFrame) {
-            reject(new Error('Iframe de preview não encontrado'));
-            return;
-        }
-
-        const checkReady = () => {
-            try {
-                if (previewFrame.contentDocument &&
-                    previewFrame.contentDocument.readyState === 'complete' &&
-                    previewFrame.contentDocument.body &&
-                    previewFrame.contentDocument.body.children.length > 0) {
-
-                    // Verificar se há conteúdo visível
-                    const hasContent = previewFrame.contentDocument.body.scrollWidth > 10;
-                    if (hasContent) {
-                        resolve(previewFrame);
-                    } else {
-                        setTimeout(checkReady, 100);
-                    }
-                } else {
-                    setTimeout(checkReady, 100);
-                }
-            } catch (e) {
-                // Pode ocorrer erro de CORS, mas tentamos continuar
-                setTimeout(checkReady, 100);
-            }
-        };
-
-        // Timeout de segurança
-        setTimeout(() => {
-            resolve(previewFrame); // Resolver mesmo que não esteja perfeito
-        }, 5000);
-
-        checkReady();
-    });
-}
-
-// Função waitForImages
+// CORREÇÃO: Função waitForImages melhorada
 function waitForImages(container) {
     const images = container.querySelectorAll('img');
     const promises = Array.from(images).map(img => {
         return new Promise((resolve) => {
             if (img.complete && img.naturalHeight !== 0) {
+                // Imagem já carregada
                 resolve();
             } else if (img.src.startsWith('data:')) {
+                // CORREÇÃO: Data URL - considerar como carregada imediatamente
                 resolve();
+            } else if (img.src.startsWith('blob:')) {
+                // Blob URL - dar um pouco mais de tempo
+                setTimeout(resolve, 500);
             } else {
+                // Esperar carregamento de URL externa
                 let loaded = false;
 
                 const onLoad = () => {
@@ -4451,14 +4416,15 @@ function waitForImages(container) {
                         loaded = true;
                         img.removeEventListener('load', onLoad);
                         img.removeEventListener('error', onError);
-                        resolve();
+                        console.warn('Erro ao carregar imagem:', img.src);
+                        resolve(); // Continuar mesmo com erro
                     }
                 };
 
                 img.addEventListener('load', onLoad);
                 img.addEventListener('error', onError);
 
-                // Timeout fixo para todos os dispositivos
+                // Timeout de segurança
                 setTimeout(() => {
                     if (!loaded) {
                         loaded = true;
@@ -4506,6 +4472,62 @@ function optimizeImageElement(img) {
         img.style.objectFit = 'cover';
         img.style.objectPosition = 'center center';
     }
+}
+
+// Função waitForImages melhorada
+function waitForImages(container) {
+    const images = container.querySelectorAll('img');
+    const promises = Array.from(images).map(img => {
+        return new Promise((resolve) => {
+            if (img.complete && img.naturalHeight !== 0) {
+                // Imagem já carregada
+                if (img.naturalWidth === 0) {
+                    // Imagem quebrada, tentar recarregar
+                    img.src = img.src;
+                    setTimeout(resolve, 500);
+                } else {
+                    resolve();
+                }
+            } else {
+                // Esperar carregamento
+                let loaded = false;
+
+                const onLoad = () => {
+                    if (!loaded) {
+                        loaded = true;
+                        img.removeEventListener('load', onLoad);
+                        img.removeEventListener('error', onError);
+                        resolve();
+                    }
+                };
+
+                const onError = () => {
+                    if (!loaded) {
+                        loaded = true;
+                        img.removeEventListener('load', onLoad);
+                        img.removeEventListener('error', onError);
+                        // Continuar mesmo com erro
+                        resolve();
+                    }
+                };
+
+                img.addEventListener('load', onLoad);
+                img.addEventListener('error', onError);
+
+                // Timeout de segurança
+                setTimeout(() => {
+                    if (!loaded) {
+                        loaded = true;
+                        img.removeEventListener('load', onLoad);
+                        img.removeEventListener('error', onError);
+                        resolve();
+                    }
+                }, 3000);
+            }
+        });
+    });
+
+    return Promise.all(promises);
 }
 
 // ================================================
@@ -4602,6 +4624,23 @@ function fixSingleImageAspectRatio(img) {
     img.style.objectPosition = 'center center';
 }
 
+// Função auxiliar para aguardar o carregamento das imagens
+function waitForImages(container) {
+    const images = container.querySelectorAll('img');
+    const promises = Array.from(images).map(img => {
+        return new Promise((resolve) => {
+            if (img.complete && img.naturalHeight !== 0) {
+                resolve();
+            } else {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 2000);
+            }
+        });
+    });
+    return Promise.all(promises);
+}
+
 // ============================
 // FUNÇÕES DE COMPARTILHAMENTO
 // ============================
@@ -4622,117 +4661,6 @@ function copyShareLink(fileName) {
     navigator.clipboard.writeText(currentUrl).then(() => {
         showToast('Link copiado para a área de transferência!', 'success');
     });
-}
-
-// Função para adicionar efeitos de hover (chamada em showPDFPreviewModal)
-function addHoverEffects() {
-    const downloadOptions = document.querySelectorAll('.download-option');
-    downloadOptions.forEach(option => {
-        option.addEventListener('mouseenter', function () {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        });
-
-        option.addEventListener('mouseleave', function () {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-        });
-    });
-}
-
-// Função para configurar interações do modal (chamada em showPDFPreviewModal)
-function setupModalInteractions() {
-    const modal = document.getElementById('pdf-preview-modal');
-    if (!modal) return;
-
-    // Fechar modal ao clicar fora do conteúdo
-    modal.addEventListener('click', function (e) {
-        if (e.target === modal) {
-            closePDFPreviewModal();
-        }
-    });
-
-    // Prevenir fechamento ao clicar dentro do conteúdo
-    const modalContent = modal.querySelector('.modal-content');
-    if (modalContent) {
-        modalContent.addEventListener('click', function (e) {
-            e.stopPropagation();
-        });
-    }
-}
-
-// Função para lidar com teclas no modal (chamada em showPDFPreviewModal)
-function handleModalKeydown(e) {
-    if (e.key === 'Escape') {
-        closePDFPreviewModal();
-    }
-}
-
-// Função para copiar link compartilhável (chamada no modal)
-function copyShareableLink(encodedHTML, fileName) {
-    const currentUrl = window.location.href.split('?')[0];
-    navigator.clipboard.writeText(currentUrl).then(() => {
-        showToast('Link copiado para a área de transferência!', 'success');
-    }).catch(err => {
-        console.error('Erro ao copiar link:', err);
-        showToast('Erro ao copiar link', 'error');
-    });
-}
-
-// Método alternativo para download de PDF (chamado em downloadPDF)
-async function downloadPDFAlternative(encodedHTML, fileName) {
-    try {
-        showToast('Usando método alternativo...', 'info');
-
-        const templateHTML = decodeURIComponent(escape(atob(encodedHTML)));
-
-        // Criar um container temporário simples
-        const tempDiv = document.createElement('div');
-        tempDiv.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 794px;
-            min-height: 1123px;
-            background: white;
-            padding: 40px;
-            box-sizing: border-box;
-        `;
-        tempDiv.innerHTML = templateHTML;
-        document.body.appendChild(tempDiv);
-
-        const canvas = await html2canvas(tempDiv, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            logging: false
-        });
-
-        document.body.removeChild(tempDiv);
-
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
-
-        const imgData = canvas.toDataURL('image/png', 1.0);
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-        const safeFileName = `curriculo_${(fileName || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.pdf`;
-        pdf.save(safeFileName);
-
-        showToast('PDF gerado com método alternativo!', 'success');
-
-    } catch (error) {
-        console.error('Erro no método alternativo:', error);
-        throw error;
-    }
 }
 
 // ================================================
@@ -4993,6 +4921,57 @@ function openFinalPreviewFullscreen() {
     }
 }
 
+function downloadFinalPDF() {
+    const data = getFormData();
+    if (!data) {
+        showToast('Preencha pelo menos algumas informações antes de baixar.', 'error');
+        return;
+    }
+
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
+    const useGradient = document.getElementById('useGradient')?.checked || false;
+
+    const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
+    const encodedHTML = btoa(unescape(encodeURIComponent(templateHTML)));
+    const fileName = data.personal.fullName || 'curriculo';
+
+    downloadPDF(encodedHTML, fileName);
+}
+
+function downloadFinalJPG() {
+    const data = getFormData();
+    if (!data) {
+        showToast('Preencha pelo menos algumas informações antes de baixar.', 'error');
+        return;
+    }
+
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
+    const useGradient = document.getElementById('useGradient')?.checked || false;
+
+    const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
+    const encodedHTML = btoa(unescape(encodeURIComponent(templateHTML)));
+    const fileName = data.personal.fullName || 'curriculo';
+
+    downloadJPG(encodedHTML, fileName);
+}
+
+function downloadFinalPNG() {
+    const data = getFormData();
+    if (!data) {
+        showToast('Preencha pelo menos algumas informações antes de baixar.', 'error');
+        return;
+    }
+
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#3498db';
+    const useGradient = document.getElementById('useGradient')?.checked || false;
+
+    const templateHTML = generateTemplateHTML(data, selectedTemplate, selectedColor, secondaryColor, useGradient);
+    const encodedHTML = btoa(unescape(encodeURIComponent(templateHTML)));
+    const fileName = data.personal.fullName || 'curriculo';
+
+    downloadPNG(encodedHTML, fileName);
+}
+
 function shareViaEmailFinal() {
     const data = getFormData();
     const fileName = data.personal.fullName || 'curriculo';
@@ -5113,11 +5092,3 @@ window.copyShareLink = copyShareLink;
 window.closePDFPreviewModal = closePDFPreviewModal;
 window.toggleShareOptions = toggleShareOptions;
 window.showPDFPreviewModal = showPDFPreviewModal;
-window.captureCurrentPreview = captureCurrentPreview;
-window.downloadFinalPDF = downloadFinalPDF;
-window.downloadFinalJPG = downloadFinalJPG;
-window.downloadFinalPNG = downloadFinalPNG;
-window.shareViaEmailFinal = shareViaEmailFinal;
-window.shareViaWhatsAppFinal = shareViaWhatsAppFinal;
-window.copyShareableLinkFinal = copyShareableLinkFinal;
-window.copyShareableLink = copyShareableLink;
