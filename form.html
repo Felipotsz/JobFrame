@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobFrame - Gerador de Currículos</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="form.css">
+
+    <!-- Favicon -->
+    <link rel="icon" href="src/favicon.png">
+
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- JavaScript -->
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+
+    <header id="header" class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html#hero" class="nav-logo">
+                    <img src="src/logo.png" alt="logo">
+                    <h2>JobFrame</h2>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html#hero" class="nav-link">Início</a></li>
+                <li><a href="index.html#about" class="nav-link">Sobre</a></li>
+                <li><a href="index.html#security" class="nav-link">Segurança</a></li>
+                <li><a href="index.html#team" class="nav-link">Contato</a></li>
+            </ul>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema">
+                <span class="theme-icon"></span>
+            </button>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section id="creator" class="creator">
+            <div class="container">
+                <h2 class="section-title">Criação de Currículo</h2>
+
+                <div class="creator-main" style="display: block;">
+
+                    <div class="form-column" style="width: 100%;">
+                        <div class="step-indicator">
+                            <div class="progress-bar" id="progress-bar"></div>
+                            <div class="step-numbers">
+                                <div class="step active" data-step-index="0">
+                                    <span class="step-number">1</span>
+                                </div>
+                                <div class="step" data-step-index="1">
+                                    <span class="step-number">2</span>
+                                </div>
+                                <div class="step" data-step-index="2">
+                                    <span class="step-number">3</span>
+                                </div>
+                                <div class="step" data-step-index="3">
+                                    <span class="step-number">4</span>
+                                </div>
+                                <div class="step" data-step-index="4">
+                                    <span class="step-number">5</span>
+                                </div>
+                                <div class="step" data-step-index="5">
+                                    <span class="step-number">6</span>
+                                </div>
+                                <div class="step" data-step-index="6">
+                                    <span class="step-number">7</span>
+                                </div>
+                                <div class="step" data-step-index="7">
+                                    <span class="step-number">8</span>
+                                </div>
+                                <div class="step" data-step-index="8">
+                                    <span class="step-number">9</span>
+                                </div>
+                            </div>
+                            <div class="step-titles">
+                                <span class="step-title">Pessoal</span>
+                                <span class="step-title">Objetivo</span>
+                                <span class="step-title">Experiência</span>
+                                <span class="step-title">Formação</span>
+                                <span class="step-title">Habilidades</span>
+                                <span class="step-title">Idiomas</span>
+                                <span class="step-title">Foto</span>
+                                <span class="step-title">Layouts</span>
+                                <span class="step-title">Finalizar</span>
+                            </div>
+                        </div>
+
+                        <div class="form-container" id="form-container">
+                            <form id="resume-form" class="resume-form">
+
+                                <div class="form-section active" data-step="0">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="user"></i> 1. Informações Pessoais
+                                    </h3>
+                                    <div class="divider"></div>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="fullName">Nome Completo</label>
+                                            <input type="text" id="fullName" name="fullName">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input type="email" id="email" name="email">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="phone">Telefone</label>
+                                            <input type="tel" id="phone" name="phone">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="linkedin">LinkedIn</label>
+                                            <input type="url" id="linkedin" name="linkedin"
+                                                placeholder="URL do seu perfil">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="neighborhood">Bairro</label>
+                                            <input type="text" id="neighborhood" name="neighborhood">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="city">Cidade</label>
+                                            <input type="text" id="city" name="city">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="state">Estado</label>
+                                            <input type="text" id="state" name="state">
+                                        </div>
+                                    </div>
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()" disabled><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" data-step="1">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="target"></i> 2. Objetivo Profissional
+                                    </h3>
+                                    <div class="divider"></div>
+                                    <div class="form-grid">
+                                        <div class="form-group form-group-full">
+                                            <label for="objective">Faça uma descrição dos seus objetivos
+                                                profissionais</label>
+                                            <textarea id="objective" name="objective" rows="5"
+                                                placeholder="Ex: Profissional de marketing com 5 anos de experiência em gestão de campanhas digitais e foco em resultados."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" data-step="2">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="briefcase"></i> 3. Experiência Profissional
+                                    </h3>
+                                    <div class="divider"></div>
+                                    <div id="experience-container">
+                                        <div class="experience-item">
+                                            <div class="form-grid">
+                                                <div class="form-group">
+                                                    <label>Cargo</label>
+                                                    <input type="text" name="experienceTitle[]">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Empresa</label>
+                                                    <input type="text" name="experienceCompany[]">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Data Início</label>
+                                                    <input type="month" name="experienceStartDate[]">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Data Fim</label>
+                                                    <input type="month" name="experienceEndDate[]">
+                                                </div>
+                                                <div class="form-group form-group-full form-group-checkbox">
+                                                    <input type="checkbox" id="experienceCurrent-0"
+                                                        name="experienceCurrent[]">
+                                                    <label for="experienceCurrent-0" style="font-weight: 400;">Trabalho
+                                                        Atual</label>
+                                                </div>
+                                                <div class="form-group form-group-full">
+                                                    <label>Descrição (Opcional)</label>
+                                                    <textarea name="experienceDescription[]" rows="2"
+                                                        placeholder="Descreva suas principais responsabilidades e conquistas..."></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="btn-add-item-wrapper">
+                                        <button type="button" class="btn btn-secondary btn-add-item"
+                                            onclick="addExperience()">
+                                            <i data-lucide="plus"></i> Adicionar Experiência
+                                        </button>
+                                    </div>
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" data-step="3">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="graduation-cap"></i> 4. Formação Acadêmica
+                                    </h3>
+                                    <div class="divider"></div>
+                                    <div id="education-container">
+                                        <div class="education-item">
+                                            <div class="form-grid">
+                                                <div class="form-group">
+                                                    <label>Curso</label>
+                                                    <input type="text" name="educationDegree[]">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Instituição</label>
+                                                    <input type="text" name="educationSchool[]">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Data Início</label>
+                                                    <input type="month" name="educationStartYear[]">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Data Conclusão</label>
+                                                    <input type="month" name="educationEndYear[]">
+                                                </div>
+                                                <div class="form-group form-group-full form-group-checkbox">
+                                                    <input type="checkbox" id="educationCurrent-0"
+                                                        name="educationCurrent[]">
+                                                    <label for="educationCurrent-0" style="font-weight: 400;">Em
+                                                        Andamento</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="btn-add-item-wrapper">
+                                        <button type="button" class="btn btn-secondary btn-add-item"
+                                            onclick="addEducation()">
+                                            <i data-lucide="plus"></i> Adicionar Formação
+                                        </button>
+                                    </div>
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" data-step="4">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="zap"></i> 5. Habilidades Técnicas, Soft e Hard Skills
+                                    </h3>
+                                    <div class="divider"></div>
+                                    <div class="form-grid">
+                                        <div class="form-group form-group-full">
+                                            <label for="skills">Habilidades (Separe por vírgula)</label>
+                                            <textarea id="skills" name="skills" rows="4"
+                                                placeholder="Ex: Pacote Office, Proatividade, Photoshop, Comunicação, Liderança"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" data-step="5">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="globe"></i> 6. Idiomas
+                                    </h3>
+                                    <div id="language-container">
+                                        <div class="divider"></div>
+                                        <div class="language-item">
+                                            <div class="form-grid form-grid-compact">
+                                                <div class="form-group">
+                                                    <label>Idioma</label>
+                                                    <input type="text" name="languageName[]">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Nível</label>
+                                                    <select name="languageLevel[]">
+                                                        <option value="">Selecione</option>
+                                                        <option value="Básico">Básico</option>
+                                                        <option value="Intermediário">Intermediário</option>
+                                                        <option value="Avançado">Avançado</option>
+                                                        <option value="Fluente">Fluente</option>
+                                                        <option value="Nativo">Nativo</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="btn-add-item-wrapper">
+                                        <button type="button" class="btn btn-secondary btn-add-item"
+                                            onclick="addLanguage()">
+                                            <i data-lucide="plus"></i> Adicionar Idioma
+                                        </button>
+                                    </div>
+
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" data-step="6">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="image"></i> 7. Foto
+                                    </h3>
+                                    <div class="divider"></div>
+
+                                    <div class="form-group form-group-photo">
+                                        <input type="file" id="photo-input" accept="image/jpeg,image/png"
+                                            style="display: none;">
+                                        <div class="photo-upload-wrapper">
+                                            <div id="photo-drop-zone" class="photo-drop-zone">
+                                                <div id="photo-preview" class="photo-preview">
+                                                    <i data-lucide="camera" class="photo-placeholder-icon"></i>
+                                                    <span id="photo-placeholder-text">Clique para adicionar ou arraste
+                                                        uma foto
+                                                        (Máx. 5MB)</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="photo-actions">
+                                                <label for="photo-input" class="btn btn-secondary btn-upload-label">
+                                                    <i data-lucide="upload"></i> Escolher Arquivo
+                                                </label>
+                                                <button type="button" class="btn btn-primary" id="open-camera-btn">
+                                                    <i data-lucide="camera"></i> Tirar Foto
+                                                </button>
+                                                <button type="button" class="btn btn-destructive" id="remove-photo"
+                                                    style="display: none;">
+                                                    <i data-lucide="trash-2"></i> Remover Foto
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <small class="photo-guideline-text">Recomendado: Rosto claro, fundo neutro.
+                                            Formato PNG ou
+                                            JPEG, tamanho máximo: 5MB.</small>
+                                    </div>
+
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section" data-step="7">
+                                    <h3 class="form-section-title">
+                                        <i data-lucide="check-circle"></i> 8. Finalização
+                                    </h3>
+
+                                    <div class="divider"></div>
+
+                                    <div class="form-group form-group-full">
+                                        <label>Escolha um layout para o seu currículo:</label>
+
+                                        <div id="template-options" class="template-options-simple">
+                                            <div class="template-card active" data-template="classic">
+                                                <div class="template-icon">
+                                                    <i data-lucide="award"></i>
+                                                </div>
+                                                <h3>Clássico</h3>
+                                                <p>Estrutura tradicional e organizada</p>
+                                            </div>
+
+                                            <div class="template-card" data-template="executive">
+                                                <div class="template-icon">
+                                                    <i data-lucide="briefcase"></i>
+                                                </div>
+                                                <h3>Executive</h3>
+                                                <p>Visual limpo com toques atuais</p>
+                                            </div>
+
+                                            <div class="template-card" data-template="minimal">
+                                                <div class="template-icon">
+                                                    <i data-lucide="circle-dot"></i>
+                                                </div>
+                                                <h3>Minimalista</h3>
+                                                <p>Design leve e direto ao ponto</p>
+                                            </div>
+
+                                            <div class="template-card" data-template="elegant">
+                                                <div class="template-icon">
+                                                    <i data-lucide="feather"></i>
+                                                </div>
+                                                <h3>Elegante</h3>
+                                                <p>Toque refinado e tipografia clássica</p>
+                                            </div>
+
+                                            <div class="template-card" data-template="professional">
+                                                <div class="template-icon">
+                                                    <i data-lucide="user-check"></i>
+                                                </div>
+                                                <h3>Profissional</h3>
+                                                <p>Equilíbrio entre forma e função</p>
+                                            </div>
+
+                                            <div class="template-card" data-template="creative">
+                                                <div class="template-icon">
+                                                    <i data-lucide="lightbulb"></i>
+                                                </div>
+                                                <h3>Criativo</h3>
+                                                <p>Estilo expressivo e original</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="divider"></div>
+
+                                    <div class="form-group form-group-full">
+                                        <label><i data-lucide="palette"
+                                                style="width: 20px; height: 20px; margin-right: 8px;"></i> Escolha uma
+                                            cor principal para o seu currículo:</label>
+                                        <div class="color-options">
+                                            <button type="button" class="color-btn" data-color="#2563EB"
+                                                style="background-color:#2563EB;"
+                                                aria-label="Azul Profissional"></button>
+                                            <button type="button" class="color-btn" data-color="#1E3A8A"
+                                                style="background-color:#1E3A8A;" aria-label="Azul Marinho"></button>
+                                            <button type="button" class="color-btn" data-color="#0369A1"
+                                                style="background-color:#0369A1;"
+                                                aria-label="Azul Corporativo"></button>
+                                            <button type="button" class="color-btn" data-color="#0F766E"
+                                                style="background-color:#0F766E;"
+                                                aria-label="Verde Profissional"></button>
+                                            <button type="button" class="color-btn" data-color="#6D28D9"
+                                                style="background-color:#6D28D9;" aria-label="Roxo Profundo"></button>
+                                            <button type="button" class="color-btn" data-color="#374151"
+                                                style="background-color:#374151;" aria-label="Cinza Escuro"></button>
+                                            <button type="button" class="color-btn" data-color="#111827"
+                                                style="background-color:#111827;"
+                                                aria-label="Preto Profissional"></button>
+                                        </div>
+
+                                    </div>
+                                    <div class="custom-color-wrapper">
+                                        <label for="customColor">Ou escolha sua própria cor principal:</label>
+                                        <input type="color" id="customColor" name="customColor" value="#2563EB">
+                                    </div>
+
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-secondary" onclick="prevStep()"><i
+                                                data-lucide="chevron-left"></i> Anterior</button>
+                                        <button type="button" class="btn btn-hero" onclick="nextStep()">Próximo <i
+                                                data-lucide="chevron-right"></i></button>
+                                    </div>
+                                </div>
+                        </div>
+
+                        <div class="form-section" data-step="8">
+                            <h3 class="form-section-title">
+                                <i data-lucide="eye"></i> 9. Pré-visualização e Download
+                            </h3>
+
+                            <div class="divider"></div>
+
+                            <div class="preview-final-section">
+                                <div class="preview-header-final">
+                                    <div class="preview-title-final">
+                                        <i data-lucide="file-text"></i>
+                                        <span>Seu Currículo Está Pronto!</span>
+                                    </div>
+                                    <p class="preview-subtitle">Confira a pré-visualização abaixo e faça o download no
+                                        formato desejado</p>
+                                </div>
+
+                                <!-- Container da Pré-visualização Centralizada -->
+                                <div class="final-preview-container">
+                                    <div class="preview-header">
+                                        <span class="preview-title"><i data-lucide="eye"></i> Visualização do
+                                            Currículo</span>
+                                        <div class="preview-actions">
+                                            <button type="button" class="btn btn-secondary btn-sm"
+                                                id="final-preview-refresh" onclick="generateFinalPreview()">
+                                                <i data-lucide="refresh-ccw"></i> Atualizar
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm"
+                                                id="final-preview-fullscreen" onclick="openFinalPreviewFullscreen()">
+                                                <i data-lucide="maximize-2"></i> Tela Cheia
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="resume-preview-box">
+                                        <iframe id="final-resume-frame" class="resume-frame"
+                                            title="Pré-visualização Final do Currículo"
+                                            style="width: 100%; height: 100%; border: none; display: none;">
+                                        </iframe>
+                                        <div id="final-preview-placeholder" class="preview-placeholder">
+                                            <i data-lucide="file-text"></i>
+                                            <p>Clique em "Atualizar Visualização" para gerar a pré-visualização do seu
+                                                currículo.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Seção de Download -->
+                                <div class="download-section-final">
+                                    <h4 class="download-title">
+                                        <i data-lucide="download"></i>
+                                        Baixar Currículo
+                                    </h4>
+
+                                    <div class="download-options-final">
+                                        <button type="button" class="download-option-final"
+                                            onclick="downloadFinalPDF()">
+                                            <div class="option-icon-final">
+                                                <i data-lucide="file-text"></i>
+                                            </div>
+                                            <div class="option-content-final">
+                                                <span class="option-title-final">Baixar PDF</span>
+                                                <span class="option-description-final">Formato ideal para
+                                                    impressão</span>
+                                            </div>
+                                        </button>
+
+                                        <button type="button" class="download-option-final"
+                                            onclick="downloadFinalJPG()">
+                                            <div class="option-icon-final">
+                                                <i data-lucide="image"></i>
+                                            </div>
+                                            <div class="option-content-final">
+                                                <span class="option-title-final">Baixar JPG</span>
+                                                <span class="option-description-final">Imagem de alta qualidade</span>
+                                            </div>
+                                        </button>
+
+                                        <button type="button" class="download-option-final"
+                                            onclick="downloadFinalPNG()">
+                                            <div class="option-icon-final">
+                                                <i data-lucide="file-image"></i>
+                                            </div>
+                                            <div class="option-content-final">
+                                                <span class="option-title-final">Baixar PNG</span>
+                                                <span class="option-description-final">Imagem com fundo
+                                                    transparente</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Seção de Compartilhamento -->
+                                <div class="share-section-final">
+                                    <h4 class="share-title">
+                                        <i data-lucide="share-2"></i>
+                                        Compartilhar
+                                    </h4>
+
+                                    <div class="share-options-final">
+                                        <button type="button" class="share-option-final" onclick="shareViaEmailFinal()">
+                                            <div class="option-icon-final">
+                                                <i data-lucide="mail"></i>
+                                            </div>
+                                            <div class="option-content-final">
+                                                <span class="option-title-final">E-mail</span>
+                                                <span class="option-description-final">Enviar por e-mail</span>
+                                            </div>
+                                        </button>
+
+                                        <button type="button" class="share-option-final"
+                                            onclick="shareViaWhatsAppFinal()">
+                                            <div class="option-icon-final">
+                                                <i data-lucide="message-circle"></i>
+                                            </div>
+                                            <div class="option-content-final">
+                                                <span class="option-title-final">WhatsApp</span>
+                                                <span class="option-description-final">Compartilhar no WhatsApp</span>
+                                            </div>
+                                        </button>
+
+                                        <button type="button" class="share-option-final"
+                                            onclick="copyShareableLinkFinal()">
+                                            <div class="option-icon-final">
+                                                <i data-lucide="link"></i>
+                                            </div>
+                                            <div class="option-content-final">
+                                                <span class="option-title-final">Copiar Link</span>
+                                                <span class="option-description-final">Link compartilhável</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-navigation">
+                                <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                                    <i data-lucide="chevron-left"></i> Anterior
+                                </button>
+                                <button type="button" class="btn btn-hero" onclick="generateFinalPreview()">
+                                    <i data-lucide="refresh-cw"></i> Atualizar Visualização
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="camera-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="modal-title"><i data-lucide="camera"></i> Capturar Foto</h3>
+
+            <div class="camera-stream-container">
+                <video id="camera-stream" autoplay playsinline></video>
+                <canvas id="camera-canvas" class="hidden"></canvas>
+                <div id="camera-message" class="camera-message">Aguardando permissão da câmera...</div>
+            </div>
+
+            <div class="modal-actions">
+                <div class="main-camera-actions">
+                    <button type="button" class="btn btn-secondary" id="switch-camera-btn" style="display: none;">
+                        <i data-lucide="rotate-ccw"></i> Inverter Câmera
+                    </button>
+
+                    <button type="button" class="btn btn-hero" id="capture-photo-btn" disabled>
+                        <i data-lucide="aperture"></i> Capturar
+                    </button>
+                </div>
+
+                <button type="button" class="btn btn-destructive" id="close-camera-modal-btn">
+                    <i data-lucide="x"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Estilos adicionais para melhorar o download */
+        .resume-preview-box {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            border: 1px solid hsl(var(--border));
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .resume-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .preview-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: hsl(var(--muted-foreground));
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+
+    <script>
+        // Garantir que todos os labels fiquem visíveis
+        document.addEventListener('DOMContentLoaded', function () {
+            // Forçar cor dos labels
+            const labels = document.querySelectorAll('label');
+            labels.forEach(label => {
+                label.style.color = 'hsl(var(--foreground))';
+                label.style.fontWeight = '600';
+            });
+
+            // Labels de checkbox
+            const checkboxLabels = document.querySelectorAll('.form-group-checkbox label');
+            checkboxLabels.forEach(label => {
+                label.style.color = 'hsl(var(--foreground))';
+                label.style.fontWeight = '500';
+            });
+        });
+
+        // Garantir que o modal funcione corretamente
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inicializar ícones
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Fechar modal ao clicar fora
+            document.addEventListener('click', function (e) {
+                if (e.target.id === 'pdf-preview-modal') {
+                    closePDFPreviewModal();
+                }
+            });
+
+            // Fechar modal com tecla ESC
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closePDFPreviewModal();
+                }
+            });
+        });
+
+        // Função auxiliar para aguardar o carregamento das imagens
+        function waitForImages(container) {
+            const images = container.querySelectorAll('img');
+            const promises = Array.from(images).map(img => {
+                if (img.complete) {
+                    return Promise.resolve();
+                }
+                return new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 3000);
+                });
+            });
+            return Promise.all(promises);
+        }
+    </script>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>JobFrame</h3>
+                    <p>Criando currículos profissionais para impulsionar sua carreira.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 JobFrame. Todos os direitos reservados.</p>
+                <div class="footer-divider"></div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
